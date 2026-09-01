@@ -1,5 +1,5 @@
 name: DonutOrders
-version: 3.1
+version: ${project.version}
 author: M1rcELoRO
 main: ro.server.orderplugin.OrderPlugin
 api-version: '1.21'

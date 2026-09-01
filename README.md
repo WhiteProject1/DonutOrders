@@ -3,7 +3,7 @@
 **A player-driven order board for Minecraft servers.** Players post buy-orders for the
 items they want; anyone else can fill them and is paid per item delivered.
 
-![Version](https://img.shields.io/badge/version-3.1-blue)
+![Version](https://img.shields.io/badge/version-3.2-blue)
 ![Minecraft](https://img.shields.io/badge/minecraft-1.21%2B-brightgreen)
 ![Platform](https://img.shields.io/badge/platform-Paper%20%7C%20Spigot%20%7C%20Folia-orange)
 ![Java](https://img.shields.io/badge/java-17%2B-red)

@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 3.2
 
 Added fully configurable order lore — the description under every item on the board is now a template in `lang/*.yml` instead of nine lines assembled in Java. Reorder them, delete them, add your own, with hex colours and blank lines wherever you want them.
 
