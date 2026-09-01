@@ -1,0 +1,51 @@
+# -----------------------------------------------------------------------------#
+#  Sipariş düzenleme menüsü                                                      #
+# -----------------------------------------------------------------------------#
+#  Alanların açıklaması için menus/main-menu.yml başındaki nota bakın.
+#
+#  Sipariş tamamlandığında "cancel-order" butonu kaldırılır ve "collect-items"
+#  onun yerine geçer — bu davranış koddadır, slotları buna göre ayarlayın.
+# -----------------------------------------------------------------------------#
+
+rows: 3
+title: ""
+content-slots: ""
+open-sound: "none"
+
+# Menü kapanırken çalan ses. Bir menüden diğerine geçerken de tetiklenir,
+# bu yüzden varsayılan "none" (config.yml -> sounds.events.menu-close).
+close-sound: "none"
+
+filler:
+  enabled: true
+  material: GRAY_STAINED_GLASS_PANE
+  name: " "
+  slots: "0, 1, 2, 9, 11, 18, 19, 20"
+  # true ise dolgu, üzerinde buton olsa bile o slotu doldurur.
+  # false (varsayılan) butonları korur — alt sıradaki sayfa/geri/arama
+  # butonlarının kaybolmaması için bu ayar false kalmalıdır.
+  overwrite: false
+
+items:
+  order:
+    enabled: true
+    slot: 10
+    material: STONE
+
+  cancel-order:
+    enabled: true
+    slot: 13
+    material: RED_TERRACOTTA
+    sound: "block.anvil.land"
+
+  collect-items:
+    enabled: true
+    slot: 15
+    material: CHEST
+    sound: "ui.button.click"
+
+  back:
+    enabled: true
+    slot: 26
+    material: RED_STAINED_GLASS_PANE
+    sound: "ui.button.click"

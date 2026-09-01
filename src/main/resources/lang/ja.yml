@@ -1,0 +1,428 @@
+# -----------------------------------------------------------------------------#
+#  DonutOrders - Japanese (ja)
+# -----------------------------------------------------------------------------#
+#
+#  Japanese language file. Freely editable.
+#
+#  Colours: &a &b &c ... and hex &#00d271
+#  Placeholders: {prefix} %player% %seller% %amount% %item% %price% %total%
+#                %limit% %page% %pages% %search% %filter% %time% %language%
+#
+#  Any key missing here falls back to lang/en.yml, so an unfinished
+#  translation never shows a raw key to a player.
+#
+#  This file is never overwritten on update; only missing keys are added.
+# -----------------------------------------------------------------------------#
+
+language:
+  name: '&f日本語'
+general:
+  player-only: '&cこのコマンドはプレイヤーのみ使用できます。'
+  no-permission: '&cこのコマンドを使用する権限がありません。'
+  reload-success: '&aDonutOrders の設定・メニュー・言語を再読み込みしました！'
+  unknown-command: '&c不明なサブコマンドです。&e/donutordersadmin&c を試してください。'
+errors:
+  not-enough-money: '{prefix}&c所持金が足りません！&e%total%&c 必要です。'
+  not-owner: '{prefix}&c他人の注文はキャンセルできません。'
+  own-order: '{prefix}&c自分の注文には納品できません！'
+  already-complete: '{prefix}&c完了した注文はキャンセルできません。'
+  max-orders-reached: '{prefix}&c有効な注文の上限に達しました（&e%limit%&c）。'
+  min-price-not-met: '{prefix}&cアイテムあたりの最低価格：&e%price%'
+  max-price-exceeded: '{prefix}&cアイテムあたりの最高価格：&e%price%'
+  min-amount-not-met: '{prefix}&c最小数量：&e%amount%'
+  max-amount-exceeded: '{prefix}&c注文あたりの最大数量：&e%amount%'
+  invalid-number: '{prefix}&c無効な数値です。'
+  invalid-number-format: '{prefix}&c無効な数値です。形式：100, 1k, 10k, 1m'
+  positive-only: '{prefix}&c正の数のみ入力できます。'
+  wrong-item: '{prefix}&cアイテムの種類が違います！'
+  no-items-in-inventory: '{prefix}&cインベントリに &e%item%&c がありません。'
+  set-item-amount-price: '{prefix}&cアイテム・数量・価格を設定してください！'
+  order-not-found: '{prefix}&c注文が見つかりません。'
+  player-not-found: '{prefix}&cプレイヤー %player% が見つかりません。'
+  cant-fulfill-own: '{prefix}&c自分の注文には納品できません！'
+  max-enchantments-reached: '{prefix}&cエンチャントは最大 &e%limit% &c個まで選択できます。'
+  order-unavailable: '{prefix}&cこの注文は既に利用できません。'
+  order-already-filled: '{prefix}&cこの注文は既に完了しています。'
+  feature-disabled: '{prefix}&cこの機能はこのサーバーでは無効です。'
+  item-blacklisted: '{prefix}&cこのアイテムの注文は許可されていません。'
+  language-not-supported: '{prefix}&c不明な言語です。利用可能：&e%languages%'
+  order-filled-elsewhere: '{prefix}&cこの注文は別のサーバーで完了しました。アイテムは返却されました。'
+  too-fast: '{prefix}&c少しゆっくり操作してください。'
+success:
+  order-created: '{prefix}&#00d271%amount% %item% &fを注文しました。'
+  order-cancelled: '{prefix}&a注文をキャンセルしました。&e%price%&a を返金し、アイテムを返却しました。'
+  order-fulfilled: '{prefix}&b%amount% %item% &7を納品し、&a$%price%&7 を受け取りました。'
+  order-received: '{prefix}&a%seller% &fがあなたに &a%amount% %item% &fを納品しました。'
+  order-complete: '{prefix}&a%item% &fの注文が完了しました！'
+  delivery-cancelled: '{prefix}&c納品をキャンセルしました。アイテムは返却されました。'
+  items-dropped: '{prefix}&aすべてのアイテムをドロップしました！'
+  order-archived: '{prefix}&a注文が完了し、保管されました！'
+  potion-selected: '{prefix}&aポーションの種類を選択しました！'
+  amount-set: '{prefix}&a数量を設定しました：%amount%'
+  price-set: '{prefix}&a価格を設定しました：$%price%'
+  filter-applied: '{prefix}&aフィルターを適用しました：&e%search%'
+  search-applied: '{prefix}&a検索中：&e%search%'
+  search-cleared: '{prefix}&a検索をリセットしました！'
+  items-sold: '{prefix}&aアイテムを &a$%price%&a で売却しました。'
+  language-changed: '{prefix}&a言語を &e%language%&a に設定しました。'
+  tax-charged: '{prefix}&e%tax%&7 の注文税が徴収されました（&e$%amount%&7）。'
+gui:
+  type-amount: '{prefix}&aチャットに数量を入力してください：'
+  type-price: '{prefix}&aチャットに価格を入力してください：'
+  type-filter: '{prefix}&eフィルターする名前を入力してください（例：''木''）：'
+  type-search: '{prefix}&eアイテム名を入力してください（''clear'' でリセット）：'
+  sell-all-coming-soon: '{prefix}&cこれらのアイテムには売却価格がありません。'
+  quick-fill-full: '{prefix}&e既に十分なアイテムが追加されています！'
+  quick-fill-added: '{prefix}&a%amount% 個のアイテムを追加しました！'
+  quick-fill-none: '{prefix}&cインベントリに一致するアイテムが見つかりません。'
+  new-order:
+    item-not-selected: '{prefix}&cアイテムを選択してください。'
+    amount-not-set: '{prefix}&c数量を設定してください。'
+    price-not-set: '{prefix}&c価格を設定してください。'
+  buttons:
+    sort: '&#ffc247並び替え'
+    filter: '&#ffc247フィルター'
+    orders: '&#00d271注文'
+    search: '&#ffc247検索'
+    your-orders: '&#00d271自分の注文'
+    next-page: '&#ffc247次のページ'
+    no-next-page: '&8次のページはありません'
+    previous-page: '&#ffc247前のページ'
+    no-previous-page: '&8前のページはありません'
+    cancel: '&#ff5f5fキャンセル'
+    confirm: '&#00d271確定'
+    item: '&#6fd3ffアイテム'
+    amount: '&#6fd3ff数量'
+    price: '&#6fd3ff価格'
+    new-order: '&#00d271新規注文'
+    cancel-order: '&#ff5f5f注文をキャンセル'
+    collect-items: '&#00d271アイテムを受け取る'
+    go-back: '&#ffc247戻る'
+    back: '&#ffc247戻る'
+    back-to-menu: '&#ffc247メニューに戻る'
+    back-to-editor: '&#ffc247編集画面に戻る'
+    back-to-order: '&#ffc247注文に戻る'
+    quick-fill: '&#00d271クイック納品'
+    sell-all: '&#00d271すべて売却'
+    drop-all: '&#ff5f5fすべてドロップ'
+    collection-back: '&#ffc247戻る'
+    collection-next: '&#ffc247次へ'
+    language: '&#6fd3ff言語'
+    level: '&#6fd3ff注文レベル'
+  enchantment-picker:
+    title: エンチャントを選択
+    click-to-select: '&7クリックで選択'
+    selected: '&a選択済み'
+    confirm: '&#00d271確定'
+    cancel: '&#ff5f5fキャンセル'
+    next: '&#ffc247次へ'
+    back: '&#ffc247戻る'
+  lore:
+    each: 1個あたり
+    delivered: 納品済み
+    paid: 支払済み
+    click-to-deliver: '&aクリックで %player% に %item% を納品'
+    until-order-expires: '&7注文は %time% 後に期限切れ'
+    until-order-deletes: '&7注文は %time% 後に削除されます'
+    owners-order: '&a%player% の注文'
+    removed-suffix: '&7（削除済み）'
+    enchanted-suffix: （エンチャント済み）
+    most-paid: 報酬が高い順
+    most-delivered: 納品数が多い順
+    recently-listed: 新着順
+    most-money-per-item: 単価が高い順
+    filter-all: すべて
+    filter-blocks: ブロック
+    filter-tools: 道具
+    filter-food: 食べ物
+    filter-combat: 戦闘
+    filter-potions: ポーション
+    filter-books: 本
+    filter-ingredients: 素材
+    filter-utilities: その他
+    current: 現在
+    none: なし
+    click-to-search: '&7クリックしてアイテム名で検索'
+    type-in-chat: '&7チャットに入力（例：''骨''）'
+    manage-listings: '&f自分の注文を管理'
+    click-to-refresh: '&fクリックで更新'
+    return-to-orders: '&f自分の注文に戻る'
+    click-to-create: '&fクリックして新しい買い注文を作成'
+    selected: '&f選択中：&b%item%'
+    click-to-change: '&7クリックでアイテムを変更'
+    amount-value: '&f数量：&e%amount%'
+    click-to-set-amount: '&7クリックして数量を入力'
+    price-per-item: '&f1個あたりの価格：&a$%price%'
+    click-to-set-price: '&7クリックして価格を入力'
+    total-cost: '&f合計金額：&a$%total%'
+    tax-line: '&7税（&e%tax%&7）：&a$%amount%'
+    click-to-publish: '&7クリックして注文を公開'
+    order-label: '&a注文：%item%'
+    progress: '&f進捗：%filled%/%total%'
+    price-label: '&f価格：$%price%'
+    click-to-cancel: '&fクリックしてこの注文をキャンセル'
+    refunds-remaining: '&c（残額は返金されます）'
+    collect-first: '&c（先にアイテムを受け取ってください！）'
+    items-waiting: '&f保管中のアイテム：&6%amount%'
+    click-to-open-storage: '&eクリックして保管庫を開く'
+    order-completed: '&a&l注文完了！'
+    cancel-return-items: '&fキャンセルしてアイテムを返却'
+    click-to-deliver-items: '&fクリックしてアイテムを納品'
+    youre-delivering: '&7&a%amount% &f%item% &7を納品します'
+    current-filter: '&f現在のフィルター：&e%filter%'
+    click-type-name: '&7クリックして名前を入力'
+    filter-description: '&7（リストを絞り込みます。例：''木'' -> ''オークの木''）'
+    coming-soon: '&7売却価格がありません'
+    sell-all: '&7クリックしてすべてのアイテムを売却'
+    cancel-sell: '&7クリックしてキャンセル'
+    confirm-sell: '&7クリックしてすべてのアイテムを売却'
+    sell-price: '&7売却価格 &a$%price%'
+    quick-fill-desc: '&fインベントリから一致するアイテムを自動で追加します'
+    quick-fill-item: '&7アイテム：&e%item%'
+    quick-fill-remaining: '&7残り：&e%amount%'
+    quick-fill-click: '&eクリック &f- &e自動補充'
+    removed-by-admin: '&c&l管理者により削除されました'
+    items-to-collect: '&f受け取り可能なアイテム：&6%amount%'
+    click-to-collect: '&eクリックしてアイテムを受け取る'
+    language-current: '&a現在選択中'
+    language-click: '&7クリックしてこの言語を使用'
+    tax-reason-base: '&8（標準税率）'
+    tax-reason-rank: '&8（ランク割引適用）'
+    tax-reason-level: '&8（注文レベル割引適用）'
+    tax-reason-exempt: '&8（あなたは免税です）'
+    level-current: '&fレベル：&d%level%'
+    level-xp: '&f経験値：&b%xp% &7/ &b%next%'
+    level-progress: '%bar%'
+    level-tax: '&7税割引：&a%discount%'
+    level-orders: '&7追加注文枠：&a+%extra%'
+    level-items: '&7注文あたりの追加アイテム：&a+%extra%'
+    level-max: '&6&l最大レベル到達'
+    server: '&8サーバー：%server%'
+  # English default (unverified machine translation risk) - feel free to translate.
+  order-lore:
+    template:
+    - ''
+    - ' &#AAAAAA• Item: &r&#FFFFFF%item%&r'
+    - '%enchants%'
+    - ' &#AAAAAA• Price Per Item: &r&#49F267$%price%&r'
+    - ''
+    - ' &#AAAAAA• Delivery Progress:&r'
+    - '   &#FFFFFF%filled% &r&#555555/ &r&#AAAAAA%needed% items&r'
+    - '   %bar% &r&#555555(&r&#49F267%percent%&r&#555555)&r'
+    - ''
+    - ' &#AAAAAA• Payment Progress:&r'
+    - '   &#49F267$%paid% &r&#555555/ &r&#AAAAAA$%total%&r'
+    - ''
+    - ' &#AAAAAA• Expires In:&r'
+    - '   &#FFFFFF%time%&r'
+    - ''
+    - '&#FFFFFFClick to &r&#49F267deliver!&r'
+menus:
+  main-menu: 注文 » %page%/%pages% ページ
+  your-orders: 注文 » 自分の注文
+  new-order: 注文 » 新規注文
+  item-selector: アイテムを選択 » %page%/%pages%
+  item-selector-filtered: フィルター：%search% » %page%/%pages%
+  deliver-items: 注文 » アイテムを納品
+  confirm-delivery: 注文 » 納品を確認
+  confirm-sell: 注文 » 売却を確認
+  edit-order: 注文 » 注文を編集
+  collect-items: 受け取り » %page%/%pages% ページ
+  enchantment-picker: エンチャントを選択 » %page%/%pages%
+  potion-selector: ポーションの種類を選択
+  language: 言語を選択
+  admin-menu: DonutOrders 管理
+  admin-orders: 全注文 » %page%/%pages%
+input:
+  sign:
+    amount:
+    - ''
+    - ^^^^^^^^
+    - 数量を入力
+    - （例：64, 1k）
+    price:
+    - ''
+    - ^^^^^^^^
+    - 価格を入力
+    - （例：100, 1k）
+    filter:
+    - ''
+    - ^^^^^^^^
+    - フィルター入力
+    - （例：木）
+    search:
+    - ''
+    - ^^^^^^^^
+    - 検索を入力
+    - （アイテム名）
+  chat:
+    amount: '{prefix}&aチャットに数量を入力してください。&7（&e%cancel%&7 でキャンセル）'
+    price: '{prefix}&aチャットに価格を入力してください。&7（&e%cancel%&7 でキャンセル）'
+    filter: '{prefix}&aチャットにフィルターを入力してください。&7（&e%cancel%&7 でキャンセル）'
+    search: '{prefix}&aアイテム名を入力してください。&7（&e%cancel%&7 でキャンセル）'
+    cancel-word: キャンセル
+    cancelled: '{prefix}&c入力をキャンセルしました。'
+    timeout: '{prefix}&c入力がタイムアウトしました。'
+delivery:
+  items-returned: '&e[注文] %amount% 個のアイテムを返却しました（上限に達しました）。'
+  shulkers-returned: '&a[注文] %amount% 個のシュルカーボックスを返却しました！'
+  delivering:
+  - '&7&o納品中.'
+  - '&7&o納品中..'
+  - '&7&o納品中...'
+  expired-with-items: '&e[注文] &f&a%item% &fの注文が期限切れになりました。&a$%price% &fを返金しました。&e納品済みのアイテムが保管されています！'
+  expired: '&e[注文] &fあなたの注文が期限切れになりました。&a$%price% &fを返金しました。'
+admin:
+  help-header: '&6&l=== DonutOrders 管理 ==='
+  help-reload: '&e/donutordersadmin reload &7- 設定を再読み込み'
+  help-removeorder: '&e/donutordersadmin removeorder <プレイヤー> <order_id> &7- 注文を削除'
+  usage-removeorder: '&c使い方：/donutordersadmin removeorder <プレイヤー> <注文>'
+  order-removed: '&a&e%amount% %item% &aの注文を削除しました。返金：&e%price%'
+  order-removed-with-items: '&a&e%amount% %item% &aの注文を削除しました。返金：&e%price% &7（プレイヤーは %collected% 個のアイテムを受け取れます）'
+  order-removed-player: '&c&e%amount% %item% &cの注文が管理者により削除されました。返金：&e%price%&c。'
+  order-removed-collect: ' &7&e/order &7-> &e自分の注文 &7からアイテムを受け取ってください。'
+  orders-deleted: '&a%amount% 件の注文を削除しました！'
+  help-menu: '&e/donutordersadmin menu &7- 管理パネルを開く'
+  reloaded: '&e%ms%ms&a で再読み込みしました。'
+  cleanup-done: '&a期限切れの注文 %amount% 件を整理しました。'
+  save-failed: '&cファイルを書き込めませんでした！変更は今回のセッションのみ有効です。'
+  feature-enabled: '&a機能 &e%feature% &aを有効にしました。'
+  feature-disabled: '&c機能 &e%feature% &cを無効にしました。'
+  tax-enabled: '&a税システムを有効にしました。'
+  tax-disabled: '&c税システムを無効にしました。'
+  levels-enabled: '&a注文レベルシステムを有効にしました。'
+  levels-disabled: '&c注文レベルシステムを無効にしました。'
+  detail-header: '&6&l--- &f%item% &6&l---'
+  buttons:
+    reload: '&#ffc247再読み込み'
+    orders: '&#6fd3ff全注文'
+    stats: '&#6fd3ff統計'
+    cleanup: '&#ffc247整理'
+    features: '&#6fd3ff機能'
+    tax: '&#ffc247税'
+    levels: '&#6fd3ffレベルシステム'
+    close: '&#ff5f5f閉じる'
+  lore:
+    enabled: '&a有効'
+    disabled: '&c無効'
+    click-toggle: '&7クリックで切り替え'
+    click-cycle: '&7クリックで次の機能を切り替え'
+    reload: '&7設定・メニュー・言語・レベルを再読み込み'
+    orders: '&f%amount% &7件の有効な注文'
+    cleanup: '&7期限切れの注文を今すぐ削除'
+    search-hint: '&7プレイヤー名またはアイテム名で検索'
+    order-owner: '&7所有者：&f%player%'
+    order-refund: '&7削除時の返金：&a$%price%'
+    order-id: '&8ID：%id%'
+    order-remove: '&cSHIFT + 右クリック &7で削除して返金'
+    anti-abuse: '&7レベル不正防止：%state%'
+    toggle-line-on: '&a• %label% &8- %state%'
+    toggle-line-off: '&7• %label% &8- %state%'
+  stats:
+    active: '&7有効な注文：&f%amount%'
+    completed: '&7完了した注文：&f%amount%'
+    volume: '&7未決済総額：&a$%amount%'
+    players: '&7オンラインプレイヤー：&f%amount%'
+  tax:
+    creation: '&7作成：&f%percent%'
+    delivery: '&7納品：&f%percent%'
+    sell: '&7売却：&f%percent%'
+  levels:
+    count: '&7定義済みレベル：&f%amount%'
+  # English default (unverified machine translation risk) - feel free to translate.
+  features:
+    potions: Potions
+    enchantments: Enchantments
+    enchanted-books: Enchanted Books
+    sell-all: Sell All
+    quick-fill: Quick Deliver
+    search: Search
+    filter: Filter
+    sort: Sort
+  templates:
+    stats:
+    - '&7有効な注文：&f%active%'
+    - '&7完了した注文：&f%completed%'
+    - '&7未決済総額：&a$%volume%'
+    - '&7オンラインプレイヤー：&f%players%'
+    features:
+    - '%features%'
+    - ''
+    - '&7クリックで次の機能を切り替え'
+    tax:
+    - '%state%'
+    - '&7作成：&f%creation%'
+    - '&7納品：&f%delivery%'
+    - '&7売却：&f%sell%'
+    - ''
+    - '&7クリックで切り替え'
+    levels:
+    - '%state%'
+    - '%level-details%'
+    - ''
+    - '&7クリックで切り替え'
+    order:
+    - '&7所有者：&f%owner%'
+    - '&f進捗：%filled%/%total%'
+    - '&f価格：$%price%'
+    - '&7削除時の返金：&a$%refund%'
+    - '&8ID：%id%'
+    - ''
+    - '&cSHIFT + 右クリック &7で削除して返金'
+    detail:
+    - '&6&l--- &f%item% &6&l---'
+    - '&7所有者：&f%owner%'
+    - '&f進捗：%filled%/%total%'
+    - '&f価格：$%price%'
+    - '&7削除時の返金：&a$%refund%'
+    - '&f保管中のアイテム：&6%waiting%'
+    - '&8ID：%id%'
+time:
+  day: '%value%日'
+  hour: '%value%時間'
+  minute: '%value%分'
+  expired: 期限切れ
+names:
+  unknown: Unknown
+  enchanted-book: '%enchantment% Book'
+  potion:
+    base: Potion of %name%
+    splash: Splash %name%
+    lingering: Lingering %name%
+    long: '%name% (Long)'
+    strong: Strong %name%
+  potions:
+    WATER: Water
+    MUNDANE: Mundane
+    THICK: Thickness
+    AWKWARD: Awkwardness
+    NIGHT_VISION: Night Vision
+    INVISIBILITY: Invisibility
+    LEAPING: Leaping
+    FIRE_RESISTANCE: Fire Resistance
+    SWIFTNESS: Swiftness
+    SLOWNESS: Slowness
+    WATER_BREATHING: Water Breathing
+    HEALING: Healing
+    HARMING: Harming
+    POISON: Poison
+    REGENERATION: Regeneration
+    STRENGTH: Strength
+    WEAKNESS: Weakness
+    LUCK: Luck
+    TURTLE_MASTER: the Turtle Master
+    SLOW_FALLING: Slow Falling
+    WIND_CHARGED: Wind Charging
+    WEAVING: Weaving
+    OOZING: Oozing
+    INFESTED: Infestation
+  words:
+    TNT: TNT
+  items: {}
+level:
+  up: '{prefix}&dあなたの注文レベルが &f%level%&d になりました！'
+  up-title: '&d&lレベルアップ'
+  up-subtitle: '&f注文レベル &d%level%'
+  up-broadcast: '&d%player% &fが注文レベル &d%level%&f に到達しました！'
+  disabled: '{prefix}&cこのサーバーでは注文レベルシステムが無効です。'
+  daily-cap-reached: '{prefix}&e本日の経験値上限に達しました。'

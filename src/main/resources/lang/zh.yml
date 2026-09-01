@@ -1,0 +1,428 @@
+# -----------------------------------------------------------------------------#
+#  DonutOrders - Chinese (zh)
+# -----------------------------------------------------------------------------#
+#
+#  Chinese language file. Freely editable.
+#
+#  Colours: &a &b &c ... and hex &#00d271
+#  Placeholders: {prefix} %player% %seller% %amount% %item% %price% %total%
+#                %limit% %page% %pages% %search% %filter% %time% %language%
+#
+#  Any key missing here falls back to lang/en.yml, so an unfinished
+#  translation never shows a raw key to a player.
+#
+#  This file is never overwritten on update; only missing keys are added.
+# -----------------------------------------------------------------------------#
+
+language:
+  name: '&f简体中文'
+general:
+  player-only: '&c只有玩家才能使用此命令。'
+  no-permission: '&c你没有权限使用此命令。'
+  reload-success: '&aDonutOrders 的配置、菜单和语言已重新加载！'
+  unknown-command: '&c未知的子命令。请尝试 &e/donutordersadmin&c。'
+errors:
+  not-enough-money: '{prefix}&c你的金钱不足！需要 &e%total%&c。'
+  not-owner: '{prefix}&c你不能取消别人的订单。'
+  own-order: '{prefix}&c你不能完成自己的订单！'
+  already-complete: '{prefix}&c已完成的订单无法取消。'
+  max-orders-reached: '{prefix}&c你已达到活动订单上限（&e%limit%&c）。'
+  min-price-not-met: '{prefix}&c每个物品的最低价格：&e%price%'
+  max-price-exceeded: '{prefix}&c每个物品的最高价格：&e%price%'
+  min-amount-not-met: '{prefix}&c最少数量：&e%amount%'
+  max-amount-exceeded: '{prefix}&c每个订单的最大数量：&e%amount%'
+  invalid-number: '{prefix}&c无效的数字。'
+  invalid-number-format: '{prefix}&c无效的数字。格式：100, 1k, 10k, 1m'
+  positive-only: '{prefix}&c只能输入正数。'
+  wrong-item: '{prefix}&c物品类型错误！'
+  no-items-in-inventory: '{prefix}&c你的背包里没有 &e%item%&c。'
+  set-item-amount-price: '{prefix}&c请设置物品、数量和价格！'
+  order-not-found: '{prefix}&c未找到订单。'
+  player-not-found: '{prefix}&c未找到玩家 %player%。'
+  cant-fulfill-own: '{prefix}&c你不能完成自己的订单！'
+  max-enchantments-reached: '{prefix}&c你最多可以选择 &e%limit% &c个附魔。'
+  order-unavailable: '{prefix}&c此订单已不可用。'
+  order-already-filled: '{prefix}&c此订单已被完成。'
+  feature-disabled: '{prefix}&c此功能在本服务器已停用。'
+  item-blacklisted: '{prefix}&c不允许为此物品下单。'
+  language-not-supported: '{prefix}&c未知语言。可用：&e%languages%'
+  order-filled-elsewhere: '{prefix}&c该订单刚刚在另一台服务器上被完成。你的物品已归还。'
+  too-fast: '{prefix}&c慢一点。'
+success:
+  order-created: '{prefix}&#00d271已订购 %amount% %item%&f。'
+  order-cancelled: '{prefix}&a订单已取消。已退还 &e%price%&a，物品已归还。'
+  order-fulfilled: '{prefix}&a已交付 &b%amount% %item%&7，你获得了 &a$%price%&7。'
+  order-received: '{prefix}&a%seller% &f向你交付了 &a%amount% %item%&f。'
+  order-complete: '{prefix}&a%item% &f订单已完成！'
+  delivery-cancelled: '{prefix}&c交付已取消。你的物品已归还。'
+  items-dropped: '{prefix}&a已丢出所有物品！'
+  order-archived: '{prefix}&a订单已完成并归档！'
+  potion-selected: '{prefix}&a已选择药水类型！'
+  amount-set: '{prefix}&a数量已设置：%amount%'
+  price-set: '{prefix}&a价格已设置：$%price%'
+  filter-applied: '{prefix}&a已应用筛选：&e%search%'
+  search-applied: '{prefix}&a正在搜索：&e%search%'
+  search-cleared: '{prefix}&a搜索已清除！'
+  items-sold: '{prefix}&a物品以 &a$%price%&a 售出。'
+  language-changed: '{prefix}&a语言已设置为 &e%language%&a。'
+  tax-charged: '{prefix}&7已收取 &e%tax%&7 的订单税（&e$%amount%&7）。'
+gui:
+  type-amount: '{prefix}&a请在聊天栏输入数量：'
+  type-price: '{prefix}&a请在聊天栏输入价格：'
+  type-filter: '{prefix}&e请输入用于筛选的名称（例如 ''木''）：'
+  type-search: '{prefix}&e请输入物品名称（输入 ''clear'' 重置）：'
+  sell-all-coming-soon: '{prefix}&c这些物品都没有出售价格。'
+  quick-fill-full: '{prefix}&e已经添加了足够的物品！'
+  quick-fill-added: '{prefix}&a已添加 %amount% 个物品！'
+  quick-fill-none: '{prefix}&c在你的背包中未找到匹配的物品。'
+  new-order:
+    item-not-selected: '{prefix}&c请选择一个物品。'
+    amount-not-set: '{prefix}&c请设置数量。'
+    price-not-set: '{prefix}&c请设置价格。'
+  buttons:
+    sort: '&#ffc247排序'
+    filter: '&#ffc247筛选'
+    orders: '&#00d271订单'
+    search: '&#ffc247搜索'
+    your-orders: '&#00d271我的订单'
+    next-page: '&#ffc247下一页'
+    no-next-page: '&8没有下一页'
+    previous-page: '&#ffc247上一页'
+    no-previous-page: '&8没有上一页'
+    cancel: '&#ff5f5f取消'
+    confirm: '&#00d271确认'
+    item: '&#6fd3ff物品'
+    amount: '&#6fd3ff数量'
+    price: '&#6fd3ff价格'
+    new-order: '&#00d271新建订单'
+    cancel-order: '&#ff5f5f取消订单'
+    collect-items: '&#00d271领取物品'
+    go-back: '&#ffc247返回'
+    back: '&#ffc247返回'
+    back-to-menu: '&#ffc247返回菜单'
+    back-to-editor: '&#ffc247返回编辑器'
+    back-to-order: '&#ffc247返回订单'
+    quick-fill: '&#00d271快速交付'
+    sell-all: '&#00d271全部出售'
+    drop-all: '&#ff5f5f全部丢出'
+    collection-back: '&#ffc247返回'
+    collection-next: '&#ffc247下一页'
+    language: '&#6fd3ff语言'
+    level: '&#6fd3ff订单等级'
+  enchantment-picker:
+    title: 选择附魔
+    click-to-select: '&7点击选择'
+    selected: '&a已选择'
+    confirm: '&#00d271确认'
+    cancel: '&#ff5f5f取消'
+    next: '&#ffc247下一页'
+    back: '&#ffc247返回'
+  lore:
+    each: 每个
+    delivered: 已交付
+    paid: 已支付
+    click-to-deliver: '&a点击向 %player% 交付 %item%'
+    until-order-expires: '&7订单将在 %time% 后过期'
+    until-order-deletes: '&7订单将在 %time% 后删除'
+    owners-order: '&a%player% 的订单'
+    removed-suffix: '&7（已移除）'
+    enchanted-suffix: （已附魔）
+    most-paid: 报酬最高
+    most-delivered: 交付最多
+    recently-listed: 最近发布
+    most-money-per-item: 单价最高
+    filter-all: 全部
+    filter-blocks: 方块
+    filter-tools: 工具
+    filter-food: 食物
+    filter-combat: 战斗
+    filter-potions: 药水
+    filter-books: 书籍
+    filter-ingredients: 材料
+    filter-utilities: 杂项
+    current: 当前
+    none: 无
+    click-to-search: '&7点击按物品名称搜索'
+    type-in-chat: '&7在聊天栏输入（例如 ''骨头''）'
+    manage-listings: '&f管理你的订单'
+    click-to-refresh: '&f点击刷新'
+    return-to-orders: '&f返回你的订单'
+    click-to-create: '&f点击创建新的收购订单'
+    selected: '&f已选择：&b%item%'
+    click-to-change: '&7点击更换物品'
+    amount-value: '&f数量：&e%amount%'
+    click-to-set-amount: '&7点击输入数量'
+    price-per-item: '&f单价：&a$%price%'
+    click-to-set-price: '&7点击输入价格'
+    total-cost: '&f总花费：&a$%total%'
+    tax-line: '&7税费（&e%tax%&7）：&a$%amount%'
+    click-to-publish: '&7点击发布订单'
+    order-label: '&a订单：%item%'
+    progress: '&f进度：%filled%/%total%'
+    price-label: '&f价格：$%price%'
+    click-to-cancel: '&f点击取消此订单'
+    refunds-remaining: '&c（剩余金额将被退还）'
+    collect-first: '&c（请先领取你的物品！）'
+    items-waiting: '&f等待中的物品：&6%amount%'
+    click-to-open-storage: '&e点击打开仓库'
+    order-completed: '&a&l订单已完成！'
+    cancel-return-items: '&f取消并归还物品'
+    click-to-deliver-items: '&f点击交付物品'
+    youre-delivering: '&7你正在交付 &a%amount% &f%item%'
+    current-filter: '&f当前筛选：&e%filter%'
+    click-type-name: '&7点击输入名称'
+    filter-description: '&7（筛选列表，例如 ''木'' -> ''橡木''）'
+    coming-soon: '&7暂无出售价格'
+    sell-all: '&7点击出售所有物品'
+    cancel-sell: '&7点击取消'
+    confirm-sell: '&7点击出售所有物品'
+    sell-price: '&7售价 &a$%price%'
+    quick-fill-desc: '&f自动从你的背包中添加匹配的物品'
+    quick-fill-item: '&7物品：&e%item%'
+    quick-fill-remaining: '&7剩余：&e%amount%'
+    quick-fill-click: '&e点击 &f- &e自动填充'
+    removed-by-admin: '&c&l已被管理员移除'
+    items-to-collect: '&f待领取物品：&6%amount%'
+    click-to-collect: '&e点击领取物品'
+    language-current: '&a当前已选择'
+    language-click: '&7点击使用此语言'
+    tax-reason-base: '&8（标准税率）'
+    tax-reason-rank: '&8（已应用等级折扣）'
+    tax-reason-level: '&8（已应用订单等级折扣）'
+    tax-reason-exempt: '&8（你免税）'
+    level-current: '&f等级：&d%level%'
+    level-xp: '&f经验：&b%xp% &7/ &b%next%'
+    level-progress: '%bar%'
+    level-tax: '&7税费折扣：&a%discount%'
+    level-orders: '&7额外订单位：&a+%extra%'
+    level-items: '&7每单额外物品：&a+%extra%'
+    level-max: '&6&l已达最高等级'
+    server: '&8服务器：%server%'
+  # English default (unverified machine translation risk) - feel free to translate.
+  order-lore:
+    template:
+    - ''
+    - ' &#AAAAAA• Item: &r&#FFFFFF%item%&r'
+    - '%enchants%'
+    - ' &#AAAAAA• Price Per Item: &r&#49F267$%price%&r'
+    - ''
+    - ' &#AAAAAA• Delivery Progress:&r'
+    - '   &#FFFFFF%filled% &r&#555555/ &r&#AAAAAA%needed% items&r'
+    - '   %bar% &r&#555555(&r&#49F267%percent%&r&#555555)&r'
+    - ''
+    - ' &#AAAAAA• Payment Progress:&r'
+    - '   &#49F267$%paid% &r&#555555/ &r&#AAAAAA$%total%&r'
+    - ''
+    - ' &#AAAAAA• Expires In:&r'
+    - '   &#FFFFFF%time%&r'
+    - ''
+    - '&#FFFFFFClick to &r&#49F267deliver!&r'
+menus:
+  main-menu: 订单 » 第 %page%/%pages% 页
+  your-orders: 订单 » 我的订单
+  new-order: 订单 » 新建订单
+  item-selector: 选择物品 » %page%/%pages%
+  item-selector-filtered: 筛选：%search% » %page%/%pages%
+  deliver-items: 订单 » 交付物品
+  confirm-delivery: 订单 » 确认交付
+  confirm-sell: 订单 » 确认出售
+  edit-order: 订单 » 编辑订单
+  collect-items: 领取 » 第 %page%/%pages% 页
+  enchantment-picker: 选择附魔 » %page%/%pages%
+  potion-selector: 选择药水类型
+  language: 选择语言
+  admin-menu: DonutOrders 管理
+  admin-orders: 所有订单 » %page%/%pages%
+input:
+  sign:
+    amount:
+    - ''
+    - ^^^^^^^^
+    - 输入数量
+    - （例如 64, 1k）
+    price:
+    - ''
+    - ^^^^^^^^
+    - 输入价格
+    - （例如 100, 1k）
+    filter:
+    - ''
+    - ^^^^^^^^
+    - 输入筛选
+    - （例如 木）
+    search:
+    - ''
+    - ^^^^^^^^
+    - 输入搜索
+    - （物品名）
+  chat:
+    amount: '{prefix}&a请在聊天栏输入数量。&7（&e%cancel%&7 取消）'
+    price: '{prefix}&a请在聊天栏输入价格。&7（&e%cancel%&7 取消）'
+    filter: '{prefix}&a请在聊天栏输入筛选。&7（&e%cancel%&7 取消）'
+    search: '{prefix}&a请输入物品名称。&7（&e%cancel%&7 取消）'
+    cancel-word: 取消
+    cancelled: '{prefix}&c输入已取消。'
+    timeout: '{prefix}&c输入超时。'
+delivery:
+  items-returned: '&e[订单] 已归还 %amount% 个物品（已达上限）。'
+  shulkers-returned: '&a[订单] 已归还 %amount% 个潜影盒！'
+  delivering:
+  - '&7&o交付中.'
+  - '&7&o交付中..'
+  - '&7&o交付中...'
+  expired-with-items: '&e[订单] &f&a%item% &f订单已过期。已退还 &a$%price%&f。&e你已交付的物品正在等你领取！'
+  expired: '&e[订单] &f你的订单已过期。已退还 &a$%price%&f。'
+admin:
+  help-header: '&6&l=== DonutOrders 管理 ==='
+  help-reload: '&e/donutordersadmin reload &7- 重新加载配置'
+  help-removeorder: '&e/donutordersadmin removeorder <玩家> <order_id> &7- 移除订单'
+  usage-removeorder: '&c用法：/donutordersadmin removeorder <玩家> <订单>'
+  order-removed: '&a&e%amount% %item% &a订单已移除。退款：&e%price%'
+  order-removed-with-items: '&a&e%amount% %item% &a订单已移除。退款：&e%price% &7（玩家仍可领取 %collected% 个物品）'
+  order-removed-player: '&c&e%amount% %item% &c订单已被管理员移除。退款：&e%price%&c。'
+  order-removed-collect: ' &7使用 &e/order &7-> &e我的订单 &7领取你的物品。'
+  orders-deleted: '&a已删除 %amount% 个订单！'
+  help-menu: '&e/donutordersadmin menu &7- 打开管理面板'
+  reloaded: '&a已在 &e%ms%毫秒&a 内重新加载。'
+  cleanup-done: '&a已清理 %amount% 个过期订单。'
+  save-failed: '&c无法写入文件！更改仅在本次会话有效。'
+  feature-enabled: '&a功能 &e%feature% &a已启用。'
+  feature-disabled: '&c功能 &e%feature% &c已停用。'
+  tax-enabled: '&a税收系统已启用。'
+  tax-disabled: '&c税收系统已停用。'
+  levels-enabled: '&a订单等级系统已启用。'
+  levels-disabled: '&c订单等级系统已停用。'
+  detail-header: '&6&l--- &f%item% &6&l---'
+  buttons:
+    reload: '&#ffc247重新加载'
+    orders: '&#6fd3ff所有订单'
+    stats: '&#6fd3ff统计'
+    cleanup: '&#ffc247清理'
+    features: '&#6fd3ff功能'
+    tax: '&#ffc247税收'
+    levels: '&#6fd3ff等级系统'
+    close: '&#ff5f5f关闭'
+  lore:
+    enabled: '&a已启用'
+    disabled: '&c已停用'
+    click-toggle: '&7点击切换'
+    click-cycle: '&7点击切换下一个功能'
+    reload: '&7重新加载配置、菜单、语言和等级'
+    orders: '&7活动订单：&f%amount%'
+    cleanup: '&7立即清除过期订单'
+    search-hint: '&7按玩家或物品名搜索'
+    order-owner: '&7所有者：&f%player%'
+    order-refund: '&7移除时退款：&a$%price%'
+    order-id: '&8ID：%id%'
+    order-remove: '&cSHIFT + 右键 &7移除并退款'
+    anti-abuse: '&7等级滥用防护：%state%'
+    toggle-line-on: '&a• %label% &8- %state%'
+    toggle-line-off: '&7• %label% &8- %state%'
+  stats:
+    active: '&7活动订单：&f%amount%'
+    completed: '&7已完成订单：&f%amount%'
+    volume: '&7未完成金额：&a$%amount%'
+    players: '&7在线玩家：&f%amount%'
+  tax:
+    creation: '&7创建：&f%percent%'
+    delivery: '&7交付：&f%percent%'
+    sell: '&7出售：&f%percent%'
+  levels:
+    count: '&7已定义等级：&f%amount%'
+  # English default (unverified machine translation risk) - feel free to translate.
+  features:
+    potions: Potions
+    enchantments: Enchantments
+    enchanted-books: Enchanted Books
+    sell-all: Sell All
+    quick-fill: Quick Deliver
+    search: Search
+    filter: Filter
+    sort: Sort
+  templates:
+    stats:
+    - '&7活动订单：&f%active%'
+    - '&7已完成订单：&f%completed%'
+    - '&7未完成金额：&a$%volume%'
+    - '&7在线玩家：&f%players%'
+    features:
+    - '%features%'
+    - ''
+    - '&7点击切换下一个功能'
+    tax:
+    - '%state%'
+    - '&7创建：&f%creation%'
+    - '&7交付：&f%delivery%'
+    - '&7出售：&f%sell%'
+    - ''
+    - '&7点击切换'
+    levels:
+    - '%state%'
+    - '%level-details%'
+    - ''
+    - '&7点击切换'
+    order:
+    - '&7所有者：&f%owner%'
+    - '&f进度：%filled%/%total%'
+    - '&f价格：$%price%'
+    - '&7移除时退款：&a$%refund%'
+    - '&8ID：%id%'
+    - ''
+    - '&cSHIFT + 右键 &7移除并退款'
+    detail:
+    - '&6&l--- &f%item% &6&l---'
+    - '&7所有者：&f%owner%'
+    - '&f进度：%filled%/%total%'
+    - '&f价格：$%price%'
+    - '&7移除时退款：&a$%refund%'
+    - '&f等待中的物品：&6%waiting%'
+    - '&8ID：%id%'
+time:
+  day: '%value%天'
+  hour: '%value%时'
+  minute: '%value%分'
+  expired: 已过期
+names:
+  unknown: Unknown
+  enchanted-book: '%enchantment% Book'
+  potion:
+    base: Potion of %name%
+    splash: Splash %name%
+    lingering: Lingering %name%
+    long: '%name% (Long)'
+    strong: Strong %name%
+  potions:
+    WATER: Water
+    MUNDANE: Mundane
+    THICK: Thickness
+    AWKWARD: Awkwardness
+    NIGHT_VISION: Night Vision
+    INVISIBILITY: Invisibility
+    LEAPING: Leaping
+    FIRE_RESISTANCE: Fire Resistance
+    SWIFTNESS: Swiftness
+    SLOWNESS: Slowness
+    WATER_BREATHING: Water Breathing
+    HEALING: Healing
+    HARMING: Harming
+    POISON: Poison
+    REGENERATION: Regeneration
+    STRENGTH: Strength
+    WEAKNESS: Weakness
+    LUCK: Luck
+    TURTLE_MASTER: the Turtle Master
+    SLOW_FALLING: Slow Falling
+    WIND_CHARGED: Wind Charging
+    WEAVING: Weaving
+    OOZING: Oozing
+    INFESTED: Infestation
+  words:
+    TNT: TNT
+  items: {}
+level:
+  up: '{prefix}&d你的订单等级现在是 &f%level%&d！'
+  up-title: '&d&l等级提升'
+  up-subtitle: '&f订单等级 &d%level%'
+  up-broadcast: '&d%player% &f达到了订单等级 &d%level%&f！'
+  disabled: '{prefix}&c本服务器已停用订单等级系统。'
+  daily-cap-reached: '{prefix}&e你已达到今日经验上限。'

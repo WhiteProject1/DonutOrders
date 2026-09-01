@@ -1,0 +1,428 @@
+# -----------------------------------------------------------------------------#
+#  DonutOrders - Nederlands (nl)
+# -----------------------------------------------------------------------------#
+#
+#  Nederlands taalbestand. Vrij bewerkbaar.
+#
+#  Colours: &a &b &c ... and hex &#00d271
+#  Placeholders: {prefix} %player% %seller% %amount% %item% %price% %total%
+#                %limit% %page% %pages% %search% %filter% %time% %language%
+#
+#  Any key missing here falls back to lang/en.yml, so an unfinished
+#  translation never shows a raw key to a player.
+#
+#  This file is never overwritten on update; only missing keys are added.
+# -----------------------------------------------------------------------------#
+
+language:
+  name: '&fNederlands'
+general:
+  player-only: '&cAlleen spelers kunnen dit commando gebruiken.'
+  no-permission: '&cJe hebt geen toestemming voor dit commando.'
+  reload-success: '&aDonutOrders configuratie, menu''s en talen herladen!'
+  unknown-command: '&cOnbekend subcommando. Probeer &e/donutordersadmin&c.'
+errors:
+  not-enough-money: '{prefix}&cJe hebt niet genoeg geld! &e%total%&c vereist.'
+  not-owner: '{prefix}&cJe kunt de bestelling van iemand anders niet annuleren.'
+  own-order: '{prefix}&cJe kunt je eigen bestelling niet vervullen!'
+  already-complete: '{prefix}&cEen voltooide bestelling kan niet worden geannuleerd.'
+  max-orders-reached: '{prefix}&cJe hebt je limiet voor actieve bestellingen bereikt (&e%limit%&c).'
+  min-price-not-met: '{prefix}&cMinimumprijs per item: &e%price%'
+  max-price-exceeded: '{prefix}&cMaximumprijs per item: &e%price%'
+  min-amount-not-met: '{prefix}&cMinimum aantal: &e%amount%'
+  max-amount-exceeded: '{prefix}&cMaximum aantal per bestelling: &e%amount%'
+  invalid-number: '{prefix}&cOngeldig getal.'
+  invalid-number-format: '{prefix}&cOngeldig getal. Formaat: 100, 1k, 10k, 1m'
+  positive-only: '{prefix}&cAlleen positieve getallen.'
+  wrong-item: '{prefix}&cVerkeerd itemtype!'
+  no-items-in-inventory: '{prefix}&cJe hebt geen &e%item%&c in je inventaris.'
+  set-item-amount-price: '{prefix}&cStel een item, een aantal en een prijs in!'
+  order-not-found: '{prefix}&cBestelling niet gevonden.'
+  player-not-found: '{prefix}&cSpeler %player% niet gevonden.'
+  cant-fulfill-own: '{prefix}&cJe kunt je eigen bestelling niet vervullen!'
+  max-enchantments-reached: '{prefix}&cJe kunt maximaal &e%limit% &cbetoveringen kiezen.'
+  order-unavailable: '{prefix}&cDeze bestelling is niet meer beschikbaar.'
+  order-already-filled: '{prefix}&cDeze bestelling is al vervuld.'
+  feature-disabled: '{prefix}&cDeze functie is uitgeschakeld op deze server.'
+  item-blacklisted: '{prefix}&cBestellingen voor dit item zijn niet toegestaan.'
+  language-not-supported: '{prefix}&cOnbekende taal. Beschikbaar: &e%languages%'
+  order-filled-elsewhere: '{prefix}&cDeze bestelling is zojuist op een andere server vervuld. Je items zijn teruggegeven.'
+  too-fast: '{prefix}&cRustig aan.'
+success:
+  order-created: '{prefix}&#00d271%amount% %item% &fbesteld.'
+  order-cancelled: '{prefix}&aBestelling geannuleerd. &e%price%&a terugbetaald en items teruggegeven.'
+  order-fulfilled: '{prefix}&b%amount% %item% &7geleverd, je hebt &a$%price%&7 ontvangen.'
+  order-received: '{prefix}&a%seller% &fheeft je &a%amount% %item% &fgeleverd.'
+  order-complete: '{prefix}&a%item% &fbestelling voltooid!'
+  delivery-cancelled: '{prefix}&cLevering geannuleerd. Je items zijn teruggegeven.'
+  items-dropped: '{prefix}&aAlle items gedropt!'
+  order-archived: '{prefix}&aBestelling voltooid en gearchiveerd!'
+  potion-selected: '{prefix}&aDrankjestype geselecteerd!'
+  amount-set: '{prefix}&aAantal ingesteld: %amount%'
+  price-set: '{prefix}&aPrijs ingesteld: $%price%'
+  filter-applied: '{prefix}&aFilter toegepast: &e%search%'
+  search-applied: '{prefix}&aZoeken: &e%search%'
+  search-cleared: '{prefix}&aZoekopdracht gewist!'
+  items-sold: '{prefix}&aItems verkocht voor &a$%price%&a.'
+  language-changed: '{prefix}&aTaal ingesteld op &e%language%&a.'
+  tax-charged: '{prefix}&7Er is &e%tax%&7 bestelbelasting berekend (&e$%amount%&7).'
+gui:
+  type-amount: '{prefix}&aTyp het aantal in de chat:'
+  type-price: '{prefix}&aTyp de prijs in de chat:'
+  type-filter: '{prefix}&eTyp een naam om te filteren (bijv. ''hout''):'
+  type-search: '{prefix}&eTyp een itemnaam (''clear'' om te wissen):'
+  sell-all-coming-soon: '{prefix}&cGeen van deze items heeft een verkoopprijs.'
+  quick-fill-full: '{prefix}&eEr zijn al genoeg items toegevoegd!'
+  quick-fill-added: '{prefix}&a%amount% items toegevoegd!'
+  quick-fill-none: '{prefix}&cGeen passende items gevonden in je inventaris.'
+  new-order:
+    item-not-selected: '{prefix}&cKies een item.'
+    amount-not-set: '{prefix}&cStel een aantal in.'
+    price-not-set: '{prefix}&cStel een prijs in.'
+  buttons:
+    sort: '&#ffc247SORTEREN'
+    filter: '&#ffc247FILTER'
+    orders: '&#00d271BESTELLINGEN'
+    search: '&#ffc247ZOEKEN'
+    your-orders: '&#00d271JOUW BESTELLINGEN'
+    next-page: '&#ffc247Volgende pagina'
+    no-next-page: '&8Geen volgende pagina'
+    previous-page: '&#ffc247Vorige pagina'
+    no-previous-page: '&8Geen vorige pagina'
+    cancel: '&#ff5f5fANNULEREN'
+    confirm: '&#00d271BEVESTIGEN'
+    item: '&#6fd3ffITEM'
+    amount: '&#6fd3ffAANTAL'
+    price: '&#6fd3ffPRIJS'
+    new-order: '&#00d271Nieuwe bestelling'
+    cancel-order: '&#ff5f5fBESTELLING ANNULEREN'
+    collect-items: '&#00d271ITEMS OPHALEN'
+    go-back: '&#ffc247Terug'
+    back: '&#ffc247Terug'
+    back-to-menu: '&#ffc247Terug naar menu'
+    back-to-editor: '&#ffc247Terug naar editor'
+    back-to-order: '&#ffc247Terug naar bestelling'
+    quick-fill: '&#00d271SNEL LEVEREN'
+    sell-all: '&#00d271ALLES VERKOPEN'
+    drop-all: '&#ff5f5fALLES DROPPEN'
+    collection-back: '&#ffc247TERUG'
+    collection-next: '&#ffc247VOLGENDE'
+    language: '&#6fd3ffTAAL'
+    level: '&#6fd3ffBESTELNIVEAU'
+  enchantment-picker:
+    title: BETOVERINGEN KIEZEN
+    click-to-select: '&7Klik om te selecteren'
+    selected: '&aGeselecteerd'
+    confirm: '&#00d271BEVESTIGEN'
+    cancel: '&#ff5f5fANNULEREN'
+    next: '&#ffc247VOLGENDE'
+    back: '&#ffc247TERUG'
+  lore:
+    each: per stuk
+    delivered: Geleverd
+    paid: Betaald
+    click-to-deliver: '&aKlik om %item% aan %player% te leveren'
+    until-order-expires: '&7Bestelling verloopt over %time%'
+    until-order-deletes: '&7Bestelling wordt verwijderd over %time%'
+    owners-order: '&aBestelling van %player%'
+    removed-suffix: '&7(Verwijderd)'
+    enchanted-suffix: (Betoverd)
+    most-paid: Best betaald
+    most-delivered: Meest geleverd
+    recently-listed: Onlangs geplaatst
+    most-money-per-item: Meeste geld per item
+    filter-all: Alles
+    filter-blocks: Blokken
+    filter-tools: Gereedschap
+    filter-food: Voedsel
+    filter-combat: Gevecht
+    filter-potions: Drankjes
+    filter-books: Boeken
+    filter-ingredients: Ingrediënten
+    filter-utilities: Hulpmiddelen
+    current: Huidig
+    none: Geen
+    click-to-search: '&7Klik om op itemnaam te zoeken'
+    type-in-chat: '&7Typ in de chat (bijv. ''bot'')'
+    manage-listings: '&fBeheer je bestellingen'
+    click-to-refresh: '&fKlik om te vernieuwen'
+    return-to-orders: '&fTerug naar je bestellingen'
+    click-to-create: '&fKlik om een nieuwe koopbestelling te maken'
+    selected: '&fGeselecteerd: &b%item%'
+    click-to-change: '&7Klik om het item te wijzigen'
+    amount-value: '&fAantal: &e%amount%'
+    click-to-set-amount: '&7Klik om een aantal in te typen'
+    price-per-item: '&fPrijs per item: &a$%price%'
+    click-to-set-price: '&7Klik om een prijs in te typen'
+    total-cost: '&fTotale kosten: &a$%total%'
+    tax-line: '&7Belasting (&e%tax%&7): &a$%amount%'
+    click-to-publish: '&7Klik om de bestelling te plaatsen'
+    order-label: '&aBestelling: %item%'
+    progress: '&fVoortgang: %filled%/%total%'
+    price-label: '&fPrijs: $%price%'
+    click-to-cancel: '&fKlik om deze bestelling te annuleren'
+    refunds-remaining: '&c(Resterend geld wordt terugbetaald)'
+    collect-first: '&c(Haal eerst je items op!)'
+    items-waiting: '&fWachtende items: &6%amount%'
+    click-to-open-storage: '&eKlik om de opslag te openen'
+    order-completed: '&a&lBESTELLING VOLTOOID!'
+    cancel-return-items: '&fAnnuleren en items teruggeven'
+    click-to-deliver-items: '&fKlik om de items te leveren'
+    youre-delivering: '&7Je levert &a%amount% &f%item%'
+    current-filter: '&fHuidige filter: &e%filter%'
+    click-type-name: '&7Klik om een naam in te typen'
+    filter-description: '&7(Filtert de lijst, bijv. ''hout'' -> ''eikenhout'')'
+    coming-soon: '&7Geen verkoopprijs beschikbaar'
+    sell-all: '&7Klik om alle items te verkopen'
+    cancel-sell: '&7Klik om te annuleren'
+    confirm-sell: '&7Klik om alle items te verkopen'
+    sell-price: '&7Verkoopprijs &a$%price%'
+    quick-fill-desc: '&fVoegt automatisch passende items uit je inventaris toe'
+    quick-fill-item: '&7Item: &e%item%'
+    quick-fill-remaining: '&7Resterend: &e%amount%'
+    quick-fill-click: '&eKlik &f- &eautomatisch vullen'
+    removed-by-admin: '&c&lVERWIJDERD DOOR EEN ADMIN'
+    items-to-collect: '&fOp te halen items: &6%amount%'
+    click-to-collect: '&eKlik om de items op te halen'
+    language-current: '&aMomenteel geselecteerd'
+    language-click: '&7Klik om deze taal te gebruiken'
+    tax-reason-base: '&8(standaardtarief)'
+    tax-reason-rank: '&8(rangkorting toegepast)'
+    tax-reason-level: '&8(niveaukorting toegepast)'
+    tax-reason-exempt: '&8(je bent vrijgesteld van belasting)'
+    level-current: '&fNiveau: &d%level%'
+    level-xp: '&fXP: &b%xp% &7/ &b%next%'
+    level-progress: '%bar%'
+    level-tax: '&7Belastingkorting: &a%discount%'
+    level-orders: '&7Extra bestellingen: &a+%extra%'
+    level-items: '&7Extra items per bestelling: &a+%extra%'
+    level-max: '&6&lMAXIMAAL NIVEAU BEREIKT'
+    server: '&8Server: %server%'
+  # English default (unverified machine translation risk) - feel free to translate.
+  order-lore:
+    template:
+    - ''
+    - ' &#AAAAAA• Item: &r&#FFFFFF%item%&r'
+    - '%enchants%'
+    - ' &#AAAAAA• Price Per Item: &r&#49F267$%price%&r'
+    - ''
+    - ' &#AAAAAA• Delivery Progress:&r'
+    - '   &#FFFFFF%filled% &r&#555555/ &r&#AAAAAA%needed% items&r'
+    - '   %bar% &r&#555555(&r&#49F267%percent%&r&#555555)&r'
+    - ''
+    - ' &#AAAAAA• Payment Progress:&r'
+    - '   &#49F267$%paid% &r&#555555/ &r&#AAAAAA$%total%&r'
+    - ''
+    - ' &#AAAAAA• Expires In:&r'
+    - '   &#FFFFFF%time%&r'
+    - ''
+    - '&#FFFFFFClick to &r&#49F267deliver!&r'
+menus:
+  main-menu: BESTELLINGEN » Pagina %page%/%pages%
+  your-orders: BESTELLINGEN » Jouw bestellingen
+  new-order: BESTELLINGEN » Nieuwe bestelling
+  item-selector: Item kiezen » %page%/%pages%
+  item-selector-filtered: 'Filter: %search% » %page%/%pages%'
+  deliver-items: BESTELLINGEN » Items leveren
+  confirm-delivery: BESTELLINGEN » Levering bevestigen
+  confirm-sell: BESTELLINGEN » Verkoop bevestigen
+  edit-order: BESTELLINGEN » Bestelling bewerken
+  collect-items: Ophalen » Pagina %page%/%pages%
+  enchantment-picker: Betoveringen kiezen » %page%/%pages%
+  potion-selector: Drankjestype kiezen
+  language: Taal kiezen
+  admin-menu: DonutOrders Beheer
+  admin-orders: Alle bestellingen » %page%/%pages%
+input:
+  sign:
+    amount:
+    - ''
+    - ^^^^^^^^
+    - Typ aantal
+    - (bijv. 64, 1k)
+    price:
+    - ''
+    - ^^^^^^^^
+    - Typ prijs
+    - (bijv. 100, 1k)
+    filter:
+    - ''
+    - ^^^^^^^^
+    - Typ filter
+    - (bijv. hout)
+    search:
+    - ''
+    - ^^^^^^^^
+    - Typ zoekterm
+    - (itemnaam)
+  chat:
+    amount: '{prefix}&aTyp het aantal in de chat. &7(&e%cancel%&7 om te annuleren)'
+    price: '{prefix}&aTyp de prijs in de chat. &7(&e%cancel%&7 om te annuleren)'
+    filter: '{prefix}&aTyp het filter in de chat. &7(&e%cancel%&7 om te annuleren)'
+    search: '{prefix}&aTyp de itemnaam. &7(&e%cancel%&7 om te annuleren)'
+    cancel-word: annuleren
+    cancelled: '{prefix}&cInvoer geannuleerd.'
+    timeout: '{prefix}&cInvoertijd verstreken.'
+delivery:
+  items-returned: '&e[Bestelling] %amount% items teruggegeven (limiet bereikt).'
+  shulkers-returned: '&a[Bestelling] %amount% shulkerkisten teruggegeven!'
+  delivering:
+  - '&7&oLeveren.'
+  - '&7&oLeveren..'
+  - '&7&oLeveren...'
+  expired-with-items: '&e[Bestelling] &f&a%item% &fbestelling verlopen. &a$%price% &fterugbetaald. &eJe geleverde items wachten op je!'
+  expired: '&e[Bestelling] &fJe bestelling is verlopen. &a$%price% &fterugbetaald.'
+admin:
+  help-header: '&6&l=== DonutOrders Admin ==='
+  help-reload: '&e/donutordersadmin reload &7- Configuratie herladen'
+  help-removeorder: '&e/donutordersadmin removeorder <speler> <order_id> &7- Een bestelling verwijderen'
+  usage-removeorder: '&cGebruik: /donutordersadmin removeorder <speler> <bestelling>'
+  order-removed: '&a&e%amount% %item% &abestelling verwijderd. Terugbetaling: &e%price%'
+  order-removed-with-items: '&a&e%amount% %item% &abestelling verwijderd. Terugbetaling: &e%price% &7(speler kan nog %collected% items ophalen)'
+  order-removed-player: '&c&e%amount% %item% &cbestelling verwijderd door een admin. Terugbetaling: &e%price%&c.'
+  order-removed-collect: ' &7Gebruik &e/order &7-> &eJouw bestellingen &7om je items op te halen.'
+  orders-deleted: '&a%amount% bestellingen verwijderd!'
+  help-menu: '&e/donutordersadmin menu &7- Opent het beheerpaneel'
+  reloaded: '&aHerladen in &e%ms%ms&a.'
+  cleanup-done: '&a%amount% verlopen bestellingen opgeruimd.'
+  save-failed: '&cKon het bestand niet schrijven! De wijziging geldt alleen deze sessie.'
+  feature-enabled: '&aFunctie &e%feature% &aingeschakeld.'
+  feature-disabled: '&cFunctie &e%feature% &cuitgeschakeld.'
+  tax-enabled: '&aBelastingsysteem ingeschakeld.'
+  tax-disabled: '&cBelastingsysteem uitgeschakeld.'
+  levels-enabled: '&aNiveausysteem ingeschakeld.'
+  levels-disabled: '&cNiveausysteem uitgeschakeld.'
+  detail-header: '&6&l--- &f%item% &6&l---'
+  buttons:
+    reload: '&#ffc247HERLADEN'
+    orders: '&#6fd3ffALLE BESTELLINGEN'
+    stats: '&#6fd3ffSTATISTIEKEN'
+    cleanup: '&#ffc247OPRUIMEN'
+    features: '&#6fd3ffFUNCTIES'
+    tax: '&#ffc247BELASTING'
+    levels: '&#6fd3ffNIVEAUSYSTEEM'
+    close: '&#ff5f5fSLUITEN'
+  lore:
+    enabled: '&aAAN'
+    disabled: '&cUIT'
+    click-toggle: '&7Klik om te wisselen'
+    click-cycle: '&7Klik om de volgende functie te wisselen'
+    reload: '&7Herlaad config, menu''s, talen en niveaus'
+    orders: '&7Actieve bestellingen: &f%amount%'
+    cleanup: '&7Verwijder verlopen bestellingen nu'
+    search-hint: '&7Zoek op speler of itemnaam'
+    order-owner: '&7Eigenaar: &f%player%'
+    order-refund: '&7Terugbetaling bij verwijderen: &a$%price%'
+    order-id: '&8ID: %id%'
+    order-remove: '&cSHIFT + rechtsklik &7om te verwijderen en terug te betalen'
+    anti-abuse: '&7Bescherming tegen levelmisbruik: %state%'
+    toggle-line-on: '&a• %label% &8- %state%'
+    toggle-line-off: '&7• %label% &8- %state%'
+  stats:
+    active: '&7Actieve bestellingen: &f%amount%'
+    completed: '&7Voltooide bestellingen: &f%amount%'
+    volume: '&7Openstaande waarde: &a$%amount%'
+    players: '&7Spelers online: &f%amount%'
+  tax:
+    creation: '&7Aanmaken: &f%percent%'
+    delivery: '&7Levering: &f%percent%'
+    sell: '&7Verkoop: &f%percent%'
+  levels:
+    count: '&7Gedefinieerde niveaus: &f%amount%'
+  # English default (unverified machine translation risk) - feel free to translate.
+  features:
+    potions: Potions
+    enchantments: Enchantments
+    enchanted-books: Enchanted Books
+    sell-all: Sell All
+    quick-fill: Quick Deliver
+    search: Search
+    filter: Filter
+    sort: Sort
+  templates:
+    stats:
+    - '&7Actieve bestellingen: &f%active%'
+    - '&7Voltooide bestellingen: &f%completed%'
+    - '&7Openstaande waarde: &a$%volume%'
+    - '&7Spelers online: &f%players%'
+    features:
+    - '%features%'
+    - ''
+    - '&7Klik om de volgende functie te wisselen'
+    tax:
+    - '%state%'
+    - '&7Aanmaken: &f%creation%'
+    - '&7Levering: &f%delivery%'
+    - '&7Verkoop: &f%sell%'
+    - ''
+    - '&7Klik om te wisselen'
+    levels:
+    - '%state%'
+    - '%level-details%'
+    - ''
+    - '&7Klik om te wisselen'
+    order:
+    - '&7Eigenaar: &f%owner%'
+    - '&fVoortgang: %filled%/%total%'
+    - '&fPrijs: $%price%'
+    - '&7Terugbetaling bij verwijderen: &a$%refund%'
+    - '&8ID: %id%'
+    - ''
+    - '&cSHIFT + rechtsklik &7om te verwijderen en terug te betalen'
+    detail:
+    - '&6&l--- &f%item% &6&l---'
+    - '&7Eigenaar: &f%owner%'
+    - '&fVoortgang: %filled%/%total%'
+    - '&fPrijs: $%price%'
+    - '&7Terugbetaling bij verwijderen: &a$%refund%'
+    - '&fWachtende items: &6%waiting%'
+    - '&8ID: %id%'
+time:
+  day: '%value%d'
+  hour: '%value%u'
+  minute: '%value%m'
+  expired: Verlopen
+names:
+  unknown: Unknown
+  enchanted-book: '%enchantment% Book'
+  potion:
+    base: Potion of %name%
+    splash: Splash %name%
+    lingering: Lingering %name%
+    long: '%name% (Long)'
+    strong: Strong %name%
+  potions:
+    WATER: Water
+    MUNDANE: Mundane
+    THICK: Thickness
+    AWKWARD: Awkwardness
+    NIGHT_VISION: Night Vision
+    INVISIBILITY: Invisibility
+    LEAPING: Leaping
+    FIRE_RESISTANCE: Fire Resistance
+    SWIFTNESS: Swiftness
+    SLOWNESS: Slowness
+    WATER_BREATHING: Water Breathing
+    HEALING: Healing
+    HARMING: Harming
+    POISON: Poison
+    REGENERATION: Regeneration
+    STRENGTH: Strength
+    WEAKNESS: Weakness
+    LUCK: Luck
+    TURTLE_MASTER: the Turtle Master
+    SLOW_FALLING: Slow Falling
+    WIND_CHARGED: Wind Charging
+    WEAVING: Weaving
+    OOZING: Oozing
+    INFESTED: Infestation
+  words:
+    TNT: TNT
+  items: {}
+level:
+  up: '{prefix}&dJe bestelniveau is nu &f%level%&d!'
+  up-title: '&d&lNIVEAU OMHOOG'
+  up-subtitle: '&fBestelniveau &d%level%'
+  up-broadcast: '&d%player% &fheeft bestelniveau &d%level%&f bereikt!'
+  disabled: '{prefix}&cHet niveausysteem is uitgeschakeld op deze server.'
+  daily-cap-reached: '{prefix}&eJe hebt de XP-limiet van vandaag bereikt.'

@@ -1,0 +1,50 @@
+# -----------------------------------------------------------------------------#
+#  Yönetici — Tüm siparişler                                                     #
+# -----------------------------------------------------------------------------#
+#  Alanların açıklaması için menus/main-menu.yml başındaki nota bakın.
+#
+#  Sunucudaki TÜM aktif siparişler burada listelenir.
+#    Sol tık   -> siparişin ayrıntılarını sohbete yazar
+#    SHIFT + sağ tık -> siparişi kaldırır ve kalan tutarı sahibine iade eder
+#  Kaldırma bilerek shift+sağ tıka bağlanmıştır: yanlışlıkla tek tıkla
+#  başkasının siparişi silinmesin.
+# -----------------------------------------------------------------------------#
+
+rows: 6
+title: ""
+content-slots: "0-44"
+open-sound: "none"
+
+close-sound: "none"
+
+filler:
+  enabled: true
+  material: GRAY_STAINED_GLASS_PANE
+  name: " "
+  slots: "45-53"
+  overwrite: false
+
+items:
+  previous-page:
+    enabled: true
+    slot: 48
+    material: ARROW
+    sound: "ui.button.click"
+
+  back:
+    enabled: true
+    slot: 49
+    material: BARRIER
+    sound: "ui.button.click"
+
+  next-page:
+    enabled: true
+    slot: 50
+    material: ARROW
+    sound: "ui.button.click"
+
+  search:
+    enabled: true
+    slot: 53
+    material: OAK_SIGN
+    sound: "ui.button.click"

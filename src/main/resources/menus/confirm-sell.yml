@@ -1,0 +1,42 @@
+# -----------------------------------------------------------------------------#
+#  Toplanan eşyaları satmayı onayla menüsü                                       #
+# -----------------------------------------------------------------------------#
+#  Alanların açıklaması için menus/main-menu.yml başındaki nota bakın.
+#  Bu menü yalnızca config.yml -> features.sell-all açıkken görünür.
+# -----------------------------------------------------------------------------#
+
+rows: 3
+title: ""
+content-slots: ""
+open-sound: "none"
+
+# Menü kapanırken çalan ses. Bir menüden diğerine geçerken de tetiklenir,
+# bu yüzden varsayılan "none" (config.yml -> sounds.events.menu-close).
+close-sound: "none"
+
+filler:
+  enabled: false
+  material: GRAY_STAINED_GLASS_PANE
+  name: " "
+  # true ise dolgu, üzerinde buton olsa bile o slotu doldurur.
+  # false (varsayılan) butonları korur — alt sıradaki sayfa/geri/arama
+  # butonlarının kaybolmaması için bu ayar false kalmalıdır.
+  overwrite: false
+
+items:
+  cancel:
+    enabled: true
+    slot: 11
+    material: RED_STAINED_GLASS_PANE
+    sound: "ui.button.click"
+
+  preview:
+    enabled: true
+    slot: 13
+    material: STONE
+
+  confirm:
+    enabled: true
+    slot: 15
+    material: LIME_STAINED_GLASS_PANE
+    sound: "entity.experience_orb.pickup"

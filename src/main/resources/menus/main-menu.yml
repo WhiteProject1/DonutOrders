@@ -1,0 +1,124 @@
+# -----------------------------------------------------------------------------#
+#  Ana sipariş menüsü — /order                                                   #
+# -----------------------------------------------------------------------------#
+#
+#  BU DOSYA YERLEŞİMİ BELİRLER, METİNLERİ DEĞİL.
+#  Buton isimleri ve açıklamaları lang/<dil>.yml içindedir; böylece her oyuncu
+#  kendi dilinde görür. Buradaki "name" / "lore" alanları isteğe bağlı EZMELERDİR:
+#  yazarsanız o metin herkes için sabitlenir (dile göre değişmez).
+#
+#  Ortak alanlar (her butonda kullanılabilir):
+#    enabled            true/false — false ise buton hiç konmaz
+#    slot               tek slot (0'dan başlar)
+#    slots              çoklu slot: [45, 46] ya da "0-44, 53"
+#    material           blok/eşya adı (örn. ARROW, CHEST)
+#    custom-model-data  kaynak paketi model numarası (0 = yok)
+#    glow               true ise büyü parıltısı ekler
+#    name               isim ezmesi (yazmazsanız dil dosyasından gelir)
+#    lore               açıklama ezmesi; dinamik satırlar yine altına eklenir
+#    sound              tıklama sesi — "anahtar", "anahtar:ses" ya da
+#                       "anahtar:ses:perde"  (örn. "ui.button.click:0.6:1.4")
+#    sound-volume       eski yazım; sound içinde ses yazılmamışsa geçerlidir
+#    sound-pitch        eski yazım; sound içinde perde yazılmamışsa geçerlidir
+#
+#  Bir butonda sound yazmazsanız o buton için config.yml -> sounds.events
+#  altındaki genel ses çalar (örn. sayfa butonları -> page-turn). İkisi birden
+#  çalmaz; buton bazlı tanım her zaman kazanır.
+#
+#  Bir butonu tamamen kaldırmak için ya enabled: false yapın ya da bölümü silin.
+#  Silinen bölüm sürüm güncellemesinde geri gelmez.
+#
+#  DOLGU (filler) yalnızca BOŞ slotları doldurur; butonların üzerine yazmaz.
+#  Eski davranışı isteyen "overwrite: true" yazabilir — ama o zaman dolgu
+#  aralığına denk gelen butonlar görünmez olur.
+#
+#  Ses anahtarları vanilya adlarıdır (BÜYÜK_HARF enum değil):
+#    ui.button.click, block.note_block.pling, entity.experience_orb.pickup,
+#    block.anvil.use, entity.villager.yes  ...  "none" yazarsanız ses çalmaz.
+# -----------------------------------------------------------------------------#
+
+# Envanter satır sayısı (1-6). Sayfa başına sipariş sayısı content-slots'a bağlıdır.
+rows: 6
+
+# Başlık ezmesi. Boş bırakırsanız lang dosyasındaki menus.main-menu kullanılır.
+# Yer tutucular: %page% %pages%
+title: ""
+
+# Siparişlerin dizileceği slotlar. Buranın büyüklüğü = sayfa başına sipariş sayısı.
+content-slots: "0-44"
+
+# Menü açılırken çalan ses.
+open-sound: "none"
+
+# Menü kapanırken çalan ses. Bir menüden diğerine geçerken de tetiklenir,
+# bu yüzden varsayılan "none" (config.yml -> sounds.events.menu-close).
+close-sound: "none"
+
+# Boş kalan slotları dolduran cam panel.
+filler:
+  enabled: false
+  material: GRAY_STAINED_GLASS_PANE
+  name: " "
+  # true ise dolgu, üzerinde buton olsa bile o slotu doldurur.
+  # false (varsayılan) butonları korur — alt sıradaki sayfa/geri/arama
+  # butonlarının kaybolmaması için bu ayar false kalmalıdır.
+  overwrite: false
+
+items:
+  previous-page:
+    enabled: true
+    slot: 45
+    material: ARROW
+    sound: "ui.button.click"
+
+  language:
+    enabled: true
+    slot: 46
+    material: BOOK
+    sound: "ui.button.click"
+
+  sort:
+    enabled: true
+    slot: 47
+    material: CAULDRON
+    sound: "ui.button.click"
+
+  filter:
+    enabled: true
+    slot: 48
+    material: HOPPER
+    sound: "ui.button.click"
+
+  refresh:
+    enabled: true
+    slot: 49
+    material: PAPER
+    sound: "ui.button.click"
+
+  search:
+    enabled: true
+    slot: 50
+    material: OAK_SIGN
+    sound: "ui.button.click"
+
+  your-orders:
+    enabled: true
+    slot: 51
+    material: CHEST
+    sound: "ui.button.click"
+
+  # Sipariş seviyesi. levels.yml -> enabled: false ise bu buton HİÇ konmaz
+  # (slot boş kalır). Butonu istemiyor ama sistemi arkada çalıştırmak
+  # istiyorsanız burada enabled: false yapın.
+  level:
+    enabled: true
+    slot: 52
+    material: EXPERIENCE_BOTTLE
+    glow: true
+    sound: "ui.button.click"
+
+  next-page:
+    enabled: true
+    slot: 53
+    material: ARROW
+    sound: "ui.button.click"

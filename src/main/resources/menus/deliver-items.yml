@@ -1,0 +1,35 @@
+# -----------------------------------------------------------------------------#
+#  Eşya teslim menüsü                                                            #
+# -----------------------------------------------------------------------------#
+#  Alanların açıklaması için menus/main-menu.yml başındaki nota bakın.
+#
+#  content-slots burada "oyuncunun eşya bırakabileceği" alandır. Bu slotlar
+#  serbesttir; dışındaki her slot kilitlidir. Alanı büyütmek isterseniz rows'u
+#  artırıp content-slots'u genişletin, buton slotlarını da kaydırmayı unutmayın.
+# -----------------------------------------------------------------------------#
+
+rows: 4
+title: ""
+content-slots: "0-26"
+open-sound: "none"
+
+# Menü kapanırken çalan ses. Bir menüden diğerine geçerken de tetiklenir,
+# bu yüzden varsayılan "none" (config.yml -> sounds.events.menu-close).
+close-sound: "none"
+
+filler:
+  enabled: true
+  material: GRAY_STAINED_GLASS_PANE
+  name: " "
+  slots: "27-35"
+  # true ise dolgu, üzerinde buton olsa bile o slotu doldurur.
+  # false (varsayılan) butonları korur — alt sıradaki sayfa/geri/arama
+  # butonlarının kaybolmaması için bu ayar false kalmalıdır.
+  overwrite: false
+
+items:
+  quick-fill:
+    enabled: true
+    slot: 31
+    material: HOPPER
+    sound: "entity.item.pickup"

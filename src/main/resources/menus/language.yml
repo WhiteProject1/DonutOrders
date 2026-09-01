@@ -1,0 +1,69 @@
+# -----------------------------------------------------------------------------#
+#  Dil seçme menüsü — /orderlang                                                 #
+# -----------------------------------------------------------------------------#
+#  Alanların açıklaması için menus/main-menu.yml başındaki nota bakın.
+#
+#  content-slots dillerin dizildiği yerdir. lang/ klasörüne yeni bir dil dosyası
+#  eklerseniz otomatik olarak burada belirir. Sığmayan diller SONRAKİ SAYFAYA
+#  taşınır — kaybolmaz. Eklenti 13 dille geldiği için varsayılan 21 slot yeterli;
+#  sayfa okları bu yüzden kapalı gelir. Daha çok dil eklerseniz açın.
+#
+#  Her dilin ikonu aşağıdaki icons bölümünden gelir.
+#  Bu menü config.yml -> per-player-language kapalıysa açılmaz.
+# -----------------------------------------------------------------------------#
+
+rows: 5
+title: ""
+content-slots: "10-16, 19-25, 28-34"
+open-sound: "none"
+
+# Menü kapanırken çalan ses. Bir menüden diğerine geçerken de tetiklenir,
+# bu yüzden varsayılan "none" (config.yml -> sounds.events.menu-close).
+close-sound: "none"
+
+filler:
+  enabled: true
+  material: GRAY_STAINED_GLASS_PANE
+  name: " "
+  # true ise dolgu, üzerinde buton olsa bile o slotu doldurur.
+  # false (varsayılan) butonları korur — alt sıradaki sayfa/geri/arama
+  # butonlarının kaybolmaması için bu ayar false kalmalıdır.
+  overwrite: false
+
+# Dil kodu -> ikon materyali. Listede olmayan dil için default kullanılır.
+icons:
+  default: PAPER
+  tr: RED_BANNER
+  en: WHITE_BANNER
+  de: YELLOW_BANNER
+  es: ORANGE_BANNER
+  fr: BLUE_BANNER
+  it: GREEN_BANNER
+  pt: LIME_BANNER
+  ru: LIGHT_BLUE_BANNER
+  pl: PINK_BANNER
+  nl: ORANGE_WOOL
+  cs: LIGHT_GRAY_BANNER
+  zh: RED_WOOL
+  ja: WHITE_WOOL
+
+items:
+  # 13 dil tek sayfaya sığdığı için varsayılan kapalı. Kendi dilinizi ekleyip
+  # 21'i aşarsanız enabled: true yapın; slotlar zaten hazır.
+  previous-page:
+    enabled: false
+    slot: 39
+    material: ARROW
+    sound: "ui.button.click"
+
+  back:
+    enabled: true
+    slot: 40
+    material: BARRIER
+    sound: "ui.button.click"
+
+  next-page:
+    enabled: false
+    slot: 41
+    material: ARROW
+    sound: "ui.button.click"

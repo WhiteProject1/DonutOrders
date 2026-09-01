@@ -1,0 +1,988 @@
+# -----------------------------------------------------------------------------#
+#  DonutOrders - Türkçe dil dosyası                                             #
+# -----------------------------------------------------------------------------#
+#
+#  Eklentinin gösterdiği HER metin bu dosyada. Menü başlıkları, buton isimleri,
+#  tabela istemleri, eşya/büyü/iksir adları dahil hiçbir metin kodun içinde
+#  sabit değil; hepsini buradan değiştirebilirsiniz.
+#
+#  Renkler:  &a &b &c ... ve hex &#00d271
+#  Yer tutucular:
+#    {prefix}   config.yml'deki ön ek
+#    %player%   oyuncu adı           %seller%  teslim eden
+#    %amount%   miktar               %item%    eşya adı
+#    %price%    fiyat                %total%   toplam fiyat
+#    %limit%    limit                %page%    bulunulan sayfa
+#    %pages%    toplam sayfa         %search%  arama metni
+#
+#  Kendi dilinizi eklemek: bu dosyayı lang/<kod>.yml olarak kopyalayıp çevirin
+#  (örn. lang/de.yml). Otomatik olarak tanınır, kod değişikliği gerekmez.
+# -----------------------------------------------------------------------------#
+
+language:
+  name: '&fTürkçe'
+general:
+  player-only: '&cBu komutu yalnızca oyuncular kullanabilir.'
+  no-permission: '&cBu komutu kullanma yetkiniz yok.'
+  reload-success: '&aDonutOrders ayarları, menüleri ve dilleri başarıyla yeniden yüklendi!'
+  unknown-command: '&cBilinmeyen alt komut. &e/donutordersadmin&c yazın.'
+errors:
+  not-enough-money: '{prefix}&cYeterli paranız yok! &e%total%&c gerekli.'
+  not-owner: '{prefix}&cBaşkasının siparişini iptal edemezsiniz.'
+  own-order: '{prefix}&cKendi siparişinizi teslim edemezsiniz!'
+  already-complete: '{prefix}&cTamamlanmış bir sipariş iptal edilemez.'
+  max-orders-reached: '{prefix}&cAktif sipariş limitinize ulaştınız (&e%limit%&c).'
+  min-price-not-met: '{prefix}&cEşya başına en düşük fiyat: &e%price%'
+  max-price-exceeded: '{prefix}&cEşya başına en yüksek fiyat: &e%price%'
+  min-amount-not-met: '{prefix}&cEn az miktar: &e%amount%'
+  max-amount-exceeded: '{prefix}&cSipariş başına en fazla miktar: &e%amount%'
+  invalid-number: '{prefix}&cGeçersiz sayı.'
+  invalid-number-format: '{prefix}&cGeçersiz sayı. Biçim: 100, 1k, 10k, 1m'
+  positive-only: '{prefix}&cYalnızca pozitif sayılar.'
+  wrong-item: '{prefix}&cYanlış eşya türü!'
+  no-items-in-inventory: '{prefix}&cEnvanterinizde &e%item%&c bulunmuyor.'
+  set-item-amount-price: '{prefix}&cLütfen eşya, miktar ve fiyat belirleyin!'
+  order-not-found: '{prefix}&cSipariş bulunamadı.'
+  player-not-found: '{prefix}&c%player% adlı oyuncu bulunamadı.'
+  cant-fulfill-own: '{prefix}&cKendi siparişinizi teslim edemezsiniz!'
+  max-enchantments-reached: '{prefix}&cEn fazla &e%limit% &cbüyü seçebilirsiniz.'
+  order-unavailable: '{prefix}&cBu sipariş artık mevcut değil.'
+  order-already-filled: '{prefix}&cBu sipariş zaten tamamlanmış.'
+  feature-disabled: '{prefix}&cBu özellik bu sunucuda kapalı.'
+  item-blacklisted: '{prefix}&cBu eşya için sipariş verilemez.'
+  language-not-supported: '{prefix}&cBilinmeyen dil. Mevcut: &e%languages%'
+  order-filled-elsewhere: '{prefix}&cBu sipariş az önce başka bir sunucuda dolduruldu. Eşyaların iade edildi.'
+  too-fast: '{prefix}&cBiraz yavaşla.'
+success:
+  order-created: '{prefix}&#00d271%amount% %item% &fsipariş ettiniz.'
+  order-cancelled: '{prefix}&aSipariş iptal edildi. &e%price%&a iade edildi ve toplanan eşyalar verildi.'
+  order-fulfilled: '{prefix}&b%amount% %item% &7teslim ettiniz ve &a$%price% &7aldınız.'
+  order-received: '{prefix}&a%seller% &fsize &a%amount% %item% &fteslim etti.'
+  order-complete: '{prefix}&a%item% &fsiparişiniz tamamlandı!'
+  delivery-cancelled: '{prefix}&cTeslimat iptal edildi. Eşyalarınız iade edildi.'
+  items-dropped: '{prefix}&aTüm eşyalar yere bırakıldı!'
+  order-archived: '{prefix}&aSipariş tamamlandı ve arşivlendi!'
+  potion-selected: '{prefix}&aİksir türü seçildi!'
+  amount-set: '{prefix}&aMiktar ayarlandı: %amount%'
+  price-set: '{prefix}&aFiyat ayarlandı: $%price%'
+  filter-applied: '{prefix}&aFiltre uygulandı: &e%search%'
+  search-applied: '{prefix}&aAranıyor: &e%search%'
+  search-cleared: '{prefix}&aArama temizlendi!'
+  items-sold: '{prefix}&aEşyalar &a$%price%&a karşılığında satıldı.'
+  language-changed: '{prefix}&aDil &e%language%&a olarak ayarlandı.'
+  tax-charged: '{prefix}&7Sipariş vergisi alındı (&e%tax%&7 = &e$%amount%&7).'
+gui:
+  type-amount: '{prefix}&aSohbete miktarı yazın:'
+  type-price: '{prefix}&aSohbete fiyatı yazın:'
+  type-filter: '{prefix}&eFiltre için isim yazın (örn. ''wood''):'
+  type-search: '{prefix}&eAramak için eşya adı yazın (temizlemek için ''clear''):'
+  sell-all-coming-soon: '{prefix}&cBu eşyaların hiçbirinin satış fiyatı yok.'
+  quick-fill-full: '{prefix}&eZaten yeterli eşya eklendi!'
+  quick-fill-added: '{prefix}&a%amount% eşya eklendi!'
+  quick-fill-none: '{prefix}&cEnvanterinizde uygun eşya bulunamadı.'
+  new-order:
+    item-not-selected: '{prefix}&cLütfen bir eşya seçin.'
+    amount-not-set: '{prefix}&cLütfen bir miktar belirleyin.'
+    price-not-set: '{prefix}&cLütfen bir fiyat belirleyin.'
+  buttons:
+    sort: '&#ffc247Sıralama'
+    filter: '&#ffc247Filtre'
+    orders: '&#00d271Siparişler'
+    search: '&#ffc247Arama'
+    your-orders: '&#00d271Siparişlerim'
+    next-page: '&#ffc247Sonraki Sayfa'
+    no-next-page: '&8Sonraki Sayfa Yok'
+    previous-page: '&#ffc247Önceki Sayfa'
+    no-previous-page: '&8Önceki Sayfa Yok'
+    cancel: '&#ff5f5fİptal'
+    confirm: '&#00d271Onayla'
+    item: '&#6fd3ffEşya'
+    amount: '&#6fd3ffMiktar'
+    price: '&#6fd3ffFiyat'
+    new-order: '&#00d271Yeni Sipariş'
+    cancel-order: '&#ff5f5fSiparişi İptal Et'
+    collect-items: '&#00d271Eşyaları Topla'
+    go-back: '&#ffc247Geri Dön'
+    back: '&#ffc247Geri'
+    back-to-menu: '&#ffc247Ana Menüye Dön'
+    back-to-editor: '&#ffc247Düzenleyiciye Dön'
+    back-to-order: '&#ffc247Siparişe Dön'
+    quick-fill: '&#00d271Hızlı Teslim'
+    sell-all: '&#00d271Hepsini Sat'
+    drop-all: '&#ff5f5fHepsini Bırak'
+    collection-back: '&#ffc247Geri'
+    collection-next: '&#ffc247İleri'
+    language: '&#6fd3ffDil'
+    level: '&#6fd3ffSipariş Seviyesi'
+  enchantment-picker:
+    title: Büyü Seç
+    click-to-select: '&7Seçmek için tıkla'
+    selected: '&aSeçildi'
+    confirm: '&#00d271Onayla'
+    cancel: '&#ff5f5fİptal'
+    next: '&#ffc247İleri'
+    back: '&#ffc247Geri'
+  lore:
+    each: adet
+    delivered: Teslim Edildi
+    paid: Ödendi
+    click-to-deliver: '&a%player% &fiçin %item% teslim etmek için tıkla'
+    until-order-expires: '&7Siparişin bitmesine %time% kaldı'
+    until-order-deletes: '&7Siparişin silinmesine %time% kaldı'
+    owners-order: '&a%player% Siparişi'
+    removed-suffix: '&7(Kaldırıldı)'
+    enchanted-suffix: (Büyülü)
+    most-paid: En Çok Ödenen
+    most-delivered: En Çok Teslim Edilen
+    recently-listed: Son Eklenen
+    most-money-per-item: Eşya Başına En Çok Para
+    filter-all: Tümü
+    filter-blocks: Bloklar
+    filter-tools: Aletler
+    filter-food: Yiyecek
+    filter-combat: Savaş
+    filter-potions: İksirler
+    filter-books: Kitaplar
+    filter-ingredients: Malzemeler
+    filter-utilities: Araçlar
+    current: Mevcut
+    none: Yok
+    click-to-search: '&7Eşya adına göre aramak için tıkla'
+    type-in-chat: '&7Sohbete yazın (örn. ''kemik'')'
+    manage-listings: '&fSiparişlerini yönet'
+    click-to-refresh: '&fYenilemek için tıkla'
+    return-to-orders: '&fSiparişlerime dön'
+    click-to-create: '&fYeni alış siparişi oluşturmak için tıkla'
+    selected: '&fSeçilen: &b%item%'
+    click-to-change: '&7Eşyayı değiştirmek için tıkla'
+    amount-value: '&fMiktar: &e%amount%'
+    click-to-set-amount: '&7Miktar yazmak için tıkla'
+    price-per-item: '&fEşya başına fiyat: &a$%price%'
+    click-to-set-price: '&7Fiyat yazmak için tıkla'
+    total-cost: '&fToplam Maliyet: &a$%total%'
+    tax-line: '&7Vergi (&e%tax%&7): &a$%amount%'
+    click-to-publish: '&7Siparişi yayınlamak için tıkla'
+    order-label: '&aSipariş: %item%'
+    progress: '&fİlerleme: %filled%/%total%'
+    price-label: '&fFiyat: $%price%'
+    click-to-cancel: '&fBu siparişi iptal etmek için tıkla'
+    refunds-remaining: '&c(Kalan para iade edilir)'
+    collect-first: '&c(Önce eşyaları topla!)'
+    items-waiting: '&fBekleyen eşyalar: &6%amount%'
+    click-to-open-storage: '&eDepoyu açmak için tıkla'
+    order-completed: '&a&lSİPARİŞ TAMAMLANDI!'
+    cancel-return-items: '&fİptal et ve eşyaları iade et'
+    click-to-deliver-items: '&fEşyaları teslim etmek için tıkla'
+    youre-delivering: '&7&a%amount% &f%item% &7teslim ediyorsunuz'
+    current-filter: '&fMevcut Filtre: &e%filter%'
+    click-type-name: '&7İsim yazmak için tıkla'
+    filter-description: '&7(Listeyi filtreler, örn. ''wood'' -> ''oak wood'')'
+    coming-soon: '&7Satış fiyatı tanımlı değil'
+    sell-all: '&7Tüm eşyaları satmak için tıkla'
+    cancel-sell: '&7İptal etmek için tıkla'
+    confirm-sell: '&7Tüm eşyaları satmak için tıkla'
+    sell-price: '&7Satış fiyatı &a$%price%'
+    quick-fill-desc: '&fEnvanterinizdeki uygun eşyaları otomatik ekler'
+    quick-fill-item: '&7Eşya: &e%item%'
+    quick-fill-remaining: '&7Kalan: &e%amount%'
+    quick-fill-click: '&eTıkla &f- &eotomatik doldur'
+    removed-by-admin: '&c&lYETKİLİ TARAFINDAN KALDIRILDI'
+    items-to-collect: '&fToplanacak Eşyalar: &6%amount%'
+    click-to-collect: '&eEşyaları toplamak için tıkla'
+    language-current: '&aŞu an seçili'
+    language-click: '&7Bu dili kullanmak için tıkla'
+    tax-reason-base: '&8(standart oran)'
+    tax-reason-rank: '&8(rütbe indiriminiz uygulandı)'
+    tax-reason-level: '&8(sipariş seviyesi indirimi uygulandı)'
+    tax-reason-exempt: '&8(vergiden muafsınız)'
+    level-current: '&fSeviye: &d%level%'
+    level-xp: '&fXP: &b%xp% &7/ &b%next%'
+    level-progress: '%bar%'
+    level-tax: '&7Vergi indirimi: &a%discount%'
+    level-orders: '&7Ekstra sipariş hakkı: &a+%extra%'
+    level-items: '&7Sipariş başına ekstra eşya: &a+%extra%'
+    level-max: '&6&lEN YÜKSEK SEVİYE'
+    server: '&8Sunucu: %server%'
+  order-lore:
+    template:
+    - ''
+    - ' &#AAAAAA• Talep Edilen: &r&#FFFFFF%item%&r'
+    - '%enchants%'
+    - ' &#AAAAAA• Birim Fiyat: &r&#49F267%price% ₺&r'
+    - ''
+    - ' &#AAAAAA• Teslimat Durumu:&r'
+    - '   &#FFFFFF%filled% &r&#555555/ &r&#AAAAAA%needed% adet&r'
+    - '   %bar% &r&#555555(&r&#49F267%percent%&r&#555555)&r'
+    - ''
+    - ' &#AAAAAA• Yapılan Ödeme:&r'
+    - '   &#49F267%paid% ₺ &r&#555555/ &r&#AAAAAA%total% ₺&r'
+    - ''
+    - ' &#AAAAAA• Silinmesine Kalan:&r'
+    - '   &#FFFFFF%time%&r'
+    - ''
+    - '&#FFFFFFTeslimat yapmak için &r&#49F267tıkla!&r'
+menus:
+  main-menu: SİPARİŞLER » Sayfa %page%/%pages%
+  your-orders: SİPARİŞLER » Siparişlerim
+  new-order: SİPARİŞLER » Yeni Sipariş
+  item-selector: Eşya Seç » %page%/%pages%
+  item-selector-filtered: 'Filtre: %search% » %page%/%pages%'
+  deliver-items: SİPARİŞLER » Eşya Teslim Et
+  confirm-delivery: SİPARİŞLER » Teslimatı Onayla
+  confirm-sell: SİPARİŞLER » Satışı Onayla
+  edit-order: SİPARİŞLER » Siparişi Düzenle
+  collect-items: Toplama » Sayfa %page%/%pages%
+  enchantment-picker: Büyü Seç » %page%/%pages%
+  potion-selector: İksir Türü Seç
+  language: Dil Seç
+  admin-menu: DonutOrders Yönetim
+  admin-orders: Tüm Siparişler » %page%/%pages%
+input:
+  sign:
+    amount:
+    - ''
+    - ^^^^^^^^
+    - Miktar Yaz
+    - '(örn: 64, 1k)'
+    price:
+    - ''
+    - ^^^^^^^^
+    - Fiyat Yaz
+    - '(örn: 100, 1k)'
+    filter:
+    - ''
+    - ^^^^^^^^
+    - Filtre Yaz
+    - '(örn: wood)'
+    search:
+    - ''
+    - ^^^^^^^^
+    - Arama Yaz
+    - (eşya adı)
+  chat:
+    amount: '{prefix}&aSohbete miktarı yazın. &7(iptal için &e%cancel%&7)'
+    price: '{prefix}&aSohbete fiyatı yazın. &7(iptal için &e%cancel%&7)'
+    filter: '{prefix}&aSohbete filtreyi yazın. &7(iptal için &e%cancel%&7)'
+    search: '{prefix}&aSohbete eşya adını yazın. &7(iptal için &e%cancel%&7)'
+    cancel-word: iptal
+    cancelled: '{prefix}&cGirdi iptal edildi.'
+    timeout: '{prefix}&cGirdi süresi doldu.'
+delivery:
+  items-returned: '&e[Sipariş] %amount% eşya iade edildi (limite ulaşıldı).'
+  shulkers-returned: '&a[Sipariş] %amount% shulker kutusu iade edildi!'
+  delivering:
+  - '&7&oTeslim ediliyor.'
+  - '&7&oTeslim ediliyor..'
+  - '&7&oTeslim ediliyor...'
+  expired-with-items: '&e[Sipariş] &f&a%item% &fsiparişinizin süresi doldu. &a$%price% &fiade edildi. &eTeslim edilen eşyalarınız sizi bekliyor!'
+  expired: '&e[Sipariş] &fSiparişinizin süresi doldu. &a$%price% &fiade edildi.'
+admin:
+  help-header: '&6&l=== DonutOrders Yönetim ==='
+  help-reload: '&e/donutordersadmin reload &7- Ayarları yeniden yükle'
+  help-removeorder: '&e/donutordersadmin removeorder <oyuncu> <sipariş_id> &7- Sipariş kaldır'
+  usage-removeorder: '&cKullanım: /donutordersadmin removeorder <oyuncu> <sipariş>'
+  order-removed: '&a&e%amount% %item% &asiparişi kaldırıldı. İade: &e%price%'
+  order-removed-with-items: '&a&e%amount% %item% &asiparişi kaldırıldı. İade: &e%price% &7(oyuncu hâlâ %collected% eşya toplayabilir)'
+  order-removed-player: '&c&e%amount% %item% &csiparişiniz bir yetkili tarafından kaldırıldı. İade: &e%price%&c.'
+  order-removed-collect: ' &7Eşyalarınızı toplamak için &e/order &7-> &eSiparişlerim&7.'
+  orders-deleted: '&a%amount% sipariş silindi!'
+  help-menu: '&e/donutordersadmin menu &7- Yönetici panelini açar'
+  reloaded: '&e%ms%ms&a içinde yeniden yüklendi.'
+  cleanup-done: '&a%amount% süresi dolmuş sipariş temizlendi.'
+  save-failed: '&cDosya yazılamadı! Değişiklik yalnızca bu oturum için geçerli.'
+  feature-enabled: '&e%feature% &aözelliği açıldı.'
+  feature-disabled: '&e%feature% &cözelliği kapatıldı.'
+  tax-enabled: '&aVergi sistemi açıldı.'
+  tax-disabled: '&cVergi sistemi kapatıldı.'
+  levels-enabled: '&aSipariş seviye sistemi açıldı.'
+  levels-disabled: '&cSipariş seviye sistemi kapatıldı.'
+  detail-header: '&6&l--- &f%item% &6&l---'
+  buttons:
+    reload: '&#ffc247Yeniden Yükle'
+    orders: '&#6fd3ffTüm Siparişler'
+    stats: '&#6fd3ffİstatistikler'
+    cleanup: '&#ffc247Temizlik'
+    features: '&#6fd3ffÖzellikler'
+    tax: '&#ffc247Vergi'
+    levels: '&#6fd3ffSeviye Sistemi'
+    close: '&#ff5f5fKapat'
+  lore:
+    enabled: '&aAÇIK'
+    disabled: '&cKAPALI'
+    click-toggle: '&7Açıp kapatmak için tıkla'
+    click-cycle: '&7Sıradaki özelliği çevirmek için tıkla'
+    reload: '&7Config, menü, dil ve seviyeleri yeniden yükler'
+    orders: '&7Aktif sipariş: &f%amount%'
+    cleanup: '&7Süresi dolmuş siparişleri şimdi temizler'
+    search-hint: '&7Oyuncu ya da eşya adına göre ara'
+    order-owner: '&7Sahibi: &f%player%'
+    order-refund: '&7Kaldırılınca iade: &a$%price%'
+    order-id: '&8Kimlik: %id%'
+    order-remove: '&cSHIFT + sağ tık &7ile kaldır ve iade et'
+    anti-abuse: '&7Seviye istismar koruması: %state%'
+    toggle-line-on: '&a• %label% &8- %state%'
+    toggle-line-off: '&7• %label% &8- %state%'
+  stats:
+    active: '&7Aktif sipariş: &f%amount%'
+    completed: '&7Tamamlanmış sipariş: &f%amount%'
+    volume: '&7Açık hacim: &a$%amount%'
+    players: '&7Çevrimiçi oyuncu: &f%amount%'
+  tax:
+    creation: '&7Oluşturma: &f%percent%'
+    delivery: '&7Teslim: &f%percent%'
+    sell: '&7Satış: &f%percent%'
+  levels:
+    count: '&7Tanımlı seviye: &f%amount%'
+  features:
+    potions: İksirler
+    enchantments: Büyüler
+    enchanted-books: Büyülü Kitaplar
+    sell-all: Hepsini Sat
+    quick-fill: Hızlı Teslim
+    search: Arama
+    filter: Filtre
+    sort: Sıralama
+  templates:
+    stats:
+    - '&7Aktif sipariş: &f%active%'
+    - '&7Tamamlanmış sipariş: &f%completed%'
+    - '&7Açık hacim: &a$%volume%'
+    - '&7Çevrimiçi oyuncu: &f%players%'
+    features:
+    - '%features%'
+    - ''
+    - '&7Sıradaki özelliği çevirmek için tıkla'
+    tax:
+    - '%state%'
+    - '&7Oluşturma: &f%creation%'
+    - '&7Teslim: &f%delivery%'
+    - '&7Satış: &f%sell%'
+    - ''
+    - '&7Açıp kapatmak için tıkla'
+    levels:
+    - '%state%'
+    - '%level-details%'
+    - ''
+    - '&7Açıp kapatmak için tıkla'
+    order:
+    - '&7Sahibi: &f%owner%'
+    - '&fİlerleme: %filled%/%total%'
+    - '&fFiyat: $%price%'
+    - '&7Kaldırılınca iade: &a$%refund%'
+    - '&8Kimlik: %id%'
+    - ''
+    - '&cSHIFT + sağ tık &7ile kaldır ve iade et'
+    detail:
+    - '&6&l--- &f%item% &6&l---'
+    - '&7Sahibi: &f%owner%'
+    - '&fİlerleme: %filled%/%total%'
+    - '&fFiyat: $%price%'
+    - '&7Kaldırılınca iade: &a$%refund%'
+    - '&fBekleyen eşyalar: &6%waiting%'
+    - '&8Kimlik: %id%'
+time:
+  day: '%value%g'
+  hour: '%value%s'
+  minute: '%value%dk'
+  expired: Süresi doldu
+names:
+  unknown: Bilinmeyen
+  enchanted-book: '%enchantment% Kitabı'
+  potion:
+    base: '%name% İksiri'
+    splash: Patlamalı %name%
+    lingering: Kalıcı %name%
+    long: '%name% (Uzun)'
+    strong: Güçlü %name%
+  potions:
+    WATER: Su
+    MUNDANE: Sıradan
+    THICK: Yoğun
+    AWKWARD: Tuhaf
+    NIGHT_VISION: Gece Görüşü
+    INVISIBILITY: Görünmezlik
+    LEAPING: Zıplama
+    FIRE_RESISTANCE: Ateşe Dayanıklılık
+    SWIFTNESS: Hızlanma
+    SLOWNESS: Yavaşlama
+    WATER_BREATHING: Su Altında Nefes
+    HEALING: İyileşme
+    HARMING: Zarar
+    POISON: Zehir
+    REGENERATION: Yenilenme
+    STRENGTH: Güç
+    WEAKNESS: Zayıflık
+    LUCK: Şans
+    TURTLE_MASTER: Kaplumbağa Ustası
+    SLOW_FALLING: Yavaş Düşüş
+    WIND_CHARGED: Rüzgâr Yükü
+    WEAVING: Ağ Örme
+    OOZING: Sızıntı
+    INFESTED: İstila
+  enchantments:
+    protection: Koruma
+    fire_protection: Ateş Koruması
+    feather_falling: Tüy Düşüşü
+    blast_protection: Patlama Koruması
+    projectile_protection: Mermi Koruması
+    respiration: Solunum
+    aqua_affinity: Su Uyumu
+    thorns: Dikenler
+    depth_strider: Derinlik Yürüyüşü
+    frost_walker: Buz Yürüyüşü
+    binding_curse: Bağlanma Laneti
+    soul_speed: Ruh Hızı
+    swift_sneak: Hızlı Sinsilik
+    sharpness: Keskinlik
+    smite: Kutsal Darbe
+    bane_of_arthropods: Böcek Belası
+    knockback: Geri İtme
+    fire_aspect: Ateş Etkisi
+    looting: Yağma
+    sweeping_edge: Süpüren Kenar
+    sweeping: Süpüren Kenar
+    efficiency: Verimlilik
+    silk_touch: İpeksi Dokunuş
+    unbreaking: Kırılmazlık
+    fortune: Talih
+    power: Güç
+    punch: Yumruk
+    flame: Alev
+    infinity: Sonsuzluk
+    luck_of_the_sea: Denizin Şansı
+    lure: Yem
+    loyalty: Sadakat
+    impaling: Delip Geçme
+    riptide: Girdap
+    channeling: Yıldırım Çağırma
+    multishot: Çoklu Atış
+    quick_charge: Hızlı Doldurma
+    piercing: Delici
+    mending: Onarım
+    vanishing_curse: Yok Olma Laneti
+    density: Yoğunluk
+    breach: Gedik
+    wind_burst: Rüzgâr Patlaması
+  items:
+    EGG: Yumurta
+    BLAZE_ROD: Blaze Çubuğu
+    BLAZE_POWDER: Blaze Tozu
+    BREEZE_ROD: Breeze Çubuğu
+    DECORATED_POT: Süslü Çömlek
+    CARROT_ON_A_STICK: Sopalı Havuç
+    WARPED_FUNGUS_ON_A_STICK: Sopalı Çarpık Mantar
+    OAK_LOG: Meşe Kütüğü
+    SPRUCE_LOG: Ladin Kütüğü
+    BIRCH_LOG: Huş Kütüğü
+    JUNGLE_LOG: Tropik Kütük
+    ACACIA_LOG: Akasya Kütüğü
+    DARK_OAK_LOG: Koyu Meşe Kütüğü
+    CHERRY_LOG: Kiraz Kütüğü
+    MANGROVE_LOG: Mangrov Kütüğü
+    PALE_OAK_LOG: Solgun Meşe Kütüğü
+    COBBLESTONE: Kaldırım Taşı
+    MOSSY_COBBLESTONE: Yosunlu Kaldırım Taşı
+    STONE_BRICKS: Taş Tuğla
+    NETHER_BRICKS: Nether Tuğlası
+    END_STONE_BRICKS: End Taşı Tuğlası
+    IRON_INGOT: Demir Külçesi
+    GOLD_INGOT: Altın Külçesi
+    COPPER_INGOT: Bakır Külçesi
+    NETHERITE_INGOT: Netherit Külçesi
+    IRON_NUGGET: Demir Külçeciği
+    GOLD_NUGGET: Altın Külçeciği
+    IRON_ORE: Demir Cevheri
+    GOLD_ORE: Altın Cevheri
+    COAL_ORE: Kömür Cevheri
+    DIAMOND_ORE: Elmas Cevheri
+    EMERALD_ORE: Zümrüt Cevheri
+    COPPER_ORE: Bakır Cevheri
+    REDSTONE_ORE: Kızıltaş Cevheri
+    LAPIS_ORE: Lapis Lazuli Cevheri
+    ANCIENT_DEBRIS: Kadim Kalıntı
+    NETHERITE_SCRAP: Netherit Parçası
+    ENDER_PEARL: Ender İncisi
+    ENDER_EYE: Ender Gözü
+    ENDER_CHEST: Ender Sandığı
+    GHAST_TEAR: Ghast Gözyaşı
+    MAGMA_CREAM: Magma Kreması
+    NETHER_WART: Nether Siğili
+    SPIDER_EYE: Örümcek Gözü
+    FERMENTED_SPIDER_EYE: Fermente Örümcek Gözü
+    RABBIT_FOOT: Tavşan Ayağı
+    RABBIT_HIDE: Tavşan Derisi
+    PHANTOM_MEMBRANE: Hayalet Zarı
+    SLIME_BALL: Balçık Topu
+    BONE_MEAL: Kemik Unu
+    SUGAR_CANE: Şeker Kamışı
+    NAME_TAG: İsim Etiketi
+    FIREWORK_ROCKET: Havai Fişek
+    FIREWORK_STAR: Havai Fişek Yıldızı
+    NAUTILUS_SHELL: Nautilus Kabuğu
+    HEART_OF_THE_SEA: Denizin Kalbi
+    TOTEM_OF_UNDYING: Ölümsüzlük Totemi
+    ENCHANTED_BOOK: Büyülü Kitap
+    ENCHANTING_TABLE: Büyü Masası
+    CRAFTING_TABLE: Üretim Masası
+    BREWING_STAND: İksir Standı
+    FLINT_AND_STEEL: Çakmaktaşı ve Çelik
+    FISHING_ROD: Olta
+    SHULKER_SHELL: Shulker Kabuğu
+    DRAGON_BREATH: Ejderha Nefesi
+    DRAGON_EGG: Ejderha Yumurtası
+    ELYTRA: Elytra
+    TRIDENT: Yaba
+    MACE: Topuz
+    LEAD: Tasma
+    SADDLE: Eyer
+    TURTLE_SCUTE: Kaplumbağa Kabuğu
+    GLISTERING_MELON_SLICE: Parlayan Kavun Dilimi
+    GOLDEN_APPLE: Altın Elma
+    ENCHANTED_GOLDEN_APPLE: Büyülü Altın Elma
+    EXPERIENCE_BOTTLE: Tecrübe Şişesi
+    HONEY_BOTTLE: Bal Şişesi
+    HONEYCOMB: Bal Peteği
+    MILK_BUCKET: Süt Kovası
+    WATER_BUCKET: Su Kovası
+    LAVA_BUCKET: Lav Kovası
+    POWDER_SNOW_BUCKET: Toz Kar Kovası
+    CHORUS_FRUIT: Chorus Meyvesi
+    POPPED_CHORUS_FRUIT: Patlamış Chorus Meyvesi
+    DRIED_KELP: Kurutulmuş Deniz Yosunu
+    SWEET_BERRIES: Tatlı Meyveler
+    GLOW_BERRIES: Parlak Meyveler
+    AMETHYST_SHARD: Ametist Kırığı
+    ECHO_SHARD: Yankı Kırığı
+    DISC_FRAGMENT_5: Plak Parçası 5
+    GOAT_HORN: Keçi Boynuzu
+    TRIAL_KEY: Deneme Anahtarı
+    OMINOUS_TRIAL_KEY: Uğursuz Deneme Anahtarı
+    HEAVY_CORE: Ağır Çekirdek
+    WIND_CHARGE: Rüzgâr Yükü
+    BREEZE: Breeze
+    MACE_HEAD: Topuz Başı
+  words:
+    OAK: Meşe
+    SPRUCE: Ladin
+    BIRCH: Huş
+    JUNGLE: Tropik
+    ACACIA: Akasya
+    DARK: Koyu
+    CHERRY: Kiraz
+    MANGROVE: Mangrov
+    BAMBOO: Bambu
+    CRIMSON: Kızıl
+    WARPED: Çarpık
+    PALE: Solgun
+    AZALEA: Açelya
+    FLOWERING: Çiçekli
+    LOG: Kütük
+    WOOD: Odun
+    PLANKS: Tahta
+    STRIPPED: Soyulmuş
+    SLAB: Yarım Blok
+    STAIRS: Merdiven
+    LADDER: El Merdiveni
+    FENCE: Çit
+    GATE: Kapısı
+    DOOR: Kapı
+    TRAPDOOR: Kapak
+    BUTTON: Düğme
+    PRESSURE: Basınçlı
+    PLATE: Plaka
+    SIGN: Tabela
+    HANGING: Asma
+    BOAT: Kayık
+    RAFT: Sal
+    SAPLING: Fidan
+    LEAVES: Yaprak
+    STEM: Gövde
+    HYPHAE: Hif
+    ROOTS: Kök
+    NYLIUM: Nilyum
+    FUNGUS: Mantar
+    BOOKSHELF: Kitaplık
+    SHELF: Raf
+    MOSAIC: Mozaik
+    STONE: Taş
+    COBBLESTONE: Kaldırım Taşı
+    COBBLED: Kaldırım
+    MOSSY: Yosunlu
+    DEEPSLATE: Derin Arduvaz
+    GRANITE: Granit
+    DIORITE: Diyorit
+    ANDESITE: Andezit
+    TUFF: Tüf
+    CALCITE: Kalsit
+    BASALT: Bazalt
+    SMOOTH: Pürüzsüz
+    POLISHED: Cilalı
+    CHISELED: Oymalı
+    CRACKED: Çatlak
+    BRICK: Tuğla
+    BRICKS: Tuğla
+    BLACKSTONE: Kara Taş
+    OBSIDIAN: Obsidyen
+    CRYING: Ağlayan
+    NETHERRACK: Nether Kayası
+    NETHER: Nether
+    END: End
+    PURPUR: Purpur
+    QUARTZ: Kuvars
+    SANDSTONE: Kumtaşı
+    SAND: Kum
+    GRAVEL: Çakıl
+    DIRT: Toprak
+    COARSE: Kaba
+    ROOTED: Köklü
+    GRASS: Çim
+    BLOCK: Bloğu
+    MYCELIUM: Miselyum
+    PODZOL: Podzol
+    CLAY: Kil
+    TERRACOTTA: Terakota
+    GLAZED: Sırlı
+    CONCRETE: Beton
+    POWDER: Tozu
+    GLASS: Cam
+    PANE: Paneli
+    ICE: Buz
+    PACKED: Sıkıştırılmış
+    SNOW: Kar
+    MUD: Çamur
+    MOSS: Yosun
+    CARPET: Halı
+    SCULK: Sculk
+    CATALYST: Katalizör
+    SENSOR: Sensörü
+    SHRIEKER: Çığlıkçısı
+    VEIN: Damarı
+    AMETHYST: Ametist
+    BUDDING: Tomurcuklanan
+    CLUSTER: Kümesi
+    BUD: Tomurcuğu
+    LARGE: Büyük
+    MEDIUM: Orta
+    SMALL: Küçük
+    DRIPSTONE: Damlataş
+    POINTED: Sivri
+    MAGMA: Magma
+    SOUL: Ruh
+    SOIL: Toprağı
+    CAMPFIRE: Kamp Ateşi
+    LANTERN: Feneri
+    TORCH: Meşale
+    FIRE: Ateş
+    SPONGE: Sünger
+    WET: Islak
+    PRISMARINE: Prizmarin
+    CRYSTALS: Kristalleri
+    DARK_PRISMARINE: Koyu Prizmarin
+    SEA: Deniz
+    PICKLE: Turşusu
+    LILY: Zambağı
+    PAD: Yaprağı
+    OBSERVER: Gözlemci
+    COAL: Kömür
+    IRON: Demir
+    GOLD: Altın
+    GOLDEN: Altın
+    DIAMOND: Elmas
+    EMERALD: Zümrüt
+    LAPIS: Lapis
+    LAZULI: Lazuli
+    REDSTONE: Kızıltaş
+    NETHERITE: Netherit
+    COPPER: Bakır
+    EXPOSED: Aşınmış
+    WEATHERED: Yıpranmış
+    OXIDIZED: Oksitlenmiş
+    WAXED: Mumlanmış
+    CUT: Kesilmiş
+    RAW: Ham
+    ORE: Cevheri
+    INGOT: Külçesi
+    NUGGET: Külçeciği
+    SCRAP: Parçası
+    SHARD: Kırığı
+    DUST: Tozu
+    GLOWSTONE: Işıltaşı
+    ANCIENT: Kadim
+    DEBRIS: Kalıntı
+    GRATE: Izgarası
+    BULB: Ampulü
+    TRAPDOOR_COPPER: Bakır Kapak
+    SWORD: Kılıç
+    PICKAXE: Kazma
+    AXE: Balta
+    SHOVEL: Kürek
+    HOE: Çapa
+    SHEARS: Makas
+    BOW: Yay
+    CROSSBOW: Tatar Yayı
+    ARROW: Ok
+    SPECTRAL: Işıltılı
+    TIPPED: Etkili
+    SHIELD: Kalkan
+    HELMET: Miğfer
+    CHESTPLATE: Göğüslük
+    LEGGINGS: Pantolon
+    BOOTS: Bot
+    CHAINMAIL: Zincir
+    LEATHER: Deri
+    TURTLE: Kaplumbağa
+    SCUTE: Kabuğu
+    FLINT: Çakmaktaşı
+    STEEL: Çelik
+    AND: ve
+    FISHING: Balık
+    ROD: Çubuğu
+    BRUSH: Fırça
+    SPYGLASS: Dürbün
+    COMPASS: Pusula
+    RECOVERY: Kurtarma
+    CLOCK: Saat
+    MAP: Harita
+    FILLED: Dolu
+    BUCKET: Kovası
+    NAME: İsim
+    TAG: Etiketi
+    TOTEM: Totemi
+    UNDYING: Ölümsüzlük
+    SHULKER: Shulker
+    BOX: Kutusu
+    BUNDLE: Bohça
+    ENDER: Ender
+    PEARL: İncisi
+    EYE: Gözü
+    FIREWORK: Havai Fişek
+    ROCKET: Fişeği
+    STAR: Yıldızı
+    ARMOR: Zırhı
+    TRIM: Süslemesi
+    SMITHING: Demirci
+    TEMPLATE: Şablonu
+    UPGRADE: Yükseltme
+    BOOK: Kitap
+    ENCHANTED: Büyülü
+    WRITABLE: Yazılabilir
+    WRITTEN: Yazılı
+    KNOWLEDGE: Bilgi
+    PAPER: Kâğıt
+    BONE: Kemik
+    MEAL: Unu
+    STRING: İp
+    FEATHER: Tüy
+    GUNPOWDER: Barut
+    SLIME: Balçık
+    BALL: Topu
+    CREAM: Kreması
+    BLAZE: Blaze
+    GHAST: Ghast
+    TEAR: Gözyaşı
+    WART: Siğili
+    SPIDER: Örümcek
+    FERMENTED: Fermente
+    GLISTERING: Parlayan
+    MELON: Kavun
+    SLICE: Dilimi
+    RABBIT: Tavşan
+    FOOT: Ayağı
+    HIDE: Derisi
+    PHANTOM: Hayalet
+    MEMBRANE: Zarı
+    SUGAR: Şeker
+    CANE: Kamışı
+    INK: Mürekkep
+    SAC: Kesesi
+    GLOW: Parlak
+    BERRIES: Meyveleri
+    LICHEN: Likeni
+    ECHO: Yankı
+    DISC: Plağı
+    MUSIC: Müzik
+    FRAGMENT: Parçası
+    POTTERY: Çömlek
+    SHERD: Parçası
+    POT: Saksısı
+    DECORATED: Süslü
+    NETHERBRICK: Nether Tuğlası
+    WHEAT: Buğday
+    SEEDS: Tohumu
+    HAY: Saman
+    BALE: Balyası
+    BREAD: Ekmek
+    APPLE: Elma
+    COOKED: Pişmiş
+    BEEF: Biftek
+    PORKCHOP: Domuz Pirzolası
+    CHICKEN: Tavuk
+    MUTTON: Koyun Eti
+    COD: Morina
+    SALMON: Somon
+    TROPICAL: Tropikal
+    FISH: Balığı
+    PUFFERFISH: Balon Balığı
+    POTATO: Patates
+    BAKED: Fırınlanmış
+    POISONOUS: Zehirli
+    CARROT: Havuç
+    BEETROOT: Pancar
+    SOUP: Çorbası
+    STEW: Yahnisi
+    MUSHROOM: Mantar
+    SUSPICIOUS: Şüpheli
+    PUMPKIN: Balkabağı
+    PIE: Turtası
+    CAKE: Pasta
+    COOKIE: Kurabiye
+    HONEY: Bal
+    BOTTLE: Şişesi
+    COMB: Peteği
+    MILK: Süt
+    CHORUS: Chorus
+    FRUIT: Meyvesi
+    POPPED: Patlamış
+    DRIED: Kurutulmuş
+    KELP: Deniz Yosunu
+    SWEET: Tatlı
+    BERRY: Meyvesi
+    CACTUS: Kaktüs
+    EXPERIENCE: Tecrübe
+    WHITE: Beyaz
+    ORANGE: Turuncu
+    MAGENTA: Macenta
+    LIGHT: Açık
+    BLUE: Mavi
+    YELLOW: Sarı
+    LIME: Fıstık Yeşili
+    PINK: Pembe
+    GRAY: Gri
+    CYAN: Camgöbeği
+    PURPLE: Mor
+    BROWN: Kahverengi
+    GREEN: Yeşil
+    RED: Kırmızı
+    BLACK: Siyah
+    DYE: Boyası
+    WOOL: Yün
+    BED: Yatak
+    BANNER: Sancak
+    CANDLE: Mum
+    STAINED: Renkli
+    REPEATER: Tekrarlayıcı
+    COMPARATOR: Karşılaştırıcı
+    PISTON: Piston
+    STICKY: Yapışkan
+    DISPENSER: Fırlatıcı
+    DROPPER: Bırakıcı
+    HOPPER: Huni
+    LEVER: Kol
+    TRIPWIRE: Tel
+    HOOK: Kancası
+    DAYLIGHT: Gün Işığı
+    DETECTOR: Dedektörü
+    NOTE: Nota
+    JUKEBOX: Müzik Kutusu
+    RAIL: Ray
+    POWERED: Güçlendirilmiş
+    ACTIVATOR: Etkinleştirici
+    MINECART: Vagonu
+    FURNACE: Fırın
+    BLAST: İzabe
+    SMOKER: Tütsüleyici
+    CRAFTING: Üretim
+    TABLE: Masası
+    ENCHANTING: Büyü
+    ANVIL: Örs
+    DAMAGED: Hasarlı
+    CHIPPED: Yıpranmış
+    GRINDSTONE: Bileği Taşı
+    LOOM: Dokuma Tezgâhı
+    CARTOGRAPHY: Haritacılık
+    FLETCHING: Okçuluk
+    BREWING: İksir
+    STAND: Standı
+    CAULDRON: Kazan
+    COMPOSTER: Kompost Kutusu
+    BARREL: Fıçı
+    LECTERN: Kürsü
+    BELL: Çan
+    BEACON: İşaret Feneri
+    CONDUIT: Kondüit
+    LODESTONE: Mıknatıs Taşı
+    RESPAWN: Doğuş
+    TARGET: Hedef
+    SCAFFOLDING: İskele
+    CHAIN: Zincir
+    BARS: Parmaklıkları
+    CHEST: Sandık
+    TRAPPED: Tuzaklı
+    TNT: TNT
+    ANCHOR: Çıpası
+    TRIAL: Deneme
+    KEY: Anahtarı
+    VAULT: Kasa
+    HEAVY: Ağır
+    CORE: Çekirdeği
+    OMINOUS: Uğursuz
+    WIND: Rüzgâr
+    CHARGE: Yükü
+    SPAWNER: Doğurucu
+    EGG: Yumurtası
+    SPAWN: ''
+    DANDELION: Karahindiba
+    POPPY: Gelincik
+    ORCHID: Orkide
+    ALLIUM: Allium
+    AZURE: Mavi
+    BLUET: Çiçeği
+    TULIP: Lale
+    DAISY: Papatya
+    CORNFLOWER: Peygamber Çiçeği
+    VALLEY: Vadisi
+    ROSE: Gül
+    BUSH: Çalısı
+    PEONY: Şakayık
+    LILAC: Leylak
+    SUNFLOWER: Ayçiçeği
+    WITHER: Wither
+    TORCHFLOWER: Meşale Çiçeği
+    PITCHER: Testi
+    PLANT: Bitkisi
+    SPORE: Spor
+    BLOSSOM: Çiçeği
+    VINE: Sarmaşık
+    VINES: Sarmaşıkları
+    TWISTING: Burgulu
+    WEEPING: Ağlayan
+    FERN: Eğrelti Otu
+    TALL: Uzun
+    DEAD: Ölü
+    SEAGRASS: Deniz Otu
+    CORAL: Mercan
+    FAN: Yelpazesi
+    TUBE: Boru
+    BRAIN: Beyin
+    BUBBLE: Kabarcık
+    HORN: Boynuzu
+    GOAT: Keçi
+    SKULL: Kafatası
+    HEAD: Kafası
+    SKELETON: İskelet
+    ZOMBIE: Zombi
+    CREEPER: Creeper
+    DRAGON: Ejderha
+    PLAYER: Oyuncu
+    PIGLIN: Piglin
+    HEART: Kalbi
+    NAUTILUS: Nautilus
+    SNIFFER: Koklayıcı
+    ARMADILLO: Armadillo
+level:
+  up: '{prefix}&dSipariş seviyen artık &f%level%&d!'
+  up-title: '&d&lSEVİYE ATLADIN'
+  up-subtitle: '&fSipariş seviyesi &d%level%'
+  up-broadcast: '&d%player% &fsipariş seviyesi &d%level%&f oldu!'
+  disabled: '{prefix}&cSipariş seviye sistemi bu sunucuda kapalı.'
+  daily-cap-reached: '{prefix}&eBugünkü XP sınırına ulaştın.'

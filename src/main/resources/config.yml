@@ -1,0 +1,473 @@
+# -----------------------------------------------------------------------------#
+#  DonutOrders - Ana yapılandırma                                                #
+# -----------------------------------------------------------------------------#
+#
+#  Bu dosya SADECE davranışı belirler.
+#    * Metinler       -> lang/<dil>.yml   (menü başlıkları, butonlar, eşya adları)
+#    * Menü yerleşimi -> menus/*.yml      (slot, materyal, ses, aç/kapa)
+#
+#  Sürüm yükseltmelerinde yeni ayarlar bu dosyaya otomatik eklenir; hiçbir
+#  dosyayı silmeniz gerekmez, yaptığınız değişiklikler korunur.
+#
+#  Değişiklikten sonra: /donutordersadmin reload
+# -----------------------------------------------------------------------------#
+
+# Mesajların başında görünen ön ek. Boş bırakmak için "" yazın.
+prefix: ""
+
+# =============================================================================
+#  DİL
+# =============================================================================
+# Sunucu varsayılan dili. lang/ klasöründeki dosya adı (tr, en, ...).
+# "auto" yazarsanız sunucu makinesinin dili kullanılır.
+language: tr
+
+# Her oyuncu kendi dilini kullansın mı?
+#   true  -> /orderlang ile seçtiği dil, seçmediyse Minecraft istemci dili
+#   false -> herkes yukarıdaki "language" değerini görür
+per-player-language: true
+
+# Minecraft istemci dilini kendi dil dosyanıza eşlemek için (isteğe bağlı).
+# Örnek: istemci "en_pt" gönderiyor ama sizde pt_BR.yml var.
+locale-map: {}
+#  en_pt: pt_BR
+#  az: tr
+
+# =============================================================================
+#  SİPARİŞ KURALLARI
+# =============================================================================
+orders:
+  # Bir oyuncunun aynı anda kaç aktif siparişi olabilir.
+  # -1 = sınırsız. orders.unlimited izni her zaman sınırsız yapar.
+  max-active-per-player: 10
+
+  # Rütbeye göre limit. İzni olan oyuncu için EN YÜKSEK değer geçerlidir,
+  # böylece ikinci bir izin vermek oyuncuyu asla kısıtlamaz.
+  rank-limits:
+    orders.limit.vip: 25
+    orders.limit.mvp: 50
+
+  # Eşya başına en düşük / en yüksek fiyat. Üst sınır için -1 = sınırsız.
+  min-price-per-item: 0.01
+  max-price-per-item: -1
+
+  # Sipariş başına en az / en fazla miktar. -1 = sınırsız.
+  min-amount: 1
+  max-amount: -1
+
+  # Siparişin geçerlilik süresi (saat). 168 = 7 gün.
+  expiry-hours: 168
+
+  # Tamamlanmış siparişin, eşyalar toplanmadan önce ne kadar bekleyeceği (saat).
+  completed-retention-hours: 168
+
+  # Büyülü eşya siparişi başına en fazla büyü sayısı. -1 = sınırsız.
+  max-enchantments-per-order: 5
+
+  # Süresi dolan siparişlerin ne sıklıkla temizleneceği (tik). 6000 = 5 dakika.
+  cleanup-interval-ticks: 6000
+
+  # Miktar ve fiyat nasıl sorulsun?
+  #   SIGN -> oyuncunun önüne geçici tabela çıkar (metin: lang -> input.sign)
+  #   CHAT -> sohbete yazması istenir   (metin: lang -> input.chat)
+  input-mode: SIGN
+
+  # Sipariş verilemeyecek eşyalar.
+  blacklist: []
+  #  - BEDROCK
+  #  - BARRIER
+
+# =============================================================================
+#  VERGİ
+# =============================================================================
+#  ###  TAMAMEN KAPATMAK İÇİN:  enabled: false  ###
+#  Kapalıyken hiçbir menüde vergi satırı görünmez ve hiç para kesilmez.
+#  Varsayılan AÇIK'tır; oranı 0 bırakırsanız yine hiç para kesilmez.
+#
+#  ORANLAR YÜZDE OLARAK YAZILIR:  5.0 = %5   (2.0'daki 0.05 biçimi DEĞİL —
+#  eski dosyanız otomatik dönüştürülür, elle bir şey yapmanıza gerek yok.)
+# =============================================================================
+tax:
+  enabled: true
+
+  # Sipariş oluştururken alınan vergi. Sipariş tutarının ÜSTÜNE eklenir.
+  creation-percent: 5.0
+
+  # Sipariş tamamlanıp para teslim edene giderken kesilen vergi. 0.0 = kapalı.
+  delivery-percent: 0.0
+
+  # "Hepsini sat" işleminden kesilen vergi. 0.0 = kapalı.
+  sell-percent: 0.0
+
+  # ---------------------------------------------------------------------------
+  # RÜTBEYE GÖRE VERGİ ORANI
+  # Sol: izin düğümü, sağ: o rütbenin vergi YÜZDESİ.
+  # EN DÜŞÜK oran geçerlidir — ikinci bir rütbe izni oyuncuyu asla cezalandırmaz.
+  # ---------------------------------------------------------------------------
+  rank-rates:
+    orders.rank.vip: 4.0
+    orders.rank.mvp: 3.0
+    orders.rank.elite: 2.0
+    orders.rank.legend: 0.0
+
+  # ---------------------------------------------------------------------------
+  # RÜTBEYE GÖRE İNDİRİM (alternatif / ek yöntem)
+  # Taban vergiden YÜZDE İNDİRİM. EN YÜKSEK indirim geçerlidir.
+  # Örnek: taban %5 + indirim 40 -> %3
+  # rank-rates ile birlikte kullanılırsa önce rank-rates uygulanır, sonra indirim.
+  # Kullanmak istemiyorsanız bu bölümü boş bırakın: rank-discounts: {}
+  # ---------------------------------------------------------------------------
+  rank-discounts:
+    orders.rank.vip: 20.0
+    orders.rank.mvp: 40.0
+
+  # Vergiyi tamamen kaldıran izin.
+  exempt-permission: "orders.tax.exempt"
+
+  # Toplanan vergi nereye gitsin?
+  #   VOID    -> yok olur (para arzını düşürür, önerilen)
+  #   ACCOUNT -> aşağıdaki oyuncu hesabına yatar
+  destination: VOID
+  destination-account: ""
+
+  # Mutlak alt / üst sınır. -1 = sınır yok.
+  # Alt sınır yalnızca vergi zaten alınacaksa geçerlidir; oran %0 ise para kesilmez.
+  min-amount: -1
+  max-amount: -1
+
+# =============================================================================
+#  ÖZELLİKLER
+#  Kapattığınız özellik ilgili butonlarla birlikte tamamen kaybolur.
+# =============================================================================
+features:
+  # İksir siparişi (tür seçme menüsü dahil)
+  potions: true
+  # Eşyaya büyü seçerek sipariş verme
+  enchantments: true
+  # Büyülü kitap siparişi
+  enchanted-books: true
+  # Toplama ekranındaki "hepsini sat" butonu
+  sell-all: true
+  # Teslim ekranındaki "hızlı teslim" butonu
+  quick-fill: true
+  # Ana menüdeki arama
+  search: true
+  # Ana menüdeki filtre
+  filter: true
+  # Ana menüdeki sıralama
+  sort: true
+
+  # Yönetici panelindeki "Özellikler" butonunun sırayla açıp/kapattığı liste.
+  # Yeniden derlemeye gerek kalmadan buradan ekleyip çıkarabilirsiniz; her
+  # girdi yukarıdaki anahtarlardan biriyle eşleşmelidir.
+  panel-toggles:
+    - potions
+    - enchantments
+    - enchanted-books
+    - sell-all
+    - quick-fill
+    - search
+    - filter
+    - sort
+
+# =============================================================================
+#  SESLER
+# =============================================================================
+#  Vanilya ses anahtarları kullanılır (ui.button.click gibi, BÜYÜK_HARF değil).
+#  Enum yerine vanilya adı kullanılmasının sebebi: Minecraft sürümleri arasında
+#  yeniden adlandırılan sesler eklentiyi bozmasın.
+#
+#  BİÇİM:  "anahtar"  |  "anahtar:ses"  |  "anahtar:ses:perde"  |  "none"
+#    ses   0.0 - 1.0 arası (varsayılan 1.0)
+#    perde 0.5 - 2.0 arası (varsayılan 1.0)
+#  Örnek:  "block.note_block.pling:0.6:1.8"
+#
+#  Buton bazlı sesler menus/*.yml içindedir ve buradakileri EZER.
+#  Bir buton kendi sesini yazmamışsa buradaki ilgili olay sesi çalar.
+#  sounds.enabled: false tüm sesleri kapatır.
+# =============================================================================
+sounds:
+  enabled: true
+
+  events:
+    # Hata mesajlarında
+    error: "block.note_block.bass:1.0:0.8"
+    # Genel başarı geri bildirimi
+    success: "entity.experience_orb.pickup:1.0:1.0"
+    # Sipariş oluşturuldu
+    order-created: "entity.player.levelup:0.6:1.4"
+    # Siparişe eşya teslim edildi
+    order-delivered: "entity.experience_orb.pickup:1.0:1.2"
+    # Sipariş iptal edildi
+    order-cancelled: "block.note_block.bass:1.0:0.6"
+    # Sipariş tamamen doldu
+    order-completed: "ui.toast.challenge_complete:1.0:1.0"
+    # Sayfa çevirme (buton kendi sesini yazmamışsa)
+    page-turn: "item.book.page_turn:1.0:1.0"
+    # Menü açılışı (menü dosyasında open-sound yazmamışsa)
+    menu-open: "none"
+    # Menü kapanışı. DİKKAT: bir menüden diğerine geçerken de tetiklenir,
+    # bu yüzden varsayılan "none".
+    menu-close: "none"
+    # Seviye atlama
+    level-up: "ui.toast.challenge_complete:1.0:1.0"
+    # Vergi kesildiğinde
+    tax-paid: "entity.villager.yes:0.7:1.0"
+    # Para yetmediğinde
+    no-money: "entity.villager.no:1.0:1.0"
+
+# =============================================================================
+#  ÖZEL EŞYALAR
+# =============================================================================
+#  ItemsAdder / Oraxen / Nexo eşyaları ve custom-model-data'lı vanilya eşyaları
+#  siparişe konabilir. Eklentiler DERLEME BAĞIMLILIĞI DEĞİLDİR: kurulu olmayan
+#  sağlayıcı sessizce atlanır, hiçbiri kurulu olmasa da eklenti çalışır.
+#
+#  Kimlik biçimi:  sağlayıcı:anahtar
+#    itemsadder:ruby          oraxen:mythic_sword       nexo:magic_wand
+#    cmd:DIAMOND_SWORD:10001  (kaynak paketi modeli, eklenti gerektirmez)
+# =============================================================================
+custom-items:
+  enabled: true
+
+  providers:
+    itemsadder: true
+    oraxen: true
+    nexo: true
+    # custom-model-data ile ayırt edilen vanilya eşyaları
+    custom-model-data: true
+
+  # Eşya seçme menüsünde özel eşyalar nerede görünsün?
+  #   TOP     -> listenin başında
+  #   BOTTOM  -> listenin sonunda
+  #   MIXED   -> normal sıralamada
+  placement: TOP
+
+  # Yalnızca bu eşyalara sipariş verilebilsin (boş = hepsi serbest)
+  whitelist: []
+  #  - "itemsadder:ruby"
+
+  # Bu eşyalara sipariş verilemez
+  blacklist: []
+
+  # Teslim sırasında eşleştirme sıkılığı:
+  #   STRICT -> özel kimlik + ad + model verisi eşleşmeli
+  #   LOOSE  -> yalnızca özel kimlik yeterli (yeniden adlandırılmış eşya kabul edilir)
+  match-mode: STRICT
+
+# =============================================================================
+#  YAZI BİÇİMİ (MINIFONT)
+# =============================================================================
+#  Metni "ᴋüçüᴋ ʙüʏüᴋ ʜᴀʀꜰ" görünümüne çevirir. Renk kodları (&a, &#RRGGBB) ve
+#  yer tutucu ADLARI (%player%) hiç değişmez.
+#
+#  Dönüşüm yer tutucu DEĞİŞTİRİLMEDEN ÖNCE yapılır: sabit etiket küçük harfe
+#  döner, içine yazılan oyuncu adı / fiyat / eşya adı okunaklı kalır.
+#  Örnek:  "&eSahibi: &f%player%"  ->  "&eꜱᴀʜɪʙɪ: &fSteve"
+#
+#  Bu ayar TÜM DİLLER için geçerlidir; her dil dosyasına ayrı yazmanız gerekmez.
+# =============================================================================
+text:
+  # Para birimi. Eskiden "$" koda gömülüydü ve değiştirilemiyordu.
+  currency:
+    symbol: "$"
+    # true -> "100$"   false -> "$100"
+    after-amount: false
+
+  minifont:
+    # Buton isimleri (dil anahtarı *.buttons.* olan her metin)
+    buttons: true
+    # Menü başlıkları (dil anahtarı menus.* olan her metin)
+    titles: true
+    # Buton açıklamaları / lore (dil anahtarı *.lore.* olan her metin).
+    # Butonun adı küçük harfliyken açıklamasının normal olması dağınık durur,
+    # bu yüzden varsayılan AÇIK.
+    lore: true
+    # Sohbet mesajları. Bunlar uzun cümlelerdir; küçük harfe çevrilince
+    # okunması zorlaşır, bu yüzden varsayılan KAPALI.
+    messages: false
+
+    # Harf tablosu. Sol: normal harf (tek karakter), sağ: gösterilecek biçim.
+    # Bir satırı SİLERSENİZ o harf olduğu gibi kalır.
+    # Türkçe ğ ş ç ö ü ı harflerinin Unicode'da küçük-büyük karşılığı YOKTUR;
+    # aşağıda en yakın biçimler kullanılmıştır. Beğenmezseniz o satırları silin.
+    map:
+      a: "ᴀ"
+      b: "ʙ"
+      c: "ᴄ"
+      d: "ᴅ"
+      e: "ᴇ"
+      f: "ꜰ"
+      g: "ɢ"
+      h: "ʜ"
+      i: "ɪ"
+      j: "ᴊ"
+      k: "ᴋ"
+      l: "ʟ"
+      m: "ᴍ"
+      n: "ɴ"
+      o: "ᴏ"
+      p: "ᴘ"
+      q: "ǫ"
+      r: "ʀ"
+      s: "ѕ"
+      t: "ᴛ"
+      u: "ᴜ"
+      v: "ᴠ"
+      w: "ᴡ"
+      x: "x"
+      y: "ʏ"
+      z: "ᴢ"
+      "ı": "ɪ"
+      "ğ": "ɢ"
+      "ü": "ᴜ"
+      "ş": "ѕ"
+      "ö": "ᴏ"
+      "ç": "ᴄ"
+
+  # Sipariş eşyasının açıklamasındaki (lore) ilerleme çubuğu.
+  # gui.order-lore.template içinde %bar% yer tutucusu bunu kullanır.
+  progress-bar:
+    length: 10
+    filled-char: "■"
+    empty-char: "■"
+    filled-color: "&#49F267"
+    empty-color: "&#555555"
+
+  # Sipariş lore'undaki sayıların (fiyat, adet, ödeme...) biçimi.
+  number-format:
+    # full  = 5.000 / 45.000.000   (binlik ayraçlı, tam sayı)
+    # compact = 5K / 45M           (kısaltılmış; TextUtil.formatNumber ile aynı)
+    style: full
+    # "full" biçiminde binlik ayraç. Ondalık varsa ayraç "." ise "," kullanılır.
+    thousands-separator: "."
+    decimals: 0
+    # Yüzde biçimi. %s sayının yerine geçer. Türkçe %0, İngilizce 0% yazar.
+    percent-format: "%%%s"
+
+# =============================================================================
+#  SPAM / MAKRO KORUMASI
+# =============================================================================
+#  Menüdeki her tıklama sunucuya iş yaptırır: sipariş listesi süzülür, sıralanır
+#  ve 54 eşya yeniden kurulur. Otomatik tıklayan bir makro bunu saniyede
+#  onlarca kez tetikleyebilir.
+#
+#  DEĞERLER MİLİSANİYEDİR.  0 = o kontrol KAPALI.
+#  Hepsini kapatmak için hepsini 0 yapın; ayrı bir "enabled" anahtarı yoktur ki
+#  "açık ama süreler 0" gibi kafa karıştırıcı bir durum oluşmasın.
+#
+#  bypass-permission izni olan oyuncu hiçbir beklemeye takılmaz (yöneticiler).
+# =============================================================================
+protection:
+  # Menü içindeki her tıklama. 200 = saniyede en fazla 5 tıklama.
+  # Teslim ekranının eşya alanı bunun DIŞINDADIR: orada oyuncu kendi
+  # envanterinden eşya taşır, her taşımayı beklemeye tabi tutmak menüyü
+  # kullanılamaz hale getirirdi.
+  click-cooldown-ms: 200
+
+  # Menü açma.
+  menu-cooldown-ms: 250
+
+  # /order ve diğer komutlar.
+  command-cooldown-ms: 1000
+
+  # Yeni sipariş oluşturma. Her sipariş veritabanına yazılır ve herkesin
+  # listesini tazeler; bu yüzden daha uzun.
+  create-cooldown-ms: 3000
+
+  # Siparişe eşya teslim etme.
+  deliver-cooldown-ms: 500
+
+  # Sohbet/tabela girdisi isteme.
+  input-cooldown-ms: 500
+
+  # Engellenen oyuncuya "çok hızlısın" yazılsın mı?
+  warn-player: true
+  # Uyarının kendi aralığı. Her engellemede yazmak, spam'i önlemek yerine
+  # sohbeti spam'lardı.
+  warn-cooldown-ms: 3000
+
+  # Bu izne sahip oyuncu hiçbir beklemeye takılmaz.
+  bypass-permission: "orders.bypass.cooldown"
+
+# =============================================================================
+#  BAŞARIM
+# =============================================================================
+performance:
+  # data.yml'ye yazma gecikmesi (tik). MEMORY/SQLITE modunda geçerlidir.
+  #
+  #  Eskiden her sipariş oluşturma/iptal/teslim işleminde TÜM siparişler
+  #  (içindeki her eşya dahil) ana iş parçacığında baştan yazılıyordu. Artık
+  #  değişiklikler biriktirilip tek yazmada işlenir ve dosyaya yazma arka planda
+  #  yapılır.
+  #
+  #  0 = gecikme yok (her değişiklikte hemen yaz - eski davranış).
+  #  40 = 2 saniye. Büyütürseniz çökme anında son saniyelerin kaybı artar.
+  save-delay-ticks: 40
+
+  # Sohbet girdisi (orders.input-mode: CHAT) kaç tik sonra vazgeçer.
+  # 1200 = 60 saniye.
+  chat-input-timeout-ticks: 1200
+
+# =============================================================================
+#  SUNUCULAR ARASI (CROSS-SERVER)
+# =============================================================================
+#  Bir oyuncu Survival'da sipariş açar, Skyblock'ta teslim alır.
+#
+#  ZORUNLU KOŞUL: ağdaki TÜM sunucular AYNI veritabanını kullanmalıdır
+#  (storage.type: MYSQL veya MARIADB). MEMORY/SQLITE ile açarsanız eklenti
+#  başlangıçta net bir hata basar ve senkronizasyonu kapatır — sessizce yanlış
+#  çalışmaktansa kapalı kalması doğrudur.
+# =============================================================================
+network:
+  enabled: false
+
+  # Bu sunucunun ağdaki adı. HER SUNUCUDA FARKLI OLMALIDIR.
+  # Boş bırakırsanız server.properties -> server-name kullanılır.
+  server-id: ""
+
+  # Eşitleme yöntemi. Şu an yalnızca POLL desteklenir (ek yazılım gerektirmez).
+  mode: POLL
+
+  poll:
+    # Kaç tikte bir tarama yapılsın. 40 = 2 saniye.
+    interval-ticks: 40
+    # Tek taramada işlenecek en fazla olay (ani yük koruması).
+    batch-size: 200
+
+  # Sipariş listesinde hangi sunucudan geldiği gösterilsin mi?
+  show-server-tag: true
+
+  # Bir sunucu bu kadar saniye haber vermezse "çevrimdışı" sayılır.
+  heartbeat-timeout: 30
+
+# =============================================================================
+#  VERİ DEPOLAMA
+# =============================================================================
+storage:
+  # Türler: MEMORY, SQLITE, MYSQL, MARIADB
+  #   MEMORY  = YAML dosya depolama (data.yml) - varsayılan
+  #   SQLITE  = yerel veritabanı, harici sunucu gerektirmez
+  #   MYSQL   = MySQL
+  #   MARIADB = MariaDB - üretim için önerilen
+  type: MEMORY
+
+  sqlite:
+    file-path: "orders.db"
+    table-prefix: "donutorders_"
+
+  database:
+    host: "localhost"
+    port: 3306
+    database: "minecraft"
+    username: "root"
+    password: ""
+    table-prefix: "donutorders_"
+
+    # HikariCP bağlantı havuzu
+    pool:
+      maximum-pool-size: 10
+      minimum-idle: 2
+      connection-timeout: 30000
+      idle-timeout: 600000
+      max-lifetime: 1800000

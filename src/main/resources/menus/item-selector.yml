@@ -1,0 +1,52 @@
+# -----------------------------------------------------------------------------#
+#  Eşya seçme menüsü                                                             #
+# -----------------------------------------------------------------------------#
+#  Alanların açıklaması için menus/main-menu.yml başındaki nota bakın.
+#
+#  Başlıktaki sayfa numarası lang dosyasındaki menus.item-selector metninden
+#  gelir ve %page% / %pages% yer tutucularını kullanır.
+# -----------------------------------------------------------------------------#
+
+rows: 6
+title: ""
+content-slots: "0-44"
+open-sound: "none"
+
+# Menü kapanırken çalan ses. Bir menüden diğerine geçerken de tetiklenir,
+# bu yüzden varsayılan "none" (config.yml -> sounds.events.menu-close).
+close-sound: "none"
+
+filler:
+  enabled: true
+  material: GRAY_STAINED_GLASS_PANE
+  name: " "
+  slots: "45-53"
+  # true ise dolgu, üzerinde buton olsa bile o slotu doldurur.
+  # false (varsayılan) butonları korur — alt sıradaki sayfa/geri/arama
+  # butonlarının kaybolmaması için bu ayar false kalmalıdır.
+  overwrite: false
+
+items:
+  previous-page:
+    enabled: true
+    slot: 48
+    material: ARROW
+    sound: "ui.button.click"
+
+  back:
+    enabled: true
+    slot: 49
+    material: BARRIER
+    sound: "ui.button.click"
+
+  next-page:
+    enabled: true
+    slot: 50
+    material: ARROW
+    sound: "ui.button.click"
+
+  search:
+    enabled: true
+    slot: 53
+    material: OAK_SIGN
+    sound: "ui.button.click"

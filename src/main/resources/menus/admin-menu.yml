@@ -1,0 +1,79 @@
+# -----------------------------------------------------------------------------#
+#  Yönetici paneli — /donutordersadmin                                           #
+# -----------------------------------------------------------------------------#
+#  Alanların açıklaması için menus/main-menu.yml başındaki nota bakın.
+#
+#  Bir butonu enabled: false yaparsanız o yetenek panelden TAMAMEN kalkar
+#  (komut karşılığı çalışmaya devam eder).
+#
+#  features / tax / levels butonları tıklandığında ilgili ayarı config'e YAZAR
+#  ve anında uygular. Yazma başarısız olursa değişiklik yalnızca o oturum için
+#  geçerli olur ve konsola uyarı düşer.
+# -----------------------------------------------------------------------------#
+
+rows: 5
+title: ""
+content-slots: ""
+open-sound: "block.chest.open:0.5:1.2"
+
+# Menü kapanırken çalan ses.
+close-sound: "none"
+
+filler:
+  enabled: true
+  material: BLACK_STAINED_GLASS_PANE
+  name: " "
+  slots: "0-44"
+  # Dolgu butonların üzerine yazmaz; bu menüde tüm boşluğu doldurmak için
+  # geniş bir aralık verilmiştir.
+  overwrite: false
+
+items:
+  reload:
+    enabled: true
+    slot: 10
+    material: REDSTONE
+    glow: true
+    sound: "block.anvil.use:0.7:1.4"
+
+  orders:
+    enabled: true
+    slot: 12
+    material: CHEST
+    sound: "ui.button.click"
+
+  stats:
+    enabled: true
+    slot: 14
+    material: PAPER
+    sound: "ui.button.click"
+
+  cleanup:
+    enabled: true
+    slot: 16
+    material: LAVA_BUCKET
+    sound: "ui.button.click"
+
+  features:
+    enabled: true
+    slot: 29
+    material: COMPARATOR
+    sound: "ui.button.click"
+
+  tax:
+    enabled: true
+    slot: 31
+    material: GOLD_INGOT
+    sound: "ui.button.click"
+
+  levels:
+    enabled: true
+    slot: 33
+    material: EXPERIENCE_BOTTLE
+    sound: "ui.button.click"
+
+  close:
+    enabled: true
+    slot: 40
+    material: BARRIER
+    sound: "ui.button.click"

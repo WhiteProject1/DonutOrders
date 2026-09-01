@@ -1,0 +1,60 @@
+# -----------------------------------------------------------------------------#
+#  Büyü seçme menüsü                                                             #
+# -----------------------------------------------------------------------------#
+#  Alanların açıklaması için menus/main-menu.yml başındaki nota bakın.
+#
+#  content-slots büyülü kitapların dizildiği yerdir; kaç tane yazarsanız sayfa
+#  başına o kadar büyü gösterilir. "preview" seçilen büyülerle birlikte eşyanın
+#  önizlemesidir.
+#
+#  Bu menü config.yml -> features.enchantments kapalıysa hiç açılmaz.
+# -----------------------------------------------------------------------------#
+
+rows: 6
+title: ""
+content-slots: "2-8, 11-17, 20-26, 29-35, 38-44"
+open-sound: "none"
+
+# Menü kapanırken çalan ses. Bir menüden diğerine geçerken de tetiklenir,
+# bu yüzden varsayılan "none" (config.yml -> sounds.events.menu-close).
+close-sound: "none"
+
+filler:
+  enabled: true
+  material: GRAY_STAINED_GLASS_PANE
+  name: " "
+  slots: "1, 9, 10, 45-53"
+  # true ise dolgu, üzerinde buton olsa bile o slotu doldurur.
+  # false (varsayılan) butonları korur — alt sıradaki sayfa/geri/arama
+  # butonlarının kaybolmaması için bu ayar false kalmalıdır.
+  overwrite: false
+
+items:
+  preview:
+    enabled: true
+    slot: 0
+    material: STONE
+
+  previous-page:
+    enabled: true
+    slot: 45
+    material: ARROW
+    sound: "ui.button.click"
+
+  cancel:
+    enabled: true
+    slot: 46
+    material: RED_STAINED_GLASS_PANE
+    sound: "ui.button.click"
+
+  confirm:
+    enabled: true
+    slot: 52
+    material: LIME_STAINED_GLASS_PANE
+    sound: "entity.experience_orb.pickup"
+
+  next-page:
+    enabled: true
+    slot: 53
+    material: ARROW
+    sound: "ui.button.click"

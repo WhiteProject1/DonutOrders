@@ -1,0 +1,55 @@
+name: DonutOrders
+version: 3.1
+author: M1rcELoRO
+main: ro.server.orderplugin.OrderPlugin
+api-version: '1.21'
+folia-supported: true
+
+depend: [Vault]
+softdepend: [CMI, CMILib, Essentials, ShopGUIPlus, EconomyShopGUI, ItemsAdder, Oraxen, Nexo]
+commands:
+  order:
+    description: Siparis sistemi ana komutu.
+    usage: /<command> [esya]
+    aliases: [orders, siparis]
+  donutordersadmin:
+    description: DonutOrders yonetici komutlari. Argumansiz calistirilirsa paneli acar.
+    usage: /<command> [menu|reload|removeorder]
+    permission: orders.admin
+    aliases: [donutorders, ordersadmin, siparisadmin]
+  orderlang:
+    description: Siparis menulerinin dilini secer.
+    usage: /<command> [dil|auto]
+    aliases: [orderdil, ordersdil]
+
+permissions:
+  orders.admin:
+    description: Yonetici komutlarina erisim.
+    default: op
+  orders.unlimited:
+    description: Sinirsiz aktif siparis.
+    default: false
+  orders.bypass.cooldown:
+    description: Spam/bekleme korumasindan muaf (config.yml -> protection.bypass-permission).
+    default: op
+  orders.tax.exempt:
+    description: Vergiden tamamen muaf (config.yml -> tax.exempt-permission ile degistirilebilir).
+    default: false
+  orders.rank.vip:
+    description: Ornek rutbe izni - config.yml -> tax.rank-rates / rank-discounts.
+    default: false
+  orders.rank.mvp:
+    description: Ornek rutbe izni.
+    default: false
+  orders.rank.elite:
+    description: Ornek rutbe izni.
+    default: false
+  orders.rank.legend:
+    description: Ornek rutbe izni.
+    default: false
+  orders.limit.vip:
+    description: Ornek limit izni - config.yml -> orders.rank-limits.
+    default: false
+  orders.limit.mvp:
+    description: Ornek limit izni.
+    default: false

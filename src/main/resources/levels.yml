@@ -1,0 +1,218 @@
+# -----------------------------------------------------------------------------#
+#  DonutOrders — Sipariş Seviyesi                                                #
+# -----------------------------------------------------------------------------#
+#
+#  Oyuncular sipariş verip teslim ettikçe XP kazanır. Seviye yükseldikçe daha az
+#  vergi öder, aynı anda daha çok sipariş açar ve sipariş başına daha çok eşya
+#  isteyebilir.
+#
+#  ###  TAMAMEN KAPATMAK İÇİN:  enabled: false  ###
+#  Kapalıyken /order menüsündeki seviye butonu hiç konmaz, hiçbir XP işlenmez,
+#  kayıt dosyası okunmaz ve vergi hesabı seviyeyi hiç sormaz. Sıfır maliyet.
+#
+#  BU DOSYADA HİÇBİR SAYI KODA GÖMÜLÜ DEĞİLDİR:
+#    * Seviye sayısı serbest — 3 seviye de yazabilirsiniz 80 de.
+#    * Her XP kalemi ayrı; istemediğinizi 0 yaparak kapatırsınız.
+#    * Bir seviyede bonus alanı yazmazsanız o bonus o seviyede 0'dır.
+#    * Butonun yeri menus/main-menu.yml -> items.level içindedir.
+#
+#  Değişiklikten sonra: /donutordersadmin reload
+# -----------------------------------------------------------------------------#
+
+enabled: true
+
+# =============================================================================
+#  XP NASIL KAZANILIR
+#  Bir kalemi 0 yaparsanız o yoldan XP kazanılmaz.
+# =============================================================================
+xp:
+  # Sipariş oluşturmak (sabit)
+  on-create: 5.0
+  # Sipariş oluştururken harcanan her 1000 birim para için ek XP
+  on-create-per-1000: 1.0
+  # Başkasının siparişine teslim edilen her EŞYA için
+  on-deliver-per-item: 0.25
+  # Kendi siparişin tamamen dolduğunda (sabit)
+  on-complete: 10.0
+  # "Hepsini sat" ile kazanılan her 1000 birim için
+  on-sell-per-1000: 0.5
+
+# Günlük XP tavanı. -1 = sınırsız.
+# Sayaç, oyuncunun ilk XP kazandığı andan 24 saat sonra sıfırlanır.
+daily-cap: -1
+
+# =============================================================================
+#  İSTİSMAR KORUMASI  (arkadaşlar arası XP çiftçiliği)
+# =============================================================================
+#  Seviye sistemi "ekonomik hareket" ödülüdür. Ama iki arkadaş hiçbir ekonomik
+#  hareket üretmeden birbirini seviye atlatabilir. Kapatılan açıklar:
+#
+#   1) YIKAMA TİCARETİ: A 1 adet toprak için sipariş açar, B doldurur, sonra
+#      roller değişir. Para iki kişi arasında gidip gelir, ikisi de XP kazanır.
+#      Makroyla dakikada yüzlerce kez tekrarlanabilir.
+#   2) ALT HESAP: Aynı kişi ikinci hesabıyla aynı döngüyü kurar; para hiç
+#      kaybolmaz, XP iki katına çıkar.
+#   3) AÇ-İPTAL ET: Sipariş açmak XP verir, iptal etmek parayı TAM geri verir.
+#      Vergi 0 ise bedava sonsuz XP demektir.
+#   4) DEV SİPARİŞ + İPTAL: XP para ile ölçekli olduğu için 10 milyonluk bir
+#      sipariş açıp hemen iptal etmek tek hamlede seviye atlatır.
+#   5) BÖLME: 64 eşyalık tek sipariş yerine 1 eşyalık 64 sipariş açarak sabit
+#      "sipariş açma" XP'sini katlamak.
+#
+#  ###  TAMAMEN KAPATMAK İÇİN:  enabled: false  ###
+#  Her madde ayrıca tek tek kapatılabilir. Kapalı bir kontrolün maliyeti yoktur.
+# =============================================================================
+anti-abuse:
+  enabled: true
+
+  # ---------------------------------------------------------------------------
+  # SİPARİŞ AÇMA XP'Sİ NE ZAMAN VERİLİR   (3. ve 4. açığı kökten bitirir)
+  #
+  #   ON_COMPLETE  -> sipariş GERÇEKTEN dolunca ödenir  (önerilen, varsayılan)
+  #   IMMEDIATE    -> sipariş açılır açılmaz            (eski davranış)
+  #
+  # ON_COMPLETE hiçbir kayıt tutmayı gerektirmez: sunucu yeniden başlasa bile
+  # açık geri gelmez. "Niyeti" değil "sonucu" ödüllendirir — açılıp hemen iptal
+  # edilen bir sipariş hiçbir şey üretmemiştir.
+  # ---------------------------------------------------------------------------
+  creation-xp-mode: ON_COMPLETE
+
+  # ---------------------------------------------------------------------------
+  # PARTNER LİMİTİ   (1. açık: aynı kişiyle sonsuz tekrar eden ticaret)
+  #
+  # Tamamen yasaklamak yerine kademeli olarak DEĞERSİZLEŞTİRİR. İki arkadaşın
+  # gerçekten birbirinden alışveriş yapması meşrudur; sadece bunu sonsuz kez
+  # tekrarlamak değil.
+  # ---------------------------------------------------------------------------
+  partner-limit:
+    enabled: true
+
+    # Aynı kişiyle iki XP'li ticaret arasında en az bu kadar saniye geçmeli.
+    # Bu süre içindeki ticaret gerçekleşir ama XP vermez.
+    cooldown-seconds: 60
+
+    # İlk kaç ticaret TAM XP verir.
+    full-reward-count: 3
+
+    # Ondan sonraki her ticaretin çarpanı. 0.5 = her seferinde yarıya iner.
+    #   4. ticaret %50, 5. %25, 6. %12.5 ... %1'in altına düşünce 0 olur.
+    # 1.0 yazarsanız azalma olmaz (yalnızca bekleme ve tavan çalışır).
+    decay: 0.5
+
+    # Tek bir partnerden 24 saatte kazanılabilecek en fazla XP. -1 = sınırsız.
+    daily-xp-cap: 100
+
+    # Ticaret geçmişinin hatırlanma süresi (saat).
+    window-hours: 24
+
+  # ---------------------------------------------------------------------------
+  # ALT HESAP   (2. açık)
+  # ---------------------------------------------------------------------------
+  # Teslim eden ile sipariş sahibi AYNI IP adresindeyse XP verilmez.
+  # DİKKAT: aynı evden oynayan kardeşler de bundan etkilenir. Sunucunuzda bu
+  # yaygınsa false yapın; teslimat yine çalışır, yalnızca XP verilmez.
+  block-same-ip: true
+
+  # Kendi siparişine teslim (normalde zaten engelli) hiçbir durumda XP vermesin.
+  block-self-delivery: true
+
+  # ---------------------------------------------------------------------------
+  # ASGARİ SİPARİŞ BÜYÜKLÜĞÜ   (5. açık: kuruşluk siparişleri bölerek çoğaltma)
+  # ---------------------------------------------------------------------------
+  # Bu değerlerin ALTINDAKİ siparişler hiç XP üretmez (ne açana ne teslim edene).
+  # 0 = o kontrol kapalı.
+  min-order-value: 100      # sipariş toplam tutarı (adet x fiyat)
+  min-order-amount: 16      # sipariş edilen eşya adedi
+
+  # Engellenen XP girişimleri konsola yazılsın mı? (yönetici takibi için)
+  log-suspicious: true
+
+# =============================================================================
+#  SEVİYELER
+#  İstediğiniz kadar ekleyip çıkarabilirsiniz. Sildiğiniz seviye güncellemede
+#  GERİ GELMEZ.
+#
+#    xp-required     bu seviyeye ulaşmak için gereken TOPLAM xp
+#    tax-discount    vergiden yüzde indirim (0-100)
+#    extra-orders    aktif sipariş limitine eklenir
+#    extra-items     sipariş başına istenebilecek eşya sayısına eklenir
+#    reward-commands seviye atlanınca konsolda çalışır (%player%, %level%)
+#    broadcast       true ise sunucuya duyurulur
+# =============================================================================
+levels:
+  1:
+    xp-required: 0
+    tax-discount: 0
+    extra-orders: 0
+    extra-items: 0
+    reward-commands: []
+    broadcast: false
+  2:
+    xp-required: 100
+    tax-discount: 5
+    extra-orders: 2
+    extra-items: 64
+    reward-commands: []
+    broadcast: false
+  3:
+    xp-required: 300
+    tax-discount: 10
+    extra-orders: 5
+    extra-items: 192
+    reward-commands: []
+    broadcast: false
+  4:
+    xp-required: 750
+    tax-discount: 15
+    extra-orders: 10
+    extra-items: 384
+    reward-commands: []
+    broadcast: true
+  5:
+    xp-required: 1500
+    tax-discount: 20
+    extra-orders: 15
+    extra-items: 640
+    reward-commands: []
+    broadcast: true
+  6:
+    xp-required: 3000
+    tax-discount: 25
+    extra-orders: 25
+    extra-items: 1280
+    reward-commands: []
+    broadcast: true
+  7:
+    xp-required: 6000
+    tax-discount: 30
+    extra-orders: 40
+    extra-items: 2560
+    reward-commands: []
+    broadcast: true
+  8:
+    xp-required: 12000
+    tax-discount: 40
+    extra-orders: 60
+    extra-items: 5120
+    reward-commands: []
+    broadcast: true
+
+# =============================================================================
+#  GÖRÜNÜM
+# =============================================================================
+# İlerleme çubuğu (%bar% yer tutucusu)
+progress-bar:
+  length: 20
+  filled-char: "|"
+  empty-char: "|"
+  filled-color: "&a"
+  empty-color: "&7"
+
+# Seviye atlayınca ekranda beliren başlık.
+# Metinler lang/<dil>.yml -> level.up-title / level.up-subtitle
+# Ses: config.yml -> sounds.events.level-up
+level-up-title:
+  enabled: true
+  fade-in: 10
+  stay: 40
+  fade-out: 10

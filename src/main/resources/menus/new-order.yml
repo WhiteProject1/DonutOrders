@@ -1,0 +1,57 @@
+# -----------------------------------------------------------------------------#
+#  Yeni sipariş oluşturma menüsü                                                 #
+# -----------------------------------------------------------------------------#
+#  Alanların açıklaması için menus/main-menu.yml başındaki nota bakın.
+#
+#  "item" butonunun materyali oyuncunun seçtiği eşyadır; buradaki material alanı
+#  yalnızca henüz hiçbir şey seçilmemişken kullanılır.
+# -----------------------------------------------------------------------------#
+
+rows: 3
+title: ""
+content-slots: ""
+open-sound: "none"
+
+# Menü kapanırken çalan ses. Bir menüden diğerine geçerken de tetiklenir,
+# bu yüzden varsayılan "none" (config.yml -> sounds.events.menu-close).
+close-sound: "none"
+
+filler:
+  enabled: false
+  material: GRAY_STAINED_GLASS_PANE
+  name: " "
+  # true ise dolgu, üzerinde buton olsa bile o slotu doldurur.
+  # false (varsayılan) butonları korur — alt sıradaki sayfa/geri/arama
+  # butonlarının kaybolmaması için bu ayar false kalmalıdır.
+  overwrite: false
+
+items:
+  cancel:
+    enabled: true
+    slot: 10
+    material: RED_STAINED_GLASS_PANE
+    sound: "ui.button.click"
+
+  item:
+    enabled: true
+    slot: 12
+    material: STONE
+    sound: "ui.button.click"
+
+  amount:
+    enabled: true
+    slot: 13
+    material: CHEST
+    sound: "ui.button.click"
+
+  price:
+    enabled: true
+    slot: 14
+    material: EMERALD
+    sound: "ui.button.click"
+
+  confirm:
+    enabled: true
+    slot: 16
+    material: LIME_STAINED_GLASS_PANE
+    sound: "entity.experience_orb.pickup"

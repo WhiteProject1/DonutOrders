@@ -1,0 +1,428 @@
+# -----------------------------------------------------------------------------#
+#  DonutOrders - Deutsch (de)
+# -----------------------------------------------------------------------------#
+#
+#  Deutsche Sprachdatei. Frei editierbar.
+#
+#  Colours: &a &b &c ... and hex &#00d271
+#  Placeholders: {prefix} %player% %seller% %amount% %item% %price% %total%
+#                %limit% %page% %pages% %search% %filter% %time% %language%
+#
+#  Any key missing here falls back to lang/en.yml, so an unfinished
+#  translation never shows a raw key to a player.
+#
+#  This file is never overwritten on update; only missing keys are added.
+# -----------------------------------------------------------------------------#
+
+language:
+  name: '&fDeutsch'
+general:
+  player-only: '&cNur Spieler können diesen Befehl benutzen.'
+  no-permission: '&cDu hast keine Berechtigung für diesen Befehl.'
+  reload-success: '&aDonutOrders Konfiguration, Menüs und Sprachen neu geladen!'
+  unknown-command: '&cUnbekannter Unterbefehl. Versuche &e/donutordersadmin&c.'
+errors:
+  not-enough-money: '{prefix}&cDu hast nicht genug Geld! &e%total%&c benötigt.'
+  not-owner: '{prefix}&cDu kannst die Bestellung eines anderen nicht abbrechen.'
+  own-order: '{prefix}&cDu kannst deine eigene Bestellung nicht erfüllen!'
+  already-complete: '{prefix}&cEine abgeschlossene Bestellung kann nicht abgebrochen werden.'
+  max-orders-reached: '{prefix}&cDu hast dein Limit an aktiven Bestellungen erreicht (&e%limit%&c).'
+  min-price-not-met: '{prefix}&cMindestpreis pro Gegenstand: &e%price%'
+  max-price-exceeded: '{prefix}&cHöchstpreis pro Gegenstand: &e%price%'
+  min-amount-not-met: '{prefix}&cMindestmenge: &e%amount%'
+  max-amount-exceeded: '{prefix}&cHöchstmenge pro Bestellung: &e%amount%'
+  invalid-number: '{prefix}&cUngültige Zahl.'
+  invalid-number-format: '{prefix}&cUngültige Zahl. Format: 100, 1k, 10k, 1m'
+  positive-only: '{prefix}&cNur positive Zahlen.'
+  wrong-item: '{prefix}&cFalscher Gegenstandstyp!'
+  no-items-in-inventory: '{prefix}&cDu hast kein &e%item%&c im Inventar.'
+  set-item-amount-price: '{prefix}&cBitte lege Gegenstand, Menge und Preis fest!'
+  order-not-found: '{prefix}&cBestellung nicht gefunden.'
+  player-not-found: '{prefix}&cSpieler %player% nicht gefunden.'
+  cant-fulfill-own: '{prefix}&cDu kannst deine eigene Bestellung nicht erfüllen!'
+  max-enchantments-reached: '{prefix}&cDu kannst höchstens &e%limit% &cVerzauberungen wählen.'
+  order-unavailable: '{prefix}&cDiese Bestellung ist nicht mehr verfügbar.'
+  order-already-filled: '{prefix}&cDiese Bestellung wurde bereits erfüllt.'
+  feature-disabled: '{prefix}&cDiese Funktion ist auf diesem Server deaktiviert.'
+  item-blacklisted: '{prefix}&cBestellungen für diesen Gegenstand sind nicht erlaubt.'
+  language-not-supported: '{prefix}&cUnbekannte Sprache. Verfügbar: &e%languages%'
+  order-filled-elsewhere: '{prefix}&cDiese Bestellung wurde gerade auf einem anderen Server erfüllt. Deine Gegenstände wurden zurückgegeben.'
+  too-fast: '{prefix}&cImmer langsam.'
+success:
+  order-created: '{prefix}&#00d271%amount% %item% &fbestellt.'
+  order-cancelled: '{prefix}&aBestellung abgebrochen. &e%price%&a erstattet und Gegenstände zurückgegeben.'
+  order-fulfilled: '{prefix}&b%amount% %item% &7geliefert, du hast &a$%price%&7 erhalten.'
+  order-received: '{prefix}&a%seller% &fhat dir &a%amount% %item% &fgeliefert.'
+  order-complete: '{prefix}&a%item% &fBestellung abgeschlossen!'
+  delivery-cancelled: '{prefix}&cLieferung abgebrochen. Deine Gegenstände wurden zurückgegeben.'
+  items-dropped: '{prefix}&aAlle Gegenstände fallen gelassen!'
+  order-archived: '{prefix}&aBestellung abgeschlossen und archiviert!'
+  potion-selected: '{prefix}&aTrankart ausgewählt!'
+  amount-set: '{prefix}&aMenge festgelegt: %amount%'
+  price-set: '{prefix}&aPreis festgelegt: $%price%'
+  filter-applied: '{prefix}&aFilter angewendet: &e%search%'
+  search-applied: '{prefix}&aSuche: &e%search%'
+  search-cleared: '{prefix}&aSuche zurückgesetzt!'
+  items-sold: '{prefix}&aGegenstände für &a$%price%&a verkauft.'
+  language-changed: '{prefix}&aSprache auf &e%language%&a gesetzt.'
+  tax-charged: '{prefix}&7Es wurde eine Bestellsteuer von &e%tax%&7 erhoben (&e$%amount%&7).'
+gui:
+  type-amount: '{prefix}&aGib die Menge in den Chat ein:'
+  type-price: '{prefix}&aGib den Preis in den Chat ein:'
+  type-filter: '{prefix}&eGib einen Namen zum Filtern ein (z.B. ''holz''):'
+  type-search: '{prefix}&eGib einen Gegenstandsnamen ein (''clear'' zum Zurücksetzen):'
+  sell-all-coming-soon: '{prefix}&cKeiner dieser Gegenstände hat einen Verkaufspreis.'
+  quick-fill-full: '{prefix}&eEs wurden bereits genug Gegenstände hinzugefügt!'
+  quick-fill-added: '{prefix}&a%amount% Gegenstände hinzugefügt!'
+  quick-fill-none: '{prefix}&cKeine passenden Gegenstände im Inventar gefunden.'
+  new-order:
+    item-not-selected: '{prefix}&cBitte wähle einen Gegenstand.'
+    amount-not-set: '{prefix}&cBitte lege eine Menge fest.'
+    price-not-set: '{prefix}&cBitte lege einen Preis fest.'
+  buttons:
+    sort: '&#ffc247SORTIEREN'
+    filter: '&#ffc247FILTER'
+    orders: '&#00d271BESTELLUNGEN'
+    search: '&#ffc247SUCHE'
+    your-orders: '&#00d271DEINE BESTELLUNGEN'
+    next-page: '&#ffc247Nächste Seite'
+    no-next-page: '&8Keine nächste Seite'
+    previous-page: '&#ffc247Vorherige Seite'
+    no-previous-page: '&8Keine vorherige Seite'
+    cancel: '&#ff5f5fABBRECHEN'
+    confirm: '&#00d271BESTÄTIGEN'
+    item: '&#6fd3ffGEGENSTAND'
+    amount: '&#6fd3ffMENGE'
+    price: '&#6fd3ffPREIS'
+    new-order: '&#00d271Neue Bestellung'
+    cancel-order: '&#ff5f5fBESTELLUNG ABBRECHEN'
+    collect-items: '&#00d271GEGENSTÄNDE ABHOLEN'
+    go-back: '&#ffc247Zurück'
+    back: '&#ffc247Zurück'
+    back-to-menu: '&#ffc247Zurück zum Menü'
+    back-to-editor: '&#ffc247Zurück zum Editor'
+    back-to-order: '&#ffc247Zurück zur Bestellung'
+    quick-fill: '&#00d271SCHNELL LIEFERN'
+    sell-all: '&#00d271ALLES VERKAUFEN'
+    drop-all: '&#ff5f5fALLES FALLEN LASSEN'
+    collection-back: '&#ffc247ZURÜCK'
+    collection-next: '&#ffc247WEITER'
+    language: '&#6fd3ffSPRACHE'
+    level: '&#6fd3ffBESTELL-LEVEL'
+  enchantment-picker:
+    title: VERZAUBERUNGEN WÄHLEN
+    click-to-select: '&7Klicke zum Auswählen'
+    selected: '&aAusgewählt'
+    confirm: '&#00d271BESTÄTIGEN'
+    cancel: '&#ff5f5fABBRECHEN'
+    next: '&#ffc247WEITER'
+    back: '&#ffc247ZURÜCK'
+  lore:
+    each: pro Stück
+    delivered: Geliefert
+    paid: Bezahlt
+    click-to-deliver: '&aKlicke, um %item% an %player% zu liefern'
+    until-order-expires: '&7Bestellung läuft ab in %time%'
+    until-order-deletes: '&7Bestellung wird gelöscht in %time%'
+    owners-order: '&aBestellung von %player%'
+    removed-suffix: '&7(Entfernt)'
+    enchanted-suffix: (Verzaubert)
+    most-paid: Höchste Bezahlung
+    most-delivered: Meist geliefert
+    recently-listed: Zuletzt eingestellt
+    most-money-per-item: Meiste Bezahlung pro Stück
+    filter-all: Alle
+    filter-blocks: Blöcke
+    filter-tools: Werkzeuge
+    filter-food: Nahrung
+    filter-combat: Kampf
+    filter-potions: Tränke
+    filter-books: Bücher
+    filter-ingredients: Zutaten
+    filter-utilities: Hilfsmittel
+    current: Aktuell
+    none: Keine
+    click-to-search: '&7Klicke, um nach Gegenstandsnamen zu suchen'
+    type-in-chat: '&7Schreibe in den Chat (z.B. ''knochen'')'
+    manage-listings: '&fVerwalte deine Bestellungen'
+    click-to-refresh: '&fKlicke zum Aktualisieren'
+    return-to-orders: '&fZurück zu deinen Bestellungen'
+    click-to-create: '&fKlicke, um eine neue Kaufbestellung zu erstellen'
+    selected: '&fAusgewählt: &b%item%'
+    click-to-change: '&7Klicke, um den Gegenstand zu ändern'
+    amount-value: '&fMenge: &e%amount%'
+    click-to-set-amount: '&7Klicke, um eine Menge einzugeben'
+    price-per-item: '&fPreis pro Stück: &a$%price%'
+    click-to-set-price: '&7Klicke, um einen Preis einzugeben'
+    total-cost: '&fGesamtkosten: &a$%total%'
+    tax-line: '&7Steuer (&e%tax%&7): &a$%amount%'
+    click-to-publish: '&7Klicke, um die Bestellung zu veröffentlichen'
+    order-label: '&aBestellung: %item%'
+    progress: '&fFortschritt: %filled%/%total%'
+    price-label: '&fPreis: $%price%'
+    click-to-cancel: '&fKlicke, um diese Bestellung abzubrechen'
+    refunds-remaining: '&c(Restliches Geld wird erstattet)'
+    collect-first: '&c(Hole zuerst deine Gegenstände ab!)'
+    items-waiting: '&fWartende Gegenstände: &6%amount%'
+    click-to-open-storage: '&eKlicke, um das Lager zu öffnen'
+    order-completed: '&a&lBESTELLUNG ABGESCHLOSSEN!'
+    cancel-return-items: '&fAbbrechen und Gegenstände zurückgeben'
+    click-to-deliver-items: '&fKlicke, um die Gegenstände zu liefern'
+    youre-delivering: '&7Du lieferst &a%amount% &f%item%'
+    current-filter: '&fAktueller Filter: &e%filter%'
+    click-type-name: '&7Klicke, um einen Namen einzugeben'
+    filter-description: '&7(Filtert die Liste, z.B. ''holz'' -> ''Eichenholz'')'
+    coming-soon: '&7Kein Verkaufspreis verfügbar'
+    sell-all: '&7Klicke, um alle Gegenstände zu verkaufen'
+    cancel-sell: '&7Klicke zum Abbrechen'
+    confirm-sell: '&7Klicke, um alle Gegenstände zu verkaufen'
+    sell-price: '&7Verkaufspreis &a$%price%'
+    quick-fill-desc: '&fFügt passende Gegenstände automatisch aus deinem Inventar hinzu'
+    quick-fill-item: '&7Gegenstand: &e%item%'
+    quick-fill-remaining: '&7Verbleibend: &e%amount%'
+    quick-fill-click: '&eKlicke &f- &eautomatisch füllen'
+    removed-by-admin: '&c&lVON EINEM ADMIN ENTFERNT'
+    items-to-collect: '&fAbzuholende Gegenstände: &6%amount%'
+    click-to-collect: '&eKlicke, um die Gegenstände abzuholen'
+    language-current: '&aAktuell ausgewählt'
+    language-click: '&7Klicke, um diese Sprache zu nutzen'
+    tax-reason-base: '&8(Standardsatz)'
+    tax-reason-rank: '&8(Rang-Rabatt angewendet)'
+    tax-reason-level: '&8(Bestell-Level-Rabatt angewendet)'
+    tax-reason-exempt: '&8(du bist steuerbefreit)'
+    level-current: '&fLevel: &d%level%'
+    level-xp: '&fXP: &b%xp% &7/ &b%next%'
+    level-progress: '%bar%'
+    level-tax: '&7Steuerrabatt: &a%discount%'
+    level-orders: '&7Zusätzliche Bestellplätze: &a+%extra%'
+    level-items: '&7Extra Gegenstände pro Bestellung: &a+%extra%'
+    level-max: '&6&lMAXIMALES LEVEL ERREICHT'
+    server: '&8Server: %server%'
+  # English default (unverified machine translation risk) - feel free to translate.
+  order-lore:
+    template:
+    - ''
+    - ' &#AAAAAA• Item: &r&#FFFFFF%item%&r'
+    - '%enchants%'
+    - ' &#AAAAAA• Price Per Item: &r&#49F267$%price%&r'
+    - ''
+    - ' &#AAAAAA• Delivery Progress:&r'
+    - '   &#FFFFFF%filled% &r&#555555/ &r&#AAAAAA%needed% items&r'
+    - '   %bar% &r&#555555(&r&#49F267%percent%&r&#555555)&r'
+    - ''
+    - ' &#AAAAAA• Payment Progress:&r'
+    - '   &#49F267$%paid% &r&#555555/ &r&#AAAAAA$%total%&r'
+    - ''
+    - ' &#AAAAAA• Expires In:&r'
+    - '   &#FFFFFF%time%&r'
+    - ''
+    - '&#FFFFFFClick to &r&#49F267deliver!&r'
+menus:
+  main-menu: BESTELLUNGEN » Seite %page%/%pages%
+  your-orders: BESTELLUNGEN » Deine Bestellungen
+  new-order: BESTELLUNGEN » Neue Bestellung
+  item-selector: Gegenstand wählen » %page%/%pages%
+  item-selector-filtered: 'Filter: %search% » %page%/%pages%'
+  deliver-items: BESTELLUNGEN » Gegenstände liefern
+  confirm-delivery: BESTELLUNGEN » Lieferung bestätigen
+  confirm-sell: BESTELLUNGEN » Verkauf bestätigen
+  edit-order: BESTELLUNGEN » Bestellung bearbeiten
+  collect-items: Abholung » Seite %page%/%pages%
+  enchantment-picker: Verzauberungen wählen » %page%/%pages%
+  potion-selector: Trankart wählen
+  language: Sprache wählen
+  admin-menu: DonutOrders Verwaltung
+  admin-orders: Alle Bestellungen » %page%/%pages%
+input:
+  sign:
+    amount:
+    - ''
+    - ^^^^^^^^
+    - Menge eingeben
+    - (z.B. 64, 1k)
+    price:
+    - ''
+    - ^^^^^^^^
+    - Preis eingeben
+    - (z.B. 100, 1k)
+    filter:
+    - ''
+    - ^^^^^^^^
+    - Filter eingeben
+    - (z.B. holz)
+    search:
+    - ''
+    - ^^^^^^^^
+    - Suche eingeben
+    - (Gegenstand)
+  chat:
+    amount: '{prefix}&aGib die Menge in den Chat ein. &7(&e%cancel%&7 zum Abbrechen)'
+    price: '{prefix}&aGib den Preis in den Chat ein. &7(&e%cancel%&7 zum Abbrechen)'
+    filter: '{prefix}&aGib den Filter in den Chat ein. &7(&e%cancel%&7 zum Abbrechen)'
+    search: '{prefix}&aGib den Gegenstandsnamen ein. &7(&e%cancel%&7 zum Abbrechen)'
+    cancel-word: abbrechen
+    cancelled: '{prefix}&cEingabe abgebrochen.'
+    timeout: '{prefix}&cZeit für die Eingabe abgelaufen.'
+delivery:
+  items-returned: '&e[Bestellung] %amount% Gegenstände zurückgegeben (Limit erreicht).'
+  shulkers-returned: '&a[Bestellung] %amount% Shulker-Kisten zurückgegeben!'
+  delivering:
+  - '&7&oLiefere.'
+  - '&7&oLiefere..'
+  - '&7&oLiefere...'
+  expired-with-items: '&e[Bestellung] &f&a%item% &fBestellung abgelaufen. &a$%price% &ferstattet. &eDeine gelieferten Gegenstände warten auf dich!'
+  expired: '&e[Bestellung] &fDeine Bestellung ist abgelaufen. &a$%price% &ferstattet.'
+admin:
+  help-header: '&6&l=== DonutOrders Admin ==='
+  help-reload: '&e/donutordersadmin reload &7- Konfiguration neu laden'
+  help-removeorder: '&e/donutordersadmin removeorder <spieler> <order_id> &7- Bestellung entfernen'
+  usage-removeorder: '&cBenutzung: /donutordersadmin removeorder <spieler> <bestellung>'
+  order-removed: '&a&e%amount% %item% &aBestellung entfernt. Erstattung: &e%price%'
+  order-removed-with-items: '&a&e%amount% %item% &aBestellung entfernt. Erstattung: &e%price% &7(Spieler kann noch %collected% Gegenstände abholen)'
+  order-removed-player: '&c&e%amount% %item% &cBestellung wurde von einem Admin entfernt. Erstattung: &e%price%&c.'
+  order-removed-collect: ' &7Nutze &e/order &7-> &eDeine Bestellungen&7, um deine Gegenstände abzuholen.'
+  orders-deleted: '&a%amount% Bestellungen gelöscht!'
+  help-menu: '&e/donutordersadmin menu &7- Öffnet das Admin-Panel'
+  reloaded: '&aIn &e%ms%ms&a neu geladen.'
+  cleanup-done: '&a%amount% abgelaufene Bestellungen bereinigt.'
+  save-failed: '&cDatei konnte nicht geschrieben werden! Änderung gilt nur für diese Sitzung.'
+  feature-enabled: '&aFunktion &e%feature% &aaktiviert.'
+  feature-disabled: '&cFunktion &e%feature% &cdeaktiviert.'
+  tax-enabled: '&aSteuersystem aktiviert.'
+  tax-disabled: '&cSteuersystem deaktiviert.'
+  levels-enabled: '&aBestell-Level-System aktiviert.'
+  levels-disabled: '&cBestell-Level-System deaktiviert.'
+  detail-header: '&6&l--- &f%item% &6&l---'
+  buttons:
+    reload: '&#ffc247NEU LADEN'
+    orders: '&#6fd3ffALLE BESTELLUNGEN'
+    stats: '&#6fd3ffSTATISTIKEN'
+    cleanup: '&#ffc247AUFRÄUMEN'
+    features: '&#6fd3ffFUNKTIONEN'
+    tax: '&#ffc247STEUER'
+    levels: '&#6fd3ffLEVEL-SYSTEM'
+    close: '&#ff5f5fSCHLIESSEN'
+  lore:
+    enabled: '&aAKTIV'
+    disabled: '&cDEAKTIVIERT'
+    click-toggle: '&7Klicken zum Umschalten'
+    click-cycle: '&7Klicken, um die nächste Funktion umzuschalten'
+    reload: '&7Config, Menüs, Sprachen und Level neu laden'
+    orders: '&7Aktive Bestellungen: &f%amount%'
+    cleanup: '&7Abgelaufene Bestellungen jetzt entfernen'
+    search-hint: '&7Nach Spieler oder Gegenstand suchen'
+    order-owner: '&7Besitzer: &f%player%'
+    order-refund: '&7Erstattung bei Entfernung: &a$%price%'
+    order-id: '&8ID: %id%'
+    order-remove: '&cSHIFT + Rechtsklick &7zum Entfernen und Erstatten'
+    anti-abuse: '&7Level-Missbrauchsschutz: %state%'
+    toggle-line-on: '&a• %label% &8- %state%'
+    toggle-line-off: '&7• %label% &8- %state%'
+  stats:
+    active: '&7Aktive Bestellungen: &f%amount%'
+    completed: '&7Abgeschlossene Bestellungen: &f%amount%'
+    volume: '&7Offener Wert: &a$%amount%'
+    players: '&7Spieler online: &f%amount%'
+  tax:
+    creation: '&7Erstellung: &f%percent%'
+    delivery: '&7Lieferung: &f%percent%'
+    sell: '&7Verkauf: &f%percent%'
+  levels:
+    count: '&7Definierte Level: &f%amount%'
+  # English default (unverified machine translation risk) - feel free to translate.
+  features:
+    potions: Potions
+    enchantments: Enchantments
+    enchanted-books: Enchanted Books
+    sell-all: Sell All
+    quick-fill: Quick Deliver
+    search: Search
+    filter: Filter
+    sort: Sort
+  templates:
+    stats:
+    - '&7Aktive Bestellungen: &f%active%'
+    - '&7Abgeschlossene Bestellungen: &f%completed%'
+    - '&7Offener Wert: &a$%volume%'
+    - '&7Spieler online: &f%players%'
+    features:
+    - '%features%'
+    - ''
+    - '&7Klicken, um die nächste Funktion umzuschalten'
+    tax:
+    - '%state%'
+    - '&7Erstellung: &f%creation%'
+    - '&7Lieferung: &f%delivery%'
+    - '&7Verkauf: &f%sell%'
+    - ''
+    - '&7Klicken zum Umschalten'
+    levels:
+    - '%state%'
+    - '%level-details%'
+    - ''
+    - '&7Klicken zum Umschalten'
+    order:
+    - '&7Besitzer: &f%owner%'
+    - '&fFortschritt: %filled%/%total%'
+    - '&fPreis: $%price%'
+    - '&7Erstattung bei Entfernung: &a$%refund%'
+    - '&8ID: %id%'
+    - ''
+    - '&cSHIFT + Rechtsklick &7zum Entfernen und Erstatten'
+    detail:
+    - '&6&l--- &f%item% &6&l---'
+    - '&7Besitzer: &f%owner%'
+    - '&fFortschritt: %filled%/%total%'
+    - '&fPreis: $%price%'
+    - '&7Erstattung bei Entfernung: &a$%refund%'
+    - '&fWartende Gegenstände: &6%waiting%'
+    - '&8ID: %id%'
+time:
+  day: '%value%T'
+  hour: '%value%Std'
+  minute: '%value%Min'
+  expired: Abgelaufen
+names:
+  unknown: Unknown
+  enchanted-book: '%enchantment% Book'
+  potion:
+    base: Potion of %name%
+    splash: Splash %name%
+    lingering: Lingering %name%
+    long: '%name% (Long)'
+    strong: Strong %name%
+  potions:
+    WATER: Water
+    MUNDANE: Mundane
+    THICK: Thickness
+    AWKWARD: Awkwardness
+    NIGHT_VISION: Night Vision
+    INVISIBILITY: Invisibility
+    LEAPING: Leaping
+    FIRE_RESISTANCE: Fire Resistance
+    SWIFTNESS: Swiftness
+    SLOWNESS: Slowness
+    WATER_BREATHING: Water Breathing
+    HEALING: Healing
+    HARMING: Harming
+    POISON: Poison
+    REGENERATION: Regeneration
+    STRENGTH: Strength
+    WEAKNESS: Weakness
+    LUCK: Luck
+    TURTLE_MASTER: the Turtle Master
+    SLOW_FALLING: Slow Falling
+    WIND_CHARGED: Wind Charging
+    WEAVING: Weaving
+    OOZING: Oozing
+    INFESTED: Infestation
+  words:
+    TNT: TNT
+  items: {}
+level:
+  up: '{prefix}&dDein Bestell-Level ist jetzt &f%level%&d!'
+  up-title: '&d&lLEVEL AUFGESTIEGEN'
+  up-subtitle: '&fBestell-Level &d%level%'
+  up-broadcast: '&d%player% &fhat Bestell-Level &d%level%&f erreicht!'
+  disabled: '{prefix}&cDas Bestell-Level-System ist auf diesem Server deaktiviert.'
+  daily-cap-reached: '{prefix}&eDu hast das heutige XP-Limit erreicht.'

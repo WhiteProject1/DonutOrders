@@ -1,0 +1,428 @@
+# -----------------------------------------------------------------------------#
+#  DonutOrders - Russkiy (ru)
+# -----------------------------------------------------------------------------#
+#
+#  Fayl russkogo yazyka. Svobodno redaktiruyetsya.
+#
+#  Colours: &a &b &c ... and hex &#00d271
+#  Placeholders: {prefix} %player% %seller% %amount% %item% %price% %total%
+#                %limit% %page% %pages% %search% %filter% %time% %language%
+#
+#  Any key missing here falls back to lang/en.yml, so an unfinished
+#  translation never shows a raw key to a player.
+#
+#  This file is never overwritten on update; only missing keys are added.
+# -----------------------------------------------------------------------------#
+
+language:
+  name: '&fРусский'
+general:
+  player-only: '&cЭту команду могут использовать только игроки.'
+  no-permission: '&cУ вас нет прав на использование этой команды.'
+  reload-success: '&aКонфигурация, меню и языки DonutOrders перезагружены!'
+  unknown-command: '&cНеизвестная подкоманда. Попробуйте &e/donutordersadmin&c.'
+errors:
+  not-enough-money: '{prefix}&cУ вас недостаточно денег! Требуется &e%total%&c.'
+  not-owner: '{prefix}&cВы не можете отменить чужой заказ.'
+  own-order: '{prefix}&cВы не можете выполнить свой собственный заказ!'
+  already-complete: '{prefix}&cЗавершённый заказ нельзя отменить.'
+  max-orders-reached: '{prefix}&cВы достигли лимита активных заказов (&e%limit%&c).'
+  min-price-not-met: '{prefix}&cМинимальная цена за предмет: &e%price%'
+  max-price-exceeded: '{prefix}&cМаксимальная цена за предмет: &e%price%'
+  min-amount-not-met: '{prefix}&cМинимальное количество: &e%amount%'
+  max-amount-exceeded: '{prefix}&cМаксимальное количество на заказ: &e%amount%'
+  invalid-number: '{prefix}&cНеверное число.'
+  invalid-number-format: '{prefix}&cНеверное число. Формат: 100, 1k, 10k, 1m'
+  positive-only: '{prefix}&cТолько положительные числа.'
+  wrong-item: '{prefix}&cНеверный тип предмета!'
+  no-items-in-inventory: '{prefix}&cУ вас нет &e%item%&c в инвентаре.'
+  set-item-amount-price: '{prefix}&cУкажите предмет, количество и цену!'
+  order-not-found: '{prefix}&cЗаказ не найден.'
+  player-not-found: '{prefix}&cИгрок %player% не найден.'
+  cant-fulfill-own: '{prefix}&cВы не можете выполнить свой собственный заказ!'
+  max-enchantments-reached: '{prefix}&cМожно выбрать не более &e%limit% &cчар.'
+  order-unavailable: '{prefix}&cЭтот заказ больше недоступен.'
+  order-already-filled: '{prefix}&cЭтот заказ уже выполнен.'
+  feature-disabled: '{prefix}&cЭта функция отключена на этом сервере.'
+  item-blacklisted: '{prefix}&cЗаказы на этот предмет запрещены.'
+  language-not-supported: '{prefix}&cНеизвестный язык. Доступны: &e%languages%'
+  order-filled-elsewhere: '{prefix}&cЭтот заказ только что выполнили на другом сервере. Ваши предметы возвращены.'
+  too-fast: '{prefix}&cНе так быстро.'
+success:
+  order-created: '{prefix}&#00d271%amount% %item% &fзаказано.'
+  order-cancelled: '{prefix}&aЗаказ отменён. &e%price%&a возвращено, предметы возвращены.'
+  order-fulfilled: '{prefix}&b%amount% %item% &7доставлено, вы получили &a$%price%&7.'
+  order-received: '{prefix}&a%seller% &fдоставил вам &a%amount% %item%&f.'
+  order-complete: '{prefix}&a%item% &fзаказ выполнен!'
+  delivery-cancelled: '{prefix}&cДоставка отменена. Ваши предметы возвращены.'
+  items-dropped: '{prefix}&aВсе предметы выброшены!'
+  order-archived: '{prefix}&aЗаказ выполнен и заархивирован!'
+  potion-selected: '{prefix}&aТип зелья выбран!'
+  amount-set: '{prefix}&aКоличество задано: %amount%'
+  price-set: '{prefix}&aЦена задана: $%price%'
+  filter-applied: '{prefix}&aФильтр применён: &e%search%'
+  search-applied: '{prefix}&aПоиск: &e%search%'
+  search-cleared: '{prefix}&aПоиск сброшен!'
+  items-sold: '{prefix}&aПредметы проданы за &a$%price%&a.'
+  language-changed: '{prefix}&aЯзык изменён на &e%language%&a.'
+  tax-charged: '{prefix}&7Взят налог на заказ &e%tax%&7 (&e$%amount%&7).'
+gui:
+  type-amount: '{prefix}&aВведите количество в чат:'
+  type-price: '{prefix}&aВведите цену в чат:'
+  type-filter: '{prefix}&eВведите название для фильтра (напр. ''дерево''):'
+  type-search: '{prefix}&eВведите название предмета (''clear'' для сброса):'
+  sell-all-coming-soon: '{prefix}&cНи у одного из этих предметов нет цены продажи.'
+  quick-fill-full: '{prefix}&eДостаточно предметов уже добавлено!'
+  quick-fill-added: '{prefix}&aДобавлено предметов: %amount%!'
+  quick-fill-none: '{prefix}&cПодходящих предметов в инвентаре не найдено.'
+  new-order:
+    item-not-selected: '{prefix}&cВыберите предмет.'
+    amount-not-set: '{prefix}&cУкажите количество.'
+    price-not-set: '{prefix}&cУкажите цену.'
+  buttons:
+    sort: '&#ffc247СОРТИРОВКА'
+    filter: '&#ffc247ФИЛЬТР'
+    orders: '&#00d271ЗАКАЗЫ'
+    search: '&#ffc247ПОИСК'
+    your-orders: '&#00d271ВАШИ ЗАКАЗЫ'
+    next-page: '&#ffc247Следующая страница'
+    no-next-page: '&8Нет следующей страницы'
+    previous-page: '&#ffc247Предыдущая страница'
+    no-previous-page: '&8Нет предыдущей страницы'
+    cancel: '&#ff5f5fОТМЕНА'
+    confirm: '&#00d271ПОДТВЕРДИТЬ'
+    item: '&#6fd3ffПРЕДМЕТ'
+    amount: '&#6fd3ffКОЛИЧЕСТВО'
+    price: '&#6fd3ffЦЕНА'
+    new-order: '&#00d271Новый заказ'
+    cancel-order: '&#ff5f5fОТМЕНИТЬ ЗАКАЗ'
+    collect-items: '&#00d271ЗАБРАТЬ ПРЕДМЕТЫ'
+    go-back: '&#ffc247Назад'
+    back: '&#ffc247Назад'
+    back-to-menu: '&#ffc247В меню'
+    back-to-editor: '&#ffc247В редактор'
+    back-to-order: '&#ffc247К заказу'
+    quick-fill: '&#00d271БЫСТРАЯ ДОСТАВКА'
+    sell-all: '&#00d271ПРОДАТЬ ВСЁ'
+    drop-all: '&#ff5f5fВЫБРОСИТЬ ВСЁ'
+    collection-back: '&#ffc247НАЗАД'
+    collection-next: '&#ffc247ДАЛЕЕ'
+    language: '&#6fd3ffЯЗЫК'
+    level: '&#6fd3ffУРОВЕНЬ ЗАКАЗОВ'
+  enchantment-picker:
+    title: ВЫБОР ЧАР
+    click-to-select: '&7Нажмите, чтобы выбрать'
+    selected: '&aВыбрано'
+    confirm: '&#00d271ПОДТВЕРДИТЬ'
+    cancel: '&#ff5f5fОТМЕНА'
+    next: '&#ffc247ДАЛЕЕ'
+    back: '&#ffc247НАЗАД'
+  lore:
+    each: за штуку
+    delivered: Доставлено
+    paid: Оплачено
+    click-to-deliver: '&aНажмите, чтобы доставить %item% игроку %player%'
+    until-order-expires: '&7Заказ истекает через %time%'
+    until-order-deletes: '&7Заказ будет удалён через %time%'
+    owners-order: '&aЗаказ игрока %player%'
+    removed-suffix: '&7(Удалён)'
+    enchanted-suffix: (Зачарован)
+    most-paid: Самые дорогие
+    most-delivered: Больше всего доставлено
+    recently-listed: Недавно размещённые
+    most-money-per-item: Больше денег за предмет
+    filter-all: Все
+    filter-blocks: Блоки
+    filter-tools: Инструменты
+    filter-food: Еда
+    filter-combat: Бой
+    filter-potions: Зелья
+    filter-books: Книги
+    filter-ingredients: Ингредиенты
+    filter-utilities: Разное
+    current: Текущий
+    none: Нет
+    click-to-search: '&7Нажмите для поиска по названию предмета'
+    type-in-chat: '&7Напишите в чат (напр. ''кость'')'
+    manage-listings: '&fУправляйте своими заказами'
+    click-to-refresh: '&fНажмите, чтобы обновить'
+    return-to-orders: '&fНазад к вашим заказам'
+    click-to-create: '&fНажмите, чтобы создать новый заказ на покупку'
+    selected: '&fВыбрано: &b%item%'
+    click-to-change: '&7Нажмите, чтобы сменить предмет'
+    amount-value: '&fКоличество: &e%amount%'
+    click-to-set-amount: '&7Нажмите, чтобы ввести количество'
+    price-per-item: '&fЦена за предмет: &a$%price%'
+    click-to-set-price: '&7Нажмите, чтобы ввести цену'
+    total-cost: '&fОбщая стоимость: &a$%total%'
+    tax-line: '&7Налог (&e%tax%&7): &a$%amount%'
+    click-to-publish: '&7Нажмите, чтобы опубликовать заказ'
+    order-label: '&aЗаказ: %item%'
+    progress: '&fПрогресс: %filled%/%total%'
+    price-label: '&fЦена: $%price%'
+    click-to-cancel: '&fНажмите, чтобы отменить этот заказ'
+    refunds-remaining: '&c(Оставшиеся деньги возвращаются)'
+    collect-first: '&c(Сначала заберите свои предметы!)'
+    items-waiting: '&fПредметов ожидает: &6%amount%'
+    click-to-open-storage: '&eНажмите, чтобы открыть хранилище'
+    order-completed: '&a&lЗАКАЗ ВЫПОЛНЕН!'
+    cancel-return-items: '&fОтменить и вернуть предметы'
+    click-to-deliver-items: '&fНажмите, чтобы доставить предметы'
+    youre-delivering: '&7Вы доставляете &a%amount% &f%item%'
+    current-filter: '&fТекущий фильтр: &e%filter%'
+    click-type-name: '&7Нажмите, чтобы ввести название'
+    filter-description: '&7(Фильтрует список, напр. ''дерево'' -> ''дубовое дерево'')'
+    coming-soon: '&7Цена продажи недоступна'
+    sell-all: '&7Нажмите, чтобы продать все предметы'
+    cancel-sell: '&7Нажмите, чтобы отменить'
+    confirm-sell: '&7Нажмите, чтобы продать все предметы'
+    sell-price: '&7Цена продажи &a$%price%'
+    quick-fill-desc: '&fАвтоматически добавляет подходящие предметы из инвентаря'
+    quick-fill-item: '&7Предмет: &e%item%'
+    quick-fill-remaining: '&7Осталось: &e%amount%'
+    quick-fill-click: '&eНажмите &f- &eавтозаполнение'
+    removed-by-admin: '&c&lУДАЛЕНО АДМИНИСТРАТОРОМ'
+    items-to-collect: '&fПредметов к получению: &6%amount%'
+    click-to-collect: '&eНажмите, чтобы забрать предметы'
+    language-current: '&aВыбрано сейчас'
+    language-click: '&7Нажмите, чтобы использовать этот язык'
+    tax-reason-base: '&8(базовая ставка)'
+    tax-reason-rank: '&8(применена скидка ранга)'
+    tax-reason-level: '&8(применена скидка уровня)'
+    tax-reason-exempt: '&8(вы освобождены от налога)'
+    level-current: '&fУровень: &d%level%'
+    level-xp: '&fОпыт: &b%xp% &7/ &b%next%'
+    level-progress: '%bar%'
+    level-tax: '&7Скидка на налог: &a%discount%'
+    level-orders: '&7Дополнительных заказов: &a+%extra%'
+    level-items: '&7Дополнительных предметов на заказ: &a+%extra%'
+    level-max: '&6&lМАКСИМАЛЬНЫЙ УРОВЕНЬ'
+    server: '&8Сервер: %server%'
+  # English default (unverified machine translation risk) - feel free to translate.
+  order-lore:
+    template:
+    - ''
+    - ' &#AAAAAA• Item: &r&#FFFFFF%item%&r'
+    - '%enchants%'
+    - ' &#AAAAAA• Price Per Item: &r&#49F267$%price%&r'
+    - ''
+    - ' &#AAAAAA• Delivery Progress:&r'
+    - '   &#FFFFFF%filled% &r&#555555/ &r&#AAAAAA%needed% items&r'
+    - '   %bar% &r&#555555(&r&#49F267%percent%&r&#555555)&r'
+    - ''
+    - ' &#AAAAAA• Payment Progress:&r'
+    - '   &#49F267$%paid% &r&#555555/ &r&#AAAAAA$%total%&r'
+    - ''
+    - ' &#AAAAAA• Expires In:&r'
+    - '   &#FFFFFF%time%&r'
+    - ''
+    - '&#FFFFFFClick to &r&#49F267deliver!&r'
+menus:
+  main-menu: ЗАКАЗЫ » Стр. %page%/%pages%
+  your-orders: ЗАКАЗЫ » Ваши заказы
+  new-order: ЗАКАЗЫ » Новый заказ
+  item-selector: Выбор предмета » %page%/%pages%
+  item-selector-filtered: 'Фильтр: %search% » %page%/%pages%'
+  deliver-items: ЗАКАЗЫ » Доставка предметов
+  confirm-delivery: ЗАКАЗЫ » Подтверждение доставки
+  confirm-sell: ЗАКАЗЫ » Подтверждение продажи
+  edit-order: ЗАКАЗЫ » Изменить заказ
+  collect-items: Получение » Стр. %page%/%pages%
+  enchantment-picker: Выбор чар » %page%/%pages%
+  potion-selector: Выбор типа зелья
+  language: Выбор языка
+  admin-menu: Управление DonutOrders
+  admin-orders: Все заказы » %page%/%pages%
+input:
+  sign:
+    amount:
+    - ''
+    - ^^^^^^^^
+    - Кол-во
+    - (напр. 64, 1k)
+    price:
+    - ''
+    - ^^^^^^^^
+    - Цена
+    - (напр. 100, 1k)
+    filter:
+    - ''
+    - ^^^^^^^^
+    - Фильтр
+    - (напр. дерево)
+    search:
+    - ''
+    - ^^^^^^^^
+    - Поиск
+    - (предмет)
+  chat:
+    amount: '{prefix}&aВведите количество в чат. &7(&e%cancel%&7 для отмены)'
+    price: '{prefix}&aВведите цену в чат. &7(&e%cancel%&7 для отмены)'
+    filter: '{prefix}&aВведите фильтр в чат. &7(&e%cancel%&7 для отмены)'
+    search: '{prefix}&aВведите название предмета. &7(&e%cancel%&7 для отмены)'
+    cancel-word: отмена
+    cancelled: '{prefix}&cВвод отменён.'
+    timeout: '{prefix}&cВремя ввода истекло.'
+delivery:
+  items-returned: '&e[Заказ] Возвращено предметов: %amount% (достигнут лимит).'
+  shulkers-returned: '&a[Заказ] Возвращено шалкеров: %amount%!'
+  delivering:
+  - '&7&oДоставка.'
+  - '&7&oДоставка..'
+  - '&7&oДоставка...'
+  expired-with-items: '&e[Заказ] &f&a%item% &fзаказ истёк. &a$%price% &fвозвращено. &eВаши доставленные предметы ждут вас!'
+  expired: '&e[Заказ] &fВаш заказ истёк. &a$%price% &fвозвращено.'
+admin:
+  help-header: '&6&l=== DonutOrders Admin ==='
+  help-reload: '&e/donutordersadmin reload &7- Перезагрузить конфигурацию'
+  help-removeorder: '&e/donutordersadmin removeorder <игрок> <order_id> &7- Удалить заказ'
+  usage-removeorder: '&cИспользование: /donutordersadmin removeorder <игрок> <заказ>'
+  order-removed: '&a&e%amount% %item% &aзаказ удалён. Возврат: &e%price%'
+  order-removed-with-items: '&a&e%amount% %item% &aзаказ удалён. Возврат: &e%price% &7(игрок ещё может забрать %collected% предметов)'
+  order-removed-player: '&c&e%amount% %item% &cзаказ удалён администратором. Возврат: &e%price%&c.'
+  order-removed-collect: ' &7Используйте &e/order &7-> &eВаши заказы&7, чтобы забрать предметы.'
+  orders-deleted: '&aУдалено заказов: %amount%!'
+  help-menu: '&e/donutordersadmin menu &7- Открыть панель управления'
+  reloaded: '&aПерезагружено за &e%ms%мс&a.'
+  cleanup-done: '&aОчищено просроченных заказов: %amount%.'
+  save-failed: '&cНе удалось записать файл! Изменение действует только в этой сессии.'
+  feature-enabled: '&aФункция &e%feature% &aвключена.'
+  feature-disabled: '&cФункция &e%feature% &cотключена.'
+  tax-enabled: '&aСистема налогов включена.'
+  tax-disabled: '&cСистема налогов отключена.'
+  levels-enabled: '&aСистема уровней включена.'
+  levels-disabled: '&cСистема уровней отключена.'
+  detail-header: '&6&l--- &f%item% &6&l---'
+  buttons:
+    reload: '&#ffc247ПЕРЕЗАГРУЗИТЬ'
+    orders: '&#6fd3ffВСЕ ЗАКАЗЫ'
+    stats: '&#6fd3ffСТАТИСТИКА'
+    cleanup: '&#ffc247ОЧИСТКА'
+    features: '&#6fd3ffФУНКЦИИ'
+    tax: '&#ffc247НАЛОГ'
+    levels: '&#6fd3ffСИСТЕМА УРОВНЕЙ'
+    close: '&#ff5f5fЗАКРЫТЬ'
+  lore:
+    enabled: '&aВКЛЮЧЕНО'
+    disabled: '&cОТКЛЮЧЕНО'
+    click-toggle: '&7Нажмите, чтобы переключить'
+    click-cycle: '&7Нажмите, чтобы переключить следующую функцию'
+    reload: '&7Перезагрузить конфиг, меню, языки и уровни'
+    orders: '&7Активных заказов: &f%amount%'
+    cleanup: '&7Удалить просроченные заказы сейчас'
+    search-hint: '&7Поиск по игроку или названию предмета'
+    order-owner: '&7Владелец: &f%player%'
+    order-refund: '&7Возврат при удалении: &a$%price%'
+    order-id: '&8ID: %id%'
+    order-remove: '&cSHIFT + правый клик &7чтобы удалить и вернуть деньги'
+    anti-abuse: '&7Защита от накрутки уровня: %state%'
+    toggle-line-on: '&a• %label% &8- %state%'
+    toggle-line-off: '&7• %label% &8- %state%'
+  stats:
+    active: '&7Активных заказов: &f%amount%'
+    completed: '&7Завершённых заказов: &f%amount%'
+    volume: '&7Открытый объём: &a$%amount%'
+    players: '&7Игроков онлайн: &f%amount%'
+  tax:
+    creation: '&7Создание: &f%percent%'
+    delivery: '&7Доставка: &f%percent%'
+    sell: '&7Продажа: &f%percent%'
+  levels:
+    count: '&7Определено уровней: &f%amount%'
+  # English default (unverified machine translation risk) - feel free to translate.
+  features:
+    potions: Potions
+    enchantments: Enchantments
+    enchanted-books: Enchanted Books
+    sell-all: Sell All
+    quick-fill: Quick Deliver
+    search: Search
+    filter: Filter
+    sort: Sort
+  templates:
+    stats:
+    - '&7Активных заказов: &f%active%'
+    - '&7Завершённых заказов: &f%completed%'
+    - '&7Открытый объём: &a$%volume%'
+    - '&7Игроков онлайн: &f%players%'
+    features:
+    - '%features%'
+    - ''
+    - '&7Нажмите, чтобы переключить следующую функцию'
+    tax:
+    - '%state%'
+    - '&7Создание: &f%creation%'
+    - '&7Доставка: &f%delivery%'
+    - '&7Продажа: &f%sell%'
+    - ''
+    - '&7Нажмите, чтобы переключить'
+    levels:
+    - '%state%'
+    - '%level-details%'
+    - ''
+    - '&7Нажмите, чтобы переключить'
+    order:
+    - '&7Владелец: &f%owner%'
+    - '&fПрогресс: %filled%/%total%'
+    - '&fЦена: $%price%'
+    - '&7Возврат при удалении: &a$%refund%'
+    - '&8ID: %id%'
+    - ''
+    - '&cSHIFT + правый клик &7чтобы удалить и вернуть деньги'
+    detail:
+    - '&6&l--- &f%item% &6&l---'
+    - '&7Владелец: &f%owner%'
+    - '&fПрогресс: %filled%/%total%'
+    - '&fЦена: $%price%'
+    - '&7Возврат при удалении: &a$%refund%'
+    - '&fПредметов ожидает: &6%waiting%'
+    - '&8ID: %id%'
+time:
+  day: '%value%д'
+  hour: '%value%ч'
+  minute: '%value%м'
+  expired: Истёк
+names:
+  unknown: Unknown
+  enchanted-book: '%enchantment% Book'
+  potion:
+    base: Potion of %name%
+    splash: Splash %name%
+    lingering: Lingering %name%
+    long: '%name% (Long)'
+    strong: Strong %name%
+  potions:
+    WATER: Water
+    MUNDANE: Mundane
+    THICK: Thickness
+    AWKWARD: Awkwardness
+    NIGHT_VISION: Night Vision
+    INVISIBILITY: Invisibility
+    LEAPING: Leaping
+    FIRE_RESISTANCE: Fire Resistance
+    SWIFTNESS: Swiftness
+    SLOWNESS: Slowness
+    WATER_BREATHING: Water Breathing
+    HEALING: Healing
+    HARMING: Harming
+    POISON: Poison
+    REGENERATION: Regeneration
+    STRENGTH: Strength
+    WEAKNESS: Weakness
+    LUCK: Luck
+    TURTLE_MASTER: the Turtle Master
+    SLOW_FALLING: Slow Falling
+    WIND_CHARGED: Wind Charging
+    WEAVING: Weaving
+    OOZING: Oozing
+    INFESTED: Infestation
+  words:
+    TNT: TNT
+  items: {}
+level:
+  up: '{prefix}&dВаш уровень заказов теперь &f%level%&d!'
+  up-title: '&d&lНОВЫЙ УРОВЕНЬ'
+  up-subtitle: '&fУровень заказов &d%level%'
+  up-broadcast: '&d%player% &fдостиг уровня заказов &d%level%&f!'
+  disabled: '{prefix}&cСистема уровней отключена на этом сервере.'
+  daily-cap-reached: '{prefix}&eВы достигли дневного лимита опыта.'

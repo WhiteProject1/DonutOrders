@@ -1,0 +1,6 @@
+target/
+*.class
+*.jar
+cp.txt
+docs/superpowers/
+*-REPORT.md

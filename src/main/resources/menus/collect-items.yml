@@ -1,0 +1,51 @@
+# -----------------------------------------------------------------------------#
+#  Teslim edilen eşyaları toplama menüsü                                         #
+# -----------------------------------------------------------------------------#
+#  Alanların açıklaması için menus/main-menu.yml başındaki nota bakın.
+#
+#  sell-all butonu config.yml -> features.sell-all kapalıysa hiç konmaz.
+# -----------------------------------------------------------------------------#
+
+rows: 6
+title: ""
+content-slots: "0-44"
+open-sound: "none"
+
+# Menü kapanırken çalan ses. Bir menüden diğerine geçerken de tetiklenir,
+# bu yüzden varsayılan "none" (config.yml -> sounds.events.menu-close).
+close-sound: "none"
+
+filler:
+  enabled: true
+  material: GRAY_STAINED_GLASS_PANE
+  name: " "
+  slots: "45-53"
+  # true ise dolgu, üzerinde buton olsa bile o slotu doldurur.
+  # false (varsayılan) butonları korur — alt sıradaki sayfa/geri/arama
+  # butonlarının kaybolmaması için bu ayar false kalmalıdır.
+  overwrite: false
+
+items:
+  previous-page:
+    enabled: true
+    slot: 45
+    material: ARROW
+    sound: "ui.button.click"
+
+  sell-all:
+    enabled: true
+    slot: 49
+    material: EMERALD
+    sound: "entity.experience_orb.pickup"
+
+  drop-all:
+    enabled: true
+    slot: 51
+    material: DISPENSER
+    sound: "entity.item.pickup"
+
+  next-page:
+    enabled: true
+    slot: 53
+    material: ARROW
+    sound: "ui.button.click"
