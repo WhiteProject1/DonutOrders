@@ -93,7 +93,7 @@ public final class OrderPlugin extends JavaPlugin {
         this.menus.load();
 
         if (!this.setupVault()) {
-            LOGGER.severe(String.format("[%s] - Vault/Ekonomi eklentisi bulunamadi! Devre disi birakiliyor.",
+            LOGGER.severe(String.format("[%s] - Vault/economy plugin not found! Disabling.",
                     this.getDescription().getName()));
             this.getServer().getPluginManager().disablePlugin((Plugin) this);
             return;
@@ -128,9 +128,9 @@ public final class OrderPlugin extends JavaPlugin {
         // than fail silently, the owner is warned explicitly here.
         if (this.orderManager.mysqlStorage() != null && !this.sync.enabled()) {
             LOGGER.warning(String.format(
-                    "[%s] storage.type MYSQL/MARIADB olarak ayarli ama network.enabled: false! "
-                            + "Bu veritabanini birden fazla sunucu paylasiyorsa iki sunucu ayni teslimati "
-                            + "odeyebilir. Boyle bir kurulumda config.yml -> network.enabled: true yapin.",
+                    "[%s] storage.type is set to MYSQL/MARIADB but network.enabled: false! "
+                            + "If multiple servers share this database, two servers could pay out the "
+                            + "same delivery. In that kind of setup, set config.yml -> network.enabled: true.",
                     this.getDescription().getName()));
         }
 
@@ -156,7 +156,7 @@ public final class OrderPlugin extends JavaPlugin {
             this.levelStorage.flush();
         }, interval, interval);
 
-        LOGGER.info(String.format("[%s] Aktif - Surum %s", this.getDescription().getName(),
+        LOGGER.info(String.format("[%s] Active - Version %s", this.getDescription().getName(),
                 this.getDescription().getVersion()));
     }
 
@@ -174,7 +174,7 @@ public final class OrderPlugin extends JavaPlugin {
             this.orderManager.saveOrders();
             this.orderManager.shutdown();
         }
-        LOGGER.info(String.format("[%s] Devre disi.", this.getDescription().getName()));
+        LOGGER.info(String.format("[%s] Disabled.", this.getDescription().getName()));
     }
 
 
@@ -198,8 +198,8 @@ public final class OrderPlugin extends JavaPlugin {
 
         MySQLStorage storage = this.orderManager.mysqlStorage();
         if (storage == null) {
-            LOGGER.severe("network.enabled: true ama storage.type MYSQL/MARIADB degil! "
-                    + "Cross-server ortak bir veritabani gerektirir; senkronizasyon KAPATILDI.");
+            LOGGER.severe("network.enabled: true but storage.type is not MYSQL/MARIADB! "
+                    + "Cross-server sync requires a shared database; synchronization DISABLED.");
             return new NoOpSyncService(id);
         }
 
@@ -211,7 +211,7 @@ public final class OrderPlugin extends JavaPlugin {
 
     private boolean setupVault() {
         if (this.getServer().getPluginManager().getPlugin("Vault") == null) {
-            LOGGER.severe("Vault bulunamadi!");
+            LOGGER.severe("Vault not found!");
             return false;
         }
         return this.setupEconomy();
@@ -220,7 +220,7 @@ public final class OrderPlugin extends JavaPlugin {
     private boolean setupEconomy() {
         RegisteredServiceProvider<Economy> rsp = this.getServer().getServicesManager().getRegistration(Economy.class);
         if (rsp == null) {
-            LOGGER.severe("Ekonomi eklentisi bulunamadi (ornegin Essentials, CMI)!");
+            LOGGER.severe("No economy plugin found (e.g. Essentials, CMI)!");
             return false;
         }
         economy = rsp.getProvider();
@@ -251,7 +251,7 @@ public final class OrderPlugin extends JavaPlugin {
             player.playSound(player.getLocation(), soundKey, volume, pitch);
         } catch (Exception e) {
             // An invalid sound key must not break the menu.
-            getLogger().warning("Ses calinamadi: " + soundKey + " (" + e.getMessage() + ")");
+            getLogger().warning("Could not play sound: " + soundKey + " (" + e.getMessage() + ")");
         }
     }
 
@@ -282,7 +282,7 @@ public final class OrderPlugin extends JavaPlugin {
     // ------------------------------------------------------------------ reload
 
     public void reloadAllConfigs() {
-        LOGGER.info("Tum yapilandirmalar yeniden yukleniyor...");
+        LOGGER.info("Reloading all configurations...");
         this.reloadConfig();
         ConfigUpdater.update(this);
         this.reloadConfig();
@@ -307,7 +307,7 @@ public final class OrderPlugin extends JavaPlugin {
         // Cooldowns are cleared: a server owner shortening durations shouldn't
         // have players stuck waiting out the old, longer cooldown.
         if (this.cooldowns != null) this.cooldowns.clear();
-        LOGGER.info("Yapilandirmalar yeniden yuklendi.");
+        LOGGER.info("Configuration reloaded.");
     }
 
     // ------------------------------------------------------------------ access

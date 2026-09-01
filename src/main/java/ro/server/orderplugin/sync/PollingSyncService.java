@@ -64,7 +64,7 @@ public final class PollingSyncService implements SyncService {
         taskHandle = plugin.getSchedulerAdapter().runGlobalTimer(plugin,
                 () -> plugin.getSchedulerAdapter().runAsync(plugin, this::poll),
                 intervalTicks, intervalTicks);
-        plugin.getLogger().info("Cross-server (POLL) acik. Sunucu kimligi: " + serverId);
+        plugin.getLogger().info("Cross-server (POLL) enabled. Server ID: " + serverId);
     }
 
     @Override
@@ -82,7 +82,7 @@ public final class PollingSyncService implements SyncService {
              ResultSet rs = ps.executeQuery()) {
             if (rs.next()) lastSeenId = rs.getLong(1);
         } catch (Exception e) {
-            plugin.getLogger().log(Level.WARNING, "Sync baslangic imleci okunamadi", e);
+            plugin.getLogger().log(Level.WARNING, "Could not read the sync starting cursor", e);
             lastSeenId = 0L;
         }
     }
@@ -102,7 +102,7 @@ public final class PollingSyncService implements SyncService {
                 ps.setLong(6, message.timestamp());
                 ps.executeUpdate();
             } catch (Exception e) {
-                plugin.getLogger().log(Level.WARNING, "Sync olayi yazilamadi: " + message.type(), e);
+                plugin.getLogger().log(Level.WARNING, "Could not write sync event: " + message.type(), e);
             }
         });
     }
@@ -131,7 +131,7 @@ public final class PollingSyncService implements SyncService {
                 }
             }
         } catch (Exception e) {
-            plugin.getLogger().log(Level.WARNING, "Sync taramasi basarisiz", e);
+            plugin.getLogger().log(Level.WARNING, "Sync scan failed", e);
             return;
         }
 
@@ -208,7 +208,7 @@ public final class PollingSyncService implements SyncService {
                 ps.executeUpdate();
             }
         } catch (Exception e) {
-            plugin.getLogger().log(Level.WARNING, "Heartbeat yazilamadi", e);
+            plugin.getLogger().log(Level.WARNING, "Could not write heartbeat", e);
         }
     }
 

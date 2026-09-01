@@ -1,8 +1,8 @@
 # -----------------------------------------------------------------------------#
-#  DonutOrders - Francais (fr)
+#  DonutOrders - French (fr)
 # -----------------------------------------------------------------------------#
 #
-#  Fichier de langue francais. Librement modifiable.
+#  French language file. Freely editable.
 #
 #  Colours: &a &b &c ... and hex &#00d271
 #  Placeholders: {prefix} %player% %seller% %amount% %item% %price% %total%

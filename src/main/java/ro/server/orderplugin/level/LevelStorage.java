@@ -99,7 +99,7 @@ public final class LevelStorage {
             java.nio.file.Files.move(temp.toPath(), file.toPath(),
                     java.nio.file.StandardCopyOption.REPLACE_EXISTING);
         } catch (IOException e) {
-            plugin.getLogger().log(Level.SEVERE, "levels-players.yml kaydedilemedi!", e);
+            plugin.getLogger().log(Level.SEVERE, "levels-players.yml could not be saved!", e);
             // Write failed: the flag is set again so the next flush retries.
             dirty = true;
         }

@@ -32,7 +32,7 @@ public class PendingMessageManager implements Listener {
         try {
             this.config.save(this.file);
         } catch (IOException e) {
-            this.plugin.getLogger().log(Level.SEVERE, "Nu s-a putut salva pending_messages.yml!", e);
+            this.plugin.getLogger().log(Level.SEVERE, "Could not save pending_messages.yml!", e);
         }
     }
 

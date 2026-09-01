@@ -1,15 +1,16 @@
 # -----------------------------------------------------------------------------#
-#  Dil seçme menüsü — /orderlang                                                 #
+#  Language selection menu — /orderlang                                         #
 # -----------------------------------------------------------------------------#
-#  Alanların açıklaması için menus/main-menu.yml başındaki nota bakın.
+#  See the note at the top of menus/main-menu.yml for a description of the fields.
 #
-#  content-slots dillerin dizildiği yerdir. lang/ klasörüne yeni bir dil dosyası
-#  eklerseniz otomatik olarak burada belirir. Sığmayan diller SONRAKİ SAYFAYA
-#  taşınır — kaybolmaz. Eklenti 13 dille geldiği için varsayılan 21 slot yeterli;
-#  sayfa okları bu yüzden kapalı gelir. Daha çok dil eklerseniz açın.
+#  content-slots is where languages are laid out. If you add a new language
+#  file to the lang/ folder, it appears here automatically. Languages that don't
+#  fit move to the NEXT PAGE — they are never lost. The plugin ships with 13
+#  languages, so the default 21 slots are enough, which is why the page arrows
+#  come disabled by default. Enable them if you add more languages.
 #
-#  Her dilin ikonu aşağıdaki icons bölümünden gelir.
-#  Bu menü config.yml -> per-player-language kapalıysa açılmaz.
+#  Each language's icon comes from the icons section below.
+#  This menu does not open if config.yml -> per-player-language is off.
 # -----------------------------------------------------------------------------#
 
 rows: 5
@@ -17,20 +18,20 @@ title: ""
 content-slots: "10-16, 19-25, 28-34"
 open-sound: "none"
 
-# Menü kapanırken çalan ses. Bir menüden diğerine geçerken de tetiklenir,
-# bu yüzden varsayılan "none" (config.yml -> sounds.events.menu-close).
+# Sound played when the menu closes. This also triggers when switching from
+# one menu to another, which is why the default is "none" (config.yml -> sounds.events.menu-close).
 close-sound: "none"
 
 filler:
   enabled: true
   material: GRAY_STAINED_GLASS_PANE
   name: " "
-  # true ise dolgu, üzerinde buton olsa bile o slotu doldurur.
-  # false (varsayılan) butonları korur — alt sıradaki sayfa/geri/arama
-  # butonlarının kaybolmaması için bu ayar false kalmalıdır.
+  # If true, the filler fills the slot even if a button sits on it.
+  # If false (default), buttons are preserved — this must stay false so the
+  # page/back/search buttons in the bottom row don't disappear.
   overwrite: false
 
-# Dil kodu -> ikon materyali. Listede olmayan dil için default kullanılır.
+# Language code -> icon material. The default is used for a language not in the list.
 icons:
   default: PAPER
   tr: RED_BANNER
@@ -48,8 +49,8 @@ icons:
   ja: WHITE_WOOL
 
 items:
-  # 13 dil tek sayfaya sığdığı için varsayılan kapalı. Kendi dilinizi ekleyip
-  # 21'i aşarsanız enabled: true yapın; slotlar zaten hazır.
+  # Disabled by default since 13 languages fit on a single page. If you add
+  # your own language and go over 21, set enabled: true — the slots are already in place.
   previous-page:
     enabled: false
     slot: 39

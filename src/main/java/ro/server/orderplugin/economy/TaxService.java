@@ -114,14 +114,14 @@ public final class TaxService {
 
         String name = plugin.settings().taxDestinationAccount();
         if (name == null || name.isBlank()) {
-            plugin.getLogger().warning("tax.destination ACCOUNT ama tax.destination-account bos; vergi yok edildi.");
+            plugin.getLogger().warning("tax.destination is ACCOUNT but tax.destination-account is empty; tax was destroyed.");
             return;
         }
         try {
             OfflinePlayer target = plugin.getServer().getOfflinePlayer(name);
             OrderPlugin.getEconomy().depositPlayer(target, amount);
         } catch (Exception e) {
-            plugin.getLogger().warning("Vergi hesabina yatirilamadi (" + name + "): " + e.getMessage());
+            plugin.getLogger().warning("Could not deposit into the tax account (" + name + "): " + e.getMessage());
         }
     }
 }

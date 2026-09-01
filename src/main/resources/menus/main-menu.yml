@@ -1,67 +1,68 @@
 # -----------------------------------------------------------------------------#
-#  Ana sipariş menüsü — /order                                                   #
+#  Main order menu — /order                                                     #
 # -----------------------------------------------------------------------------#
 #
-#  BU DOSYA YERLEŞİMİ BELİRLER, METİNLERİ DEĞİL.
-#  Buton isimleri ve açıklamaları lang/<dil>.yml içindedir; böylece her oyuncu
-#  kendi dilinde görür. Buradaki "name" / "lore" alanları isteğe bağlı EZMELERDİR:
-#  yazarsanız o metin herkes için sabitlenir (dile göre değişmez).
+#  THIS FILE CONTROLS LAYOUT, NOT TEXT.
+#  Button names and descriptions live in lang/<language>.yml, so each player
+#  sees them in their own language. The "name" / "lore" fields here are optional
+#  OVERRIDES: if you set them, that text is fixed for everyone (no longer
+#  language-dependent).
 #
-#  Ortak alanlar (her butonda kullanılabilir):
-#    enabled            true/false — false ise buton hiç konmaz
-#    slot               tek slot (0'dan başlar)
-#    slots              çoklu slot: [45, 46] ya da "0-44, 53"
-#    material           blok/eşya adı (örn. ARROW, CHEST)
-#    custom-model-data  kaynak paketi model numarası (0 = yok)
-#    glow               true ise büyü parıltısı ekler
-#    name               isim ezmesi (yazmazsanız dil dosyasından gelir)
-#    lore               açıklama ezmesi; dinamik satırlar yine altına eklenir
-#    sound              tıklama sesi — "anahtar", "anahtar:ses" ya da
-#                       "anahtar:ses:perde"  (örn. "ui.button.click:0.6:1.4")
-#    sound-volume       eski yazım; sound içinde ses yazılmamışsa geçerlidir
-#    sound-pitch        eski yazım; sound içinde perde yazılmamışsa geçerlidir
+#  Common fields (usable on any button):
+#    enabled            true/false — if false, the button is not placed at all
+#    slot               a single slot (starts at 0)
+#    slots              multiple slots: [45, 46] or "0-44, 53"
+#    material           block/item name (e.g. ARROW, CHEST)
+#    custom-model-data  resource pack model number (0 = none)
+#    glow               if true, adds an enchant glint
+#    name               name override (if omitted, comes from the language file)
+#    lore               lore override; dynamic lines are still appended below it
+#    sound              click sound — "key", "key:volume" or
+#                       "key:volume:pitch"  (e.g. "ui.button.click:0.6:1.4")
+#    sound-volume       legacy field; applies only if sound has no volume set
+#    sound-pitch        legacy field; applies only if sound has no pitch set
 #
-#  Bir butonda sound yazmazsanız o buton için config.yml -> sounds.events
-#  altındaki genel ses çalar (örn. sayfa butonları -> page-turn). İkisi birden
-#  çalmaz; buton bazlı tanım her zaman kazanır.
+#  If a button doesn't set sound, the general sound from config.yml ->
+#  sounds.events applies instead (e.g. page buttons -> page-turn). The two
+#  never play together; the per-button definition always wins.
 #
-#  Bir butonu tamamen kaldırmak için ya enabled: false yapın ya da bölümü silin.
-#  Silinen bölüm sürüm güncellemesinde geri gelmez.
+#  To remove a button entirely, either set enabled: false or delete the section.
+#  A deleted section will not come back on a version update.
 #
-#  DOLGU (filler) yalnızca BOŞ slotları doldurur; butonların üzerine yazmaz.
-#  Eski davranışı isteyen "overwrite: true" yazabilir — ama o zaman dolgu
-#  aralığına denk gelen butonlar görünmez olur.
+#  The FILLER only fills EMPTY slots; it never overwrites buttons.
+#  If you want the old behavior, set "overwrite: true" — but then buttons that
+#  fall within the filler range become invisible.
 #
-#  Ses anahtarları vanilya adlarıdır (BÜYÜK_HARF enum değil):
+#  Sound keys are vanilla names (not UPPERCASE enum constants):
 #    ui.button.click, block.note_block.pling, entity.experience_orb.pickup,
-#    block.anvil.use, entity.villager.yes  ...  "none" yazarsanız ses çalmaz.
+#    block.anvil.use, entity.villager.yes  ...  set "none" to play no sound.
 # -----------------------------------------------------------------------------#
 
-# Envanter satır sayısı (1-6). Sayfa başına sipariş sayısı content-slots'a bağlıdır.
+# Number of inventory rows (1-6). Orders per page depends on content-slots.
 rows: 6
 
-# Başlık ezmesi. Boş bırakırsanız lang dosyasındaki menus.main-menu kullanılır.
-# Yer tutucular: %page% %pages%
+# Title override. If left blank, menus.main-menu from the language file is used.
+# Placeholders: %page% %pages%
 title: ""
 
-# Siparişlerin dizileceği slotlar. Buranın büyüklüğü = sayfa başına sipariş sayısı.
+# Slots where orders are laid out. The size of this range = orders per page.
 content-slots: "0-44"
 
-# Menü açılırken çalan ses.
+# Sound played when the menu opens.
 open-sound: "none"
 
-# Menü kapanırken çalan ses. Bir menüden diğerine geçerken de tetiklenir,
-# bu yüzden varsayılan "none" (config.yml -> sounds.events.menu-close).
+# Sound played when the menu closes. This also triggers when switching from
+# one menu to another, which is why the default is "none" (config.yml -> sounds.events.menu-close).
 close-sound: "none"
 
-# Boş kalan slotları dolduran cam panel.
+# Glass pane that fills any slots left empty.
 filler:
   enabled: false
   material: GRAY_STAINED_GLASS_PANE
   name: " "
-  # true ise dolgu, üzerinde buton olsa bile o slotu doldurur.
-  # false (varsayılan) butonları korur — alt sıradaki sayfa/geri/arama
-  # butonlarının kaybolmaması için bu ayar false kalmalıdır.
+  # If true, the filler fills the slot even if a button sits on it.
+  # If false (default), buttons are preserved — this must stay false so the
+  # page/back/search buttons in the bottom row don't disappear.
   overwrite: false
 
 items:
@@ -107,9 +108,9 @@ items:
     material: CHEST
     sound: "ui.button.click"
 
-  # Sipariş seviyesi. levels.yml -> enabled: false ise bu buton HİÇ konmaz
-  # (slot boş kalır). Butonu istemiyor ama sistemi arkada çalıştırmak
-  # istiyorsanız burada enabled: false yapın.
+  # Order level. If levels.yml -> enabled: false, this button is NOT placed
+  # at all (the slot stays empty). If you want the system running in the
+  # background without the button, set enabled: false here instead.
   level:
     enabled: true
     slot: 52

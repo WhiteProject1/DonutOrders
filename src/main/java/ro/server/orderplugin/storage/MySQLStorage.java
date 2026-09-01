@@ -168,10 +168,10 @@ public class MySQLStorage {
             try (Statement stmt = conn.createStatement()) {
                 stmt.executeUpdate("ALTER TABLE " + tablePrefix + "orders ADD COLUMN "
                         + column + " " + definition);
-                logger.info("[Database] '" + column + "' kolonu eklendi (surum yukseltmesi).");
+                logger.info("[Database] '" + column + "' column added (version upgrade).");
             }
         } catch (SQLException e) {
-            logger.log(Level.WARNING, "[Database] '" + column + "' kolonu eklenemedi", e);
+            logger.log(Level.WARNING, "[Database] Could not add '" + column + "' column", e);
         }
     }
 
@@ -196,7 +196,7 @@ public class MySQLStorage {
             ps.setInt(3, amount);
             return ps.executeUpdate() > 0 ? amount : 0;
         } catch (SQLException e) {
-            logger.log(Level.SEVERE, "[Database] Atomik doldurma basarisiz: " + orderId, e);
+            logger.log(Level.SEVERE, "[Database] Atomic fill failed: " + orderId, e);
             // If the database is unreachable, the fill DOES NOT happen. Treating
             // an error as "assume it succeeded" would open the door to double payment.
             return 0;

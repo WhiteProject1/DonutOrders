@@ -165,7 +165,7 @@ public final class Settings {
         try {
             inputMode = InputMode.valueOf(mode.trim().toUpperCase(Locale.ROOT));
         } catch (IllegalArgumentException e) {
-            plugin.getLogger().warning("orders.input-mode '" + mode + "' gecersiz (SIGN veya CHAT), SIGN kullaniliyor.");
+            plugin.getLogger().warning("orders.input-mode '" + mode + "' is invalid (SIGN or CHAT), using SIGN.");
             inputMode = InputMode.SIGN;
         }
 
@@ -201,7 +201,7 @@ public final class Settings {
         for (String raw : c.getStringList("orders.blacklist")) {
             Material m = Material.matchMaterial(raw.trim().toUpperCase(Locale.ROOT));
             if (m == null) {
-                plugin.getLogger().warning("orders.blacklist icinde bilinmeyen materyal: " + raw);
+                plugin.getLogger().warning("orders.blacklist contains an unknown material: " + raw);
                 continue;
             }
             blacklist.add(m);
@@ -269,7 +269,7 @@ public final class Settings {
         for (String key : section.getKeys(false)) {
             if (key.length() != 1) {
                 plugin.getLogger().warning("text.minifont.map -> '" + key
-                        + "' tek karakter degil, atlandi.");
+                        + "' is not a single character, skipped.");
                 continue;
             }
             String value = section.getString(key);
@@ -311,7 +311,7 @@ public final class Settings {
                 if (raw == null) continue;
                 if (!EVENT_DEFAULTS.containsKey(key)) {
                     plugin.getLogger().warning("sounds.events -> '" + key
-                            + "' kodun tanimadigi bir olay, yok sayildi.");
+                            + "' is an event the code doesn't recognize, ignored.");
                     continue;
                 }
                 out.put(key, SoundSpec.parse(raw, out.get(key)));
@@ -336,7 +336,7 @@ public final class Settings {
             Object raw = section.get(permission);
             if (raw instanceof ConfigurationSection sub) {
                 if (!sub.isSet(valueKey)) {
-                    plugin.getLogger().warning("'" + permission + "' altinda '" + valueKey + "' eksik, atlandi.");
+                    plugin.getLogger().warning("'" + permission + "' is missing '" + valueKey + "', skipped.");
                     continue;
                 }
                 out.add(new PermValue(permission, sub.getDouble(valueKey)));
@@ -345,7 +345,7 @@ public final class Settings {
             } else if (raw instanceof Map<?, ?> map && map.get(valueKey) instanceof Number n) {
                 out.add(new PermValue(permission, n.doubleValue()));
             } else {
-                plugin.getLogger().warning("'" + permission + "' icin gecersiz deger, atlandi.");
+                plugin.getLogger().warning("'" + permission + "' has an invalid value, skipped.");
             }
         }
         return List.copyOf(out);

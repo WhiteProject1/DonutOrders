@@ -1,14 +1,14 @@
 # -----------------------------------------------------------------------------#
-#  Yönetici paneli — /donutordersadmin                                           #
+#  Admin panel — /donutordersadmin                                              #
 # -----------------------------------------------------------------------------#
-#  Alanların açıklaması için menus/main-menu.yml başındaki nota bakın.
+#  See the note at the top of menus/main-menu.yml for a description of the fields.
 #
-#  Bir butonu enabled: false yaparsanız o yetenek panelden TAMAMEN kalkar
-#  (komut karşılığı çalışmaya devam eder).
+#  Setting a button's enabled: false removes that capability from the panel
+#  ENTIRELY (the equivalent command still works).
 #
-#  features / tax / levels butonları tıklandığında ilgili ayarı config'e YAZAR
-#  ve anında uygular. Yazma başarısız olursa değişiklik yalnızca o oturum için
-#  geçerli olur ve konsola uyarı düşer.
+#  The features / tax / levels buttons WRITE the corresponding setting to the
+#  config when clicked and apply it immediately. If the write fails, the
+#  change only applies for that session and a warning is logged to console.
 # -----------------------------------------------------------------------------#
 
 rows: 5
@@ -16,7 +16,7 @@ title: ""
 content-slots: ""
 open-sound: "block.chest.open:0.5:1.2"
 
-# Menü kapanırken çalan ses.
+# Sound played when the menu closes.
 close-sound: "none"
 
 filler:
@@ -24,8 +24,8 @@ filler:
   material: BLACK_STAINED_GLASS_PANE
   name: " "
   slots: "0-44"
-  # Dolgu butonların üzerine yazmaz; bu menüde tüm boşluğu doldurmak için
-  # geniş bir aralık verilmiştir.
+  # The filler never overwrites buttons; a wide range is given here to fill
+  # all the empty space in this menu.
   overwrite: false
 
 items:

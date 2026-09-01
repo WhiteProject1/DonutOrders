@@ -64,7 +64,7 @@ public final class CustomItemBridge {
         blacklist = lower(plugin.getConfig().getStringList("custom-items.blacklist"));
 
         if (!enabled) {
-            plugin.getLogger().info("Ozel esya destegi kapali (custom-items.enabled: false).");
+            plugin.getLogger().info("Custom item support is disabled (custom-items.enabled: false).");
             return;
         }
 
@@ -74,9 +74,9 @@ public final class CustomItemBridge {
         register("cmd", new ModelDataProvider());
 
         if (providers.isEmpty()) {
-            plugin.getLogger().info("Ozel esya saglayicisi bulunamadi; yalnizca vanilya esyalar.");
+            plugin.getLogger().info("No custom item provider found; vanilla items only.");
         } else {
-            plugin.getLogger().info("Ozel esya saglayicilari: " + providers.keySet());
+            plugin.getLogger().info("Custom item providers: " + providers.keySet());
         }
     }
 

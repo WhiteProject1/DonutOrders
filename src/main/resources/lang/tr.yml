@@ -1,22 +1,22 @@
 # -----------------------------------------------------------------------------#
-#  DonutOrders - Türkçe dil dosyası                                             #
+#  DonutOrders - Turkish language file                                          #
 # -----------------------------------------------------------------------------#
 #
-#  Eklentinin gösterdiği HER metin bu dosyada. Menü başlıkları, buton isimleri,
-#  tabela istemleri, eşya/büyü/iksir adları dahil hiçbir metin kodun içinde
-#  sabit değil; hepsini buradan değiştirebilirsiniz.
+#  Every piece of text the plugin shows lives in this file. Menu titles, button
+#  names, sign prompts, item/enchantment/potion names included - none of it is
+#  hardcoded in the code; you can change all of it from here.
 #
-#  Renkler:  &a &b &c ... ve hex &#00d271
-#  Yer tutucular:
-#    {prefix}   config.yml'deki ön ek
-#    %player%   oyuncu adı           %seller%  teslim eden
-#    %amount%   miktar               %item%    eşya adı
-#    %price%    fiyat                %total%   toplam fiyat
-#    %limit%    limit                %page%    bulunulan sayfa
-#    %pages%    toplam sayfa         %search%  arama metni
+#  Colours:  &a &b &c ... and hex &#00d271
+#  Placeholders:
+#    {prefix}   prefix from config.yml
+#    %player%   player name          %seller%  deliverer name
+#    %amount%   amount               %item%    item name
+#    %price%    price                %total%   total price
+#    %limit%    limit                %page%    current page
+#    %pages%    total pages          %search%  search text
 #
-#  Kendi dilinizi eklemek: bu dosyayı lang/<kod>.yml olarak kopyalayıp çevirin
-#  (örn. lang/de.yml). Otomatik olarak tanınır, kod değişikliği gerekmez.
+#  Adding your own language: copy this file to lang/<code>.yml and translate it
+#  (e.g. lang/de.yml). It is picked up automatically - no code change needed.
 # -----------------------------------------------------------------------------#
 
 language:

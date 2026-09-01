@@ -1,8 +1,8 @@
 # -----------------------------------------------------------------------------#
-#  İksir türü seçme menüsü                                                       #
+#  Potion type selector menu                                                    #
 # -----------------------------------------------------------------------------#
-#  Alanların açıklaması için menus/main-menu.yml başındaki nota bakın.
-#  Bu menü config.yml -> features.potions kapalıysa hiç açılmaz.
+#  See the note at the top of menus/main-menu.yml for a description of the fields.
+#  This menu never opens if config.yml -> features.potions is off.
 # -----------------------------------------------------------------------------#
 
 rows: 6
@@ -10,8 +10,8 @@ title: ""
 content-slots: "0-44"
 open-sound: "none"
 
-# Menü kapanırken çalan ses. Bir menüden diğerine geçerken de tetiklenir,
-# bu yüzden varsayılan "none" (config.yml -> sounds.events.menu-close).
+# Sound played when the menu closes. This also triggers when switching from
+# one menu to another, which is why the default is "none" (config.yml -> sounds.events.menu-close).
 close-sound: "none"
 
 filler:
@@ -19,9 +19,9 @@ filler:
   material: GRAY_STAINED_GLASS_PANE
   name: " "
   slots: "45-53"
-  # true ise dolgu, üzerinde buton olsa bile o slotu doldurur.
-  # false (varsayılan) butonları korur — alt sıradaki sayfa/geri/arama
-  # butonlarının kaybolmaması için bu ayar false kalmalıdır.
+  # If true, the filler fills the slot even if a button sits on it.
+  # If false (default), buttons are preserved — this must stay false so the
+  # page/back/search buttons in the bottom row don't disappear.
   overwrite: false
 
 items:

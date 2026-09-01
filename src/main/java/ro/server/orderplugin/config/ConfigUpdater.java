@@ -66,11 +66,11 @@ public final class ConfigUpdater {
         try {
             onDisk.save(file);
             if (!added.isEmpty()) {
-                plugin.getLogger().info("config.yml guncellendi, eklenen yeni ayarlar: " + String.join(", ", added));
+                plugin.getLogger().info("config.yml updated, new settings added: " + String.join(", ", added));
             }
         } catch (Exception e) {
-            plugin.getLogger().warning("config.yml guncellenemedi (" + e.getMessage()
-                    + "); yeni ayarlar varsayilan degerleriyle calisacak.");
+            plugin.getLogger().warning("config.yml could not be updated (" + e.getMessage()
+                    + "); new settings will use their default values.");
         }
     }
 
@@ -100,8 +100,8 @@ public final class ConfigUpdater {
             // If the rate was 0 in the old file, the server owner didn't want tax: don't turn it on.
             if (!onDisk.isSet("tax.enabled")) onDisk.set("tax.enabled", old > 0d);
             onDisk.set("orders.creation-tax-percent", null);
-            plugin.getLogger().info("config.yml: vergi orders.creation-tax-percent ("
-                    + old + ") -> tax.creation-percent (" + (old * 100d) + "%) tasindi.");
+            plugin.getLogger().info("config.yml: tax orders.creation-tax-percent ("
+                    + old + ") -> tax.creation-percent (" + (old * 100d) + "%) migrated.");
             changed = true;
         }
         if (onDisk.isConfigurationSection("orders.rank-tax") && !onDisk.isSet("tax.rank-rates")) {
@@ -110,7 +110,7 @@ public final class ConfigUpdater {
                 onDisk.set("tax.rank-rates." + key, old.getDouble(key) * 100d);
             }
             onDisk.set("orders.rank-tax", null);
-            plugin.getLogger().info("config.yml: orders.rank-tax -> tax.rank-rates tasindi (yuzdeye cevrildi).");
+            plugin.getLogger().info("config.yml: orders.rank-tax -> tax.rank-rates migrated (converted to percentage).");
             changed = true;
         }
 
@@ -122,11 +122,11 @@ public final class ConfigUpdater {
         String value = config.getString(from);
         config.set(from, null);
         if (config.isSet(to)) {
-            plugin.getLogger().info("config.yml: '" + from + "' kaldirildi ('" + to + "' zaten tanimli).");
+            plugin.getLogger().info("config.yml: '" + from + "' removed ('" + to + "' already defined).");
             return true;
         }
         config.set(to, value);
-        plugin.getLogger().info("config.yml: '" + from + "' -> '" + to + "' tasindi (deger korundu: " + value + ").");
+        plugin.getLogger().info("config.yml: '" + from + "' -> '" + to + "' migrated (value preserved: " + value + ").");
         return true;
     }
 
@@ -135,7 +135,7 @@ public final class ConfigUpdater {
             if (in == null) return null;
             return YamlConfiguration.loadConfiguration(new InputStreamReader(in, StandardCharsets.UTF_8));
         } catch (Exception e) {
-            plugin.getLogger().warning("Paketli config.yml okunamadi: " + e.getMessage());
+            plugin.getLogger().warning("Could not read the bundled config.yml: " + e.getMessage());
             return null;
         }
     }

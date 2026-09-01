@@ -1,13 +1,13 @@
 # -----------------------------------------------------------------------------#
-#  Büyü seçme menüsü                                                             #
+#  Enchantment picker menu                                                      #
 # -----------------------------------------------------------------------------#
-#  Alanların açıklaması için menus/main-menu.yml başındaki nota bakın.
+#  See the note at the top of menus/main-menu.yml for a description of the fields.
 #
-#  content-slots büyülü kitapların dizildiği yerdir; kaç tane yazarsanız sayfa
-#  başına o kadar büyü gösterilir. "preview" seçilen büyülerle birlikte eşyanın
-#  önizlemesidir.
+#  content-slots is where the enchanted books are laid out; however many you
+#  set, that many enchantments are shown per page. "preview" is a preview of
+#  the item together with the selected enchantments.
 #
-#  Bu menü config.yml -> features.enchantments kapalıysa hiç açılmaz.
+#  This menu never opens if config.yml -> features.enchantments is off.
 # -----------------------------------------------------------------------------#
 
 rows: 6
@@ -15,8 +15,8 @@ title: ""
 content-slots: "2-8, 11-17, 20-26, 29-35, 38-44"
 open-sound: "none"
 
-# Menü kapanırken çalan ses. Bir menüden diğerine geçerken de tetiklenir,
-# bu yüzden varsayılan "none" (config.yml -> sounds.events.menu-close).
+# Sound played when the menu closes. This also triggers when switching from
+# one menu to another, which is why the default is "none" (config.yml -> sounds.events.menu-close).
 close-sound: "none"
 
 filler:
@@ -24,9 +24,9 @@ filler:
   material: GRAY_STAINED_GLASS_PANE
   name: " "
   slots: "1, 9, 10, 45-53"
-  # true ise dolgu, üzerinde buton olsa bile o slotu doldurur.
-  # false (varsayılan) butonları korur — alt sıradaki sayfa/geri/arama
-  # butonlarının kaybolmaması için bu ayar false kalmalıdır.
+  # If true, the filler fills the slot even if a button sits on it.
+  # If false (default), buttons are preserved — this must stay false so the
+  # page/back/search buttons in the bottom row don't disappear.
   overwrite: false
 
 items:

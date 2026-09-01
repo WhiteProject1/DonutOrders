@@ -93,7 +93,7 @@ public final class AntiAbuse {
 
         enabled = section.getBoolean("enabled", true);
         if (!enabled) {
-            plugin.getLogger().info("Seviye istismar korumasi KAPALI (levels.yml -> anti-abuse.enabled: false).");
+            plugin.getLogger().info("Level abuse protection DISABLED (levels.yml -> anti-abuse.enabled: false).");
             return;
         }
 
@@ -102,7 +102,7 @@ public final class AntiAbuse {
             creationMode = CreationMode.valueOf(mode.trim().toUpperCase(Locale.ROOT));
         } catch (IllegalArgumentException e) {
             plugin.getLogger().warning("anti-abuse.creation-xp-mode '" + mode
-                    + "' gecersiz (ON_COMPLETE veya IMMEDIATE), ON_COMPLETE kullaniliyor.");
+                    + "' is invalid (ON_COMPLETE or IMMEDIATE), using ON_COMPLETE.");
             creationMode = CreationMode.ON_COMPLETE;
         }
 
@@ -122,8 +122,8 @@ public final class AntiAbuse {
 
         logSuspicious = section.getBoolean("log-suspicious", true);
 
-        plugin.getLogger().info("Seviye istismar korumasi acik (siparis XP'si: " + creationMode
-                + ", partner limiti: " + (partnerLimitEnabled ? "acik" : "kapali") + ").");
+        plugin.getLogger().info("Level abuse protection enabled (order XP: " + creationMode
+                + ", partner limit: " + (partnerLimitEnabled ? "on" : "off") + ").");
     }
 
     // ------------------------------------------------------------------ queries
@@ -237,7 +237,7 @@ public final class AntiAbuse {
 
     private void flag(Player player, String reason) {
         if (!logSuspicious || player == null) return;
-        plugin.getLogger().info("[Seviye] " + player.getName() + " XP alamadi: " + reason + ".");
+        plugin.getLogger().info("[Level] " + player.getName() + " did not receive XP: " + reason + ".");
     }
 
     /** Summary for the admin panel. */

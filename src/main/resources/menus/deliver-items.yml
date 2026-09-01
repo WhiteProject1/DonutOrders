@@ -1,11 +1,11 @@
 # -----------------------------------------------------------------------------#
-#  Eşya teslim menüsü                                                            #
+#  Deliver items menu                                                           #
 # -----------------------------------------------------------------------------#
-#  Alanların açıklaması için menus/main-menu.yml başındaki nota bakın.
+#  See the note at the top of menus/main-menu.yml for a description of the fields.
 #
-#  content-slots burada "oyuncunun eşya bırakabileceği" alandır. Bu slotlar
-#  serbesttir; dışındaki her slot kilitlidir. Alanı büyütmek isterseniz rows'u
-#  artırıp content-slots'u genişletin, buton slotlarını da kaydırmayı unutmayın.
+#  Here, content-slots is the area "where the player can place items". These
+#  slots are free; every slot outside it is locked. To enlarge the area,
+#  increase rows and widen content-slots, and remember to shift the button slots too.
 # -----------------------------------------------------------------------------#
 
 rows: 4
@@ -13,8 +13,8 @@ title: ""
 content-slots: "0-26"
 open-sound: "none"
 
-# Menü kapanırken çalan ses. Bir menüden diğerine geçerken de tetiklenir,
-# bu yüzden varsayılan "none" (config.yml -> sounds.events.menu-close).
+# Sound played when the menu closes. This also triggers when switching from
+# one menu to another, which is why the default is "none" (config.yml -> sounds.events.menu-close).
 close-sound: "none"
 
 filler:
@@ -22,9 +22,9 @@ filler:
   material: GRAY_STAINED_GLASS_PANE
   name: " "
   slots: "27-35"
-  # true ise dolgu, üzerinde buton olsa bile o slotu doldurur.
-  # false (varsayılan) butonları korur — alt sıradaki sayfa/geri/arama
-  # butonlarının kaybolmaması için bu ayar false kalmalıdır.
+  # If true, the filler fills the slot even if a button sits on it.
+  # If false (default), buttons are preserved — this must stay false so the
+  # page/back/search buttons in the bottom row don't disappear.
   overwrite: false
 
 items:

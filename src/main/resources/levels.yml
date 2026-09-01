@@ -1,143 +1,151 @@
 # -----------------------------------------------------------------------------#
-#  DonutOrders — Sipariş Seviyesi                                                #
+#  DonutOrders — Order Level                                                    #
 # -----------------------------------------------------------------------------#
 #
-#  Oyuncular sipariş verip teslim ettikçe XP kazanır. Seviye yükseldikçe daha az
-#  vergi öder, aynı anda daha çok sipariş açar ve sipariş başına daha çok eşya
-#  isteyebilir.
+#  Players earn XP as they create and deliver orders. As they level up they
+#  pay less tax, can hold more active orders at once, and can request more
+#  items per order.
 #
-#  ###  TAMAMEN KAPATMAK İÇİN:  enabled: false  ###
-#  Kapalıyken /order menüsündeki seviye butonu hiç konmaz, hiçbir XP işlenmez,
-#  kayıt dosyası okunmaz ve vergi hesabı seviyeyi hiç sormaz. Sıfır maliyet.
+#  ###  TO DISABLE ENTIRELY:  enabled: false  ###
+#  While disabled, the level button never appears in the /order menu, no XP
+#  is ever processed, the save file is never read, and the tax calculation
+#  never even asks about level. Zero cost.
 #
-#  BU DOSYADA HİÇBİR SAYI KODA GÖMÜLÜ DEĞİLDİR:
-#    * Seviye sayısı serbest — 3 seviye de yazabilirsiniz 80 de.
-#    * Her XP kalemi ayrı; istemediğinizi 0 yaparak kapatırsınız.
-#    * Bir seviyede bonus alanı yazmazsanız o bonus o seviyede 0'dır.
-#    * Butonun yeri menus/main-menu.yml -> items.level içindedir.
+#  NO NUMBER IN THIS FILE IS HARD-CODED:
+#    * The number of levels is free — write 3 levels or 80.
+#    * Each XP source is separate; set the one you don't want to 0 to disable it.
+#    * If a level's config doesn't list a bonus, that bonus is 0 at that level.
+#    * The button's location is in menus/main-menu.yml -> items.level.
 #
-#  Değişiklikten sonra: /donutordersadmin reload
+#  After changing anything: /donutordersadmin reload
 # -----------------------------------------------------------------------------#
 
 enabled: true
 
 # =============================================================================
-#  XP NASIL KAZANILIR
-#  Bir kalemi 0 yaparsanız o yoldan XP kazanılmaz.
+#  HOW XP IS EARNED
+#  Setting an entry to 0 disables XP from that source.
 # =============================================================================
 xp:
-  # Sipariş oluşturmak (sabit)
+  # Creating an order (flat)
   on-create: 5.0
-  # Sipariş oluştururken harcanan her 1000 birim para için ek XP
+  # Extra XP per 1000 currency spent when creating an order
   on-create-per-1000: 1.0
-  # Başkasının siparişine teslim edilen her EŞYA için
+  # Per ITEM delivered to someone else's order
   on-deliver-per-item: 0.25
-  # Kendi siparişin tamamen dolduğunda (sabit)
+  # When your own order becomes fully filled (flat)
   on-complete: 10.0
-  # "Hepsini sat" ile kazanılan her 1000 birim için
+  # Per 1000 currency earned via "sell all"
   on-sell-per-1000: 0.5
 
-# Günlük XP tavanı. -1 = sınırsız.
-# Sayaç, oyuncunun ilk XP kazandığı andan 24 saat sonra sıfırlanır.
+# Daily XP cap. -1 = unlimited.
+# The counter resets 24 hours after the player's first XP gain.
 daily-cap: -1
 
 # =============================================================================
-#  İSTİSMAR KORUMASI  (arkadaşlar arası XP çiftçiliği)
+#  ABUSE PROTECTION  (XP farming between friends)
 # =============================================================================
-#  Seviye sistemi "ekonomik hareket" ödülüdür. Ama iki arkadaş hiçbir ekonomik
-#  hareket üretmeden birbirini seviye atlatabilir. Kapatılan açıklar:
+#  The level system rewards "economic activity". But two friends can level
+#  each other up without producing any real economic activity at all. The
+#  exploits this closes:
 #
-#   1) YIKAMA TİCARETİ: A 1 adet toprak için sipariş açar, B doldurur, sonra
-#      roller değişir. Para iki kişi arasında gidip gelir, ikisi de XP kazanır.
-#      Makroyla dakikada yüzlerce kez tekrarlanabilir.
-#   2) ALT HESAP: Aynı kişi ikinci hesabıyla aynı döngüyü kurar; para hiç
-#      kaybolmaz, XP iki katına çıkar.
-#   3) AÇ-İPTAL ET: Sipariş açmak XP verir, iptal etmek parayı TAM geri verir.
-#      Vergi 0 ise bedava sonsuz XP demektir.
-#   4) DEV SİPARİŞ + İPTAL: XP para ile ölçekli olduğu için 10 milyonluk bir
-#      sipariş açıp hemen iptal etmek tek hamlede seviye atlatır.
-#   5) BÖLME: 64 eşyalık tek sipariş yerine 1 eşyalık 64 sipariş açarak sabit
-#      "sipariş açma" XP'sini katlamak.
+#   1) WASH TRADING: A opens an order for 1 dirt, B fills it, then they swap
+#      roles. Money moves back and forth between the two players and both
+#      earn XP. A macro can repeat this hundreds of times per minute.
+#   2) ALT ACCOUNT: The same person sets up the same loop with a second
+#      account; no money is ever lost, and XP is doubled.
+#   3) OPEN-AND-CANCEL: Opening an order grants XP, and cancelling it refunds
+#      the money IN FULL. If tax is 0, that's free, unlimited XP.
+#   4) HUGE ORDER + CANCEL: Since XP scales with money, opening a 10-million
+#      order and immediately cancelling it grants a level in a single move.
+#   5) SPLITTING: Opening 64 one-item orders instead of a single 64-item
+#      order to multiply the flat "order creation" XP.
 #
-#  ###  TAMAMEN KAPATMAK İÇİN:  enabled: false  ###
-#  Her madde ayrıca tek tek kapatılabilir. Kapalı bir kontrolün maliyeti yoktur.
+#  ###  TO DISABLE ENTIRELY:  enabled: false  ###
+#  Each item can also be disabled individually. A disabled check has no cost.
 # =============================================================================
 anti-abuse:
   enabled: true
 
   # ---------------------------------------------------------------------------
-  # SİPARİŞ AÇMA XP'Sİ NE ZAMAN VERİLİR   (3. ve 4. açığı kökten bitirir)
+  # WHEN ORDER-CREATION XP IS GRANTED   (fully closes exploits 3 and 4)
   #
-  #   ON_COMPLETE  -> sipariş GERÇEKTEN dolunca ödenir  (önerilen, varsayılan)
-  #   IMMEDIATE    -> sipariş açılır açılmaz            (eski davranış)
+  #   ON_COMPLETE  -> paid once the order is ACTUALLY filled (recommended, default)
+  #   IMMEDIATE    -> paid the moment the order is opened     (old behaviour)
   #
-  # ON_COMPLETE hiçbir kayıt tutmayı gerektirmez: sunucu yeniden başlasa bile
-  # açık geri gelmez. "Niyeti" değil "sonucu" ödüllendirir — açılıp hemen iptal
-  # edilen bir sipariş hiçbir şey üretmemiştir.
+  # ON_COMPLETE requires no record-keeping at all: even if the server
+  # restarts, the exploit doesn't come back. It rewards the "outcome", not
+  # the "intent" — an order that was opened and immediately cancelled
+  # produced nothing.
   # ---------------------------------------------------------------------------
   creation-xp-mode: ON_COMPLETE
 
   # ---------------------------------------------------------------------------
-  # PARTNER LİMİTİ   (1. açık: aynı kişiyle sonsuz tekrar eden ticaret)
+  # PARTNER LIMIT   (exploit 1: endlessly repeated trades with the same person)
   #
-  # Tamamen yasaklamak yerine kademeli olarak DEĞERSİZLEŞTİRİR. İki arkadaşın
-  # gerçekten birbirinden alışveriş yapması meşrudur; sadece bunu sonsuz kez
-  # tekrarlamak değil.
+  # Instead of banning it outright, this gradually DEVALUES it. Two friends
+  # genuinely trading with each other is legitimate; repeating it endlessly
+  # is not.
   # ---------------------------------------------------------------------------
   partner-limit:
     enabled: true
 
-    # Aynı kişiyle iki XP'li ticaret arasında en az bu kadar saniye geçmeli.
-    # Bu süre içindeki ticaret gerçekleşir ama XP vermez.
+    # At least this many seconds must pass between two XP-earning trades with
+    # the same person. Trades within this window still go through but grant
+    # no XP.
     cooldown-seconds: 60
 
-    # İlk kaç ticaret TAM XP verir.
+    # How many of the first trades grant FULL XP.
     full-reward-count: 3
 
-    # Ondan sonraki her ticaretin çarpanı. 0.5 = her seferinde yarıya iner.
-    #   4. ticaret %50, 5. %25, 6. %12.5 ... %1'in altına düşünce 0 olur.
-    # 1.0 yazarsanız azalma olmaz (yalnızca bekleme ve tavan çalışır).
+    # The multiplier for every trade after that. 0.5 = halved each time.
+    #   4th trade 50%, 5th 25%, 6th 12.5% ... drops to 0 once it falls below 1%.
+    # Set to 1.0 for no decay (only the cooldown and cap apply).
     decay: 0.5
 
-    # Tek bir partnerden 24 saatte kazanılabilecek en fazla XP. -1 = sınırsız.
+    # Maximum XP earnable from a single partner in 24 hours. -1 = unlimited.
     daily-xp-cap: 100
 
-    # Ticaret geçmişinin hatırlanma süresi (saat).
+    # How long trade history is remembered (hours).
     window-hours: 24
 
   # ---------------------------------------------------------------------------
-  # ALT HESAP   (2. açık)
+  # ALT ACCOUNT   (exploit 2)
   # ---------------------------------------------------------------------------
-  # Teslim eden ile sipariş sahibi AYNI IP adresindeyse XP verilmez.
-  # DİKKAT: aynı evden oynayan kardeşler de bundan etkilenir. Sunucunuzda bu
-  # yaygınsa false yapın; teslimat yine çalışır, yalnızca XP verilmez.
+  # No XP is granted if the deliverer and the order owner share the SAME IP
+  # address.
+  # NOTE: this also affects siblings playing from the same house. If that's
+  # common on your server, set this to false; delivery will still work, it
+  # just won't grant XP.
   block-same-ip: true
 
-  # Kendi siparişine teslim (normalde zaten engelli) hiçbir durumda XP vermesin.
+  # Delivering to your own order (already blocked normally) should never
+  # grant XP under any circumstance.
   block-self-delivery: true
 
   # ---------------------------------------------------------------------------
-  # ASGARİ SİPARİŞ BÜYÜKLÜĞÜ   (5. açık: kuruşluk siparişleri bölerek çoğaltma)
+  # MINIMUM ORDER SIZE   (exploit 5: multiplying tiny orders by splitting them)
   # ---------------------------------------------------------------------------
-  # Bu değerlerin ALTINDAKİ siparişler hiç XP üretmez (ne açana ne teslim edene).
-  # 0 = o kontrol kapalı.
-  min-order-value: 100      # sipariş toplam tutarı (adet x fiyat)
-  min-order-amount: 16      # sipariş edilen eşya adedi
+  # Orders BELOW these values produce no XP at all (neither for the creator
+  # nor the deliverer).
+  # 0 = that check is disabled.
+  min-order-value: 100      # order total (quantity x price)
+  min-order-amount: 16      # number of items ordered
 
-  # Engellenen XP girişimleri konsola yazılsın mı? (yönetici takibi için)
+  # Log blocked XP attempts to the console? (for admin monitoring)
   log-suspicious: true
 
 # =============================================================================
-#  SEVİYELER
-#  İstediğiniz kadar ekleyip çıkarabilirsiniz. Sildiğiniz seviye güncellemede
-#  GERİ GELMEZ.
+#  LEVELS
+#  Add or remove as many as you like. A level you delete will NOT come back
+#  on update.
 #
-#    xp-required     bu seviyeye ulaşmak için gereken TOPLAM xp
-#    tax-discount    vergiden yüzde indirim (0-100)
-#    extra-orders    aktif sipariş limitine eklenir
-#    extra-items     sipariş başına istenebilecek eşya sayısına eklenir
-#    reward-commands seviye atlanınca konsolda çalışır (%player%, %level%)
-#    broadcast       true ise sunucuya duyurulur
+#    xp-required     TOTAL xp required to reach this level
+#    tax-discount    percentage discount off tax (0-100)
+#    extra-orders    added to the active-order limit
+#    extra-items     added to the number of items requestable per order
+#    reward-commands run on the console on level-up (%player%, %level%)
+#    broadcast       if true, announced to the server
 # =============================================================================
 levels:
   1:
@@ -198,9 +206,9 @@ levels:
     broadcast: true
 
 # =============================================================================
-#  GÖRÜNÜM
+#  APPEARANCE
 # =============================================================================
-# İlerleme çubuğu (%bar% yer tutucusu)
+# Progress bar (the %bar% placeholder)
 progress-bar:
   length: 20
   filled-char: "|"
@@ -208,9 +216,9 @@ progress-bar:
   filled-color: "&a"
   empty-color: "&7"
 
-# Seviye atlayınca ekranda beliren başlık.
-# Metinler lang/<dil>.yml -> level.up-title / level.up-subtitle
-# Ses: config.yml -> sounds.events.level-up
+# The title shown on screen when a player levels up.
+# Text: lang/<language>.yml -> level.up-title / level.up-subtitle
+# Sound: config.yml -> sounds.events.level-up
 level-up-title:
   enabled: true
   fade-in: 10

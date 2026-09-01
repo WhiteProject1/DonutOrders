@@ -100,7 +100,7 @@ public final class LanguageManager {
 
         File dir = new File(plugin.getDataFolder(), "lang");
         if (!dir.exists() && !dir.mkdirs()) {
-            plugin.getLogger().warning("lang/ klasoru olusturulamadi: " + dir);
+            plugin.getLogger().warning("Could not create the lang/ folder: " + dir);
         }
 
         migrateLegacyMessages(dir);
@@ -126,15 +126,15 @@ public final class LanguageManager {
                 try {
                     onDisk.save(file);
                 } catch (Exception e) {
-                    plugin.getLogger().warning("lang/" + code + ".yml guncellenemedi ("
-                            + e.getMessage() + "); yeni metinler yalnizca bu oturum icin gecerli.");
+                    plugin.getLogger().warning("lang/" + code + ".yml could not be updated ("
+                            + e.getMessage() + "); the new text only applies for this session.");
                 }
             }
             overlays.put(code, onDisk);
             buildLocaleKeys(code);
         }
         if (addedTotal > 0) {
-            plugin.getLogger().info(addedTotal + " yeni metin anahtari dil dosyalarina eklendi (surum yukseltmesi).");
+            plugin.getLogger().info(addedTotal + " new text keys added to the language files (version upgrade).");
         }
 
         // Extra languages that are on disk but not bundled (the server owner's own translation) are loaded too.
@@ -160,8 +160,8 @@ public final class LanguageManager {
             }
         }
 
-        plugin.getLogger().info("Diller yuklendi: " + overlays.keySet()
-                + " (varsayilan=" + serverDefault + ", oyuncu-bazli=" + perPlayer + ").");
+        plugin.getLogger().info("Languages loaded: " + overlays.keySet()
+                + " (default=" + serverDefault + ", per-player=" + perPlayer + ").");
     }
 
     /**
@@ -203,22 +203,22 @@ public final class LanguageManager {
         try {
             onDisk.save(targetFile);
         } catch (Exception e) {
-            plugin.getLogger().warning("Eski messages.yml lang/" + target + ".yml'e tasinamadi ("
-                    + e.getMessage() + "); dosya oldugu gibi birakildi.");
+            plugin.getLogger().warning("Could not migrate the old messages.yml to lang/" + target + ".yml ("
+                    + e.getMessage() + "); the file was left as is.");
             return;
         }
 
         File archived = new File(plugin.getDataFolder(), "messages.yml.migrated");
         if (archived.exists() && !archived.delete()) {
-            plugin.getLogger().warning("Eski yedek silinemedi: " + archived.getName());
+            plugin.getLogger().warning("Could not delete the old backup: " + archived.getName());
         }
         if (!file.renameTo(archived)) {
-            plugin.getLogger().warning("messages.yml yeniden adlandirilamadi; metinler tasindi ama dosya duruyor. "
-                    + "Elle silebilirsiniz.");
+            plugin.getLogger().warning("Could not rename messages.yml; the text was migrated but the file remains. "
+                    + "You can delete it manually.");
             return;
         }
-        plugin.getLogger().info("Eski messages.yml icindeki " + moved + " metin lang/" + target
-                + ".yml'e tasindi. Yedek: messages.yml.migrated");
+        plugin.getLogger().info(moved + " texts from the old messages.yml were migrated to lang/" + target
+                + ".yml. Backup: messages.yml.migrated");
     }
 
     // ------------------------------------------------------------------ resolution
@@ -341,7 +341,7 @@ public final class LanguageManager {
         return cache.computeIfAbsent(code + '\0' + key, k -> {
             String value = lookup(code, key);
             if (value == null) {
-                plugin.getLogger().warning("Eksik metin anahtari: " + key);
+                plugin.getLogger().warning("Missing text key: " + key);
                 value = "&c[" + key + "]";
             }
             return value;
@@ -481,7 +481,7 @@ public final class LanguageManager {
             if (in == null) return null;
             return YamlConfiguration.loadConfiguration(new InputStreamReader(in, StandardCharsets.UTF_8));
         } catch (Exception e) {
-            plugin.getLogger().warning("Paketli lang/" + code + ".yml okunamadi: " + e.getMessage());
+            plugin.getLogger().warning("Could not read the bundled lang/" + code + ".yml: " + e.getMessage());
             return null;
         }
     }
@@ -509,7 +509,7 @@ public final class LanguageManager {
         try (InputStream in = plugin.getResource("lang/" + code + ".yml")) {
             if (in != null) java.nio.file.Files.copy(in, out.toPath());
         } catch (Exception e) {
-            plugin.getLogger().warning("lang/" + code + ".yml cikarilamadi: " + e.getMessage());
+            plugin.getLogger().warning("Could not extract lang/" + code + ".yml: " + e.getMessage());
         }
     }
 }

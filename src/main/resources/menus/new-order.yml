@@ -1,10 +1,10 @@
 # -----------------------------------------------------------------------------#
-#  Yeni sipariş oluşturma menüsü                                                 #
+#  New order creation menu                                                      #
 # -----------------------------------------------------------------------------#
-#  Alanların açıklaması için menus/main-menu.yml başındaki nota bakın.
+#  See the note at the top of menus/main-menu.yml for a description of the fields.
 #
-#  "item" butonunun materyali oyuncunun seçtiği eşyadır; buradaki material alanı
-#  yalnızca henüz hiçbir şey seçilmemişken kullanılır.
+#  The material of the "item" button is the item the player selected; the
+#  material field here is only used while nothing has been selected yet.
 # -----------------------------------------------------------------------------#
 
 rows: 3
@@ -12,17 +12,17 @@ title: ""
 content-slots: ""
 open-sound: "none"
 
-# Menü kapanırken çalan ses. Bir menüden diğerine geçerken de tetiklenir,
-# bu yüzden varsayılan "none" (config.yml -> sounds.events.menu-close).
+# Sound played when the menu closes. This also triggers when switching from
+# one menu to another, which is why the default is "none" (config.yml -> sounds.events.menu-close).
 close-sound: "none"
 
 filler:
   enabled: false
   material: GRAY_STAINED_GLASS_PANE
   name: " "
-  # true ise dolgu, üzerinde buton olsa bile o slotu doldurur.
-  # false (varsayılan) butonları korur — alt sıradaki sayfa/geri/arama
-  # butonlarının kaybolmaması için bu ayar false kalmalıdır.
+  # If true, the filler fills the slot even if a button sits on it.
+  # If false (default), buttons are preserved — this must stay false so the
+  # page/back/search buttons in the bottom row don't disappear.
   overwrite: false
 
 items:

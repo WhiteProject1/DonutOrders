@@ -271,7 +271,7 @@ public class GuiListener implements Listener {
             handleClick(event, holder, player);
         } catch (Exception ex) {
             event.setCancelled(true);
-            LOGGER.log(Level.SEVERE, "[DonutOrders] Menu tiklamasi islenemedi (menu=" + holder.menuId()
+            LOGGER.log(Level.SEVERE, "[DonutOrders] Failed to handle menu click (menu=" + holder.menuId()
                     + ", slot=" + event.getSlot() + ")", ex);
             plugin.playError(player);
         }
@@ -398,7 +398,7 @@ public class GuiListener implements Listener {
         try {
             plugin.saveConfig();
         } catch (Exception e) {
-            plugin.getLogger().warning("config.yml kaydedilemedi (" + e.getMessage() + ").");
+            plugin.getLogger().warning("config.yml could not be saved (" + e.getMessage() + ").");
             player.sendMessage(plugin.msg(player, "admin.save-failed"));
         }
         plugin.settings().load();
@@ -413,7 +413,7 @@ public class GuiListener implements Listener {
         try {
             config.save(file);
         } catch (Exception e) {
-            plugin.getLogger().warning("levels.yml kaydedilemedi (" + e.getMessage() + ").");
+            plugin.getLogger().warning("levels.yml could not be saved (" + e.getMessage() + ").");
             player.sendMessage(plugin.msg(player, "admin.save-failed"));
             return;
         }
@@ -1230,7 +1230,7 @@ public class GuiListener implements Listener {
 
         EconomyResponse response = OrderPlugin.getEconomy().depositPlayer((OfflinePlayer) player, payment);
         if (!response.transactionSuccess()) {
-            plugin.getLogger().warning("Para yatirma basarisiz (" + player.getName() + "): " + response.errorMessage);
+            plugin.getLogger().warning("Deposit failed (" + player.getName() + "): " + response.errorMessage);
             player.sendMessage(plugin.msg(player, "errors.order-unavailable"));
             plugin.playError(player);
             gui.openCollectItems(player, order, 1);

@@ -83,9 +83,9 @@ public final class LevelManager {
         if (added > 0) {
             try {
                 onDisk.save(file);
-                plugin.getLogger().info(added + " yeni seviye ayari levels.yml'ye eklendi (surum yukseltmesi).");
+                plugin.getLogger().info(added + " new level settings added to levels.yml (version upgrade).");
             } catch (Exception e) {
-                plugin.getLogger().warning("levels.yml guncellenemedi (" + e.getMessage() + ").");
+                plugin.getLogger().warning("levels.yml could not be updated (" + e.getMessage() + ").");
             }
         }
 
@@ -93,7 +93,7 @@ public final class LevelManager {
         if (!enabled) {
             tiers = List.of();
             cache.clear();
-            plugin.getLogger().info("Siparis seviye sistemi kapali (levels.yml -> enabled: false).");
+            plugin.getLogger().info("Order level system disabled (levels.yml -> enabled: false).");
             return;
         }
 
@@ -119,11 +119,11 @@ public final class LevelManager {
 
         tiers = readTiers(onDisk.getConfigurationSection("levels"));
         if (tiers.isEmpty()) {
-            plugin.getLogger().warning("levels.yml -> 'levels' bolumu bos, seviye sistemi devre disi.");
+            plugin.getLogger().warning("levels.yml -> 'levels' section is empty, level system disabled.");
             enabled = false;
             return;
         }
-        plugin.getLogger().info("Siparis seviye sistemi acik: " + tiers.size() + " seviye.");
+        plugin.getLogger().info("Order level system enabled: " + tiers.size() + " levels.");
     }
 
     private List<LevelTier> readTiers(ConfigurationSection section) {
@@ -134,7 +134,7 @@ public final class LevelManager {
             try {
                 level = Integer.parseInt(key.trim());
             } catch (NumberFormatException e) {
-                plugin.getLogger().warning("levels.yml -> '" + key + "' bir seviye numarasi degil, atlandi.");
+                plugin.getLogger().warning("levels.yml -> '" + key + "' is not a level number, skipped.");
                 continue;
             }
             ConfigurationSection s = section.getConfigurationSection(key);
@@ -356,7 +356,7 @@ public final class LevelManager {
             if (in == null) return null;
             return YamlConfiguration.loadConfiguration(new InputStreamReader(in, StandardCharsets.UTF_8));
         } catch (Exception e) {
-            plugin.getLogger().warning("Paketli levels.yml okunamadi: " + e.getMessage());
+            plugin.getLogger().warning("Could not read the bundled levels.yml: " + e.getMessage());
             return null;
         }
     }

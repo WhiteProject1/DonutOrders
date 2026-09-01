@@ -1,8 +1,8 @@
 # -----------------------------------------------------------------------------#
-#  DonutOrders - Cestina (cs)
+#  DonutOrders - Czech (cs)
 # -----------------------------------------------------------------------------#
 #
-#  Cesky jazykovy soubor. Volne upravitelny.
+#  Czech language file. Freely editable.
 #
 #  Colours: &a &b &c ... and hex &#00d271
 #  Placeholders: {prefix} %player% %seller% %amount% %item% %price% %total%

@@ -1,8 +1,8 @@
 # -----------------------------------------------------------------------------#
-#  DonutOrders - Italiano (it)
+#  DonutOrders - Italian (it)
 # -----------------------------------------------------------------------------#
 #
-#  File di lingua italiano. Liberamente modificabile.
+#  Italian language file. Freely editable.
 #
 #  Colours: &a &b &c ... and hex &#00d271
 #  Placeholders: {prefix} %player% %seller% %amount% %item% %price% %total%

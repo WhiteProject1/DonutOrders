@@ -1,13 +1,13 @@
 # -----------------------------------------------------------------------------#
-#  Yönetici — Tüm siparişler                                                     #
+#  Admin — All orders                                                           #
 # -----------------------------------------------------------------------------#
-#  Alanların açıklaması için menus/main-menu.yml başındaki nota bakın.
+#  See the note at the top of menus/main-menu.yml for a description of the fields.
 #
-#  Sunucudaki TÜM aktif siparişler burada listelenir.
-#    Sol tık   -> siparişin ayrıntılarını sohbete yazar
-#    SHIFT + sağ tık -> siparişi kaldırır ve kalan tutarı sahibine iade eder
-#  Kaldırma bilerek shift+sağ tıka bağlanmıştır: yanlışlıkla tek tıkla
-#  başkasının siparişi silinmesin.
+#  EVERY active order on the server is listed here.
+#    Left-click       -> prints the order's details to chat
+#    SHIFT + right-click -> removes the order and refunds the remaining amount to its owner
+#  Removal is deliberately bound to shift+right-click so a single accidental
+#  click doesn't delete someone else's order.
 # -----------------------------------------------------------------------------#
 
 rows: 6

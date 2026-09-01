@@ -77,22 +77,22 @@ public class OrderManager {
             this.mysqlStorage = new MySQLStorage(plugin, storageType);
             if (this.mysqlStorage.connect()) {
                 this.useSQL = true;
-                plugin.getLogger().info("[Storage] " + storageType + " depolama aktif.");
+                plugin.getLogger().info("[Storage] " + storageType + " storage active.");
             } else {
-                plugin.getLogger().severe("[Storage] MySQL baglantisi basarisiz! YAML'a geri donuluyor.");
+                plugin.getLogger().severe("[Storage] MySQL connection failed! Falling back to YAML.");
                 this.useSQL = false;
             }
         } else if (storageType.equals("SQLITE")) {
             this.sqliteStorage = new SQLiteStorage(plugin);
             if (this.sqliteStorage.connect()) {
                 this.useSQL = true;
-                plugin.getLogger().info("[Storage] SQLite depolama aktif.");
+                plugin.getLogger().info("[Storage] SQLite storage active.");
             } else {
-                plugin.getLogger().severe("[Storage] SQLite baglantisi basarisiz! YAML'a geri donuluyor.");
+                plugin.getLogger().severe("[Storage] SQLite connection failed! Falling back to YAML.");
                 this.useSQL = false;
             }
         } else {
-            plugin.getLogger().info("[Storage] YAML dosya depolama kullaniliyor (MEMORY modu).");
+            plugin.getLogger().info("[Storage] Using YAML file storage (MEMORY mode).");
         }
     }
 
@@ -242,10 +242,10 @@ public class OrderManager {
                 addToIndex(order);
                 ++count;
             } catch (Exception e) {
-                this.plugin.getLogger().log(Level.WARNING, "Siparis yuklenirken hata, ID: " + key, e);
+                this.plugin.getLogger().log(Level.WARNING, "Error loading order, ID: " + key, e);
             }
         }
-        this.plugin.getLogger().info(count + " siparis data.yml'den yuklendi.");
+        this.plugin.getLogger().info(count + " orders loaded from data.yml.");
     }
 
     /**
@@ -342,9 +342,9 @@ public class OrderManager {
             java.nio.file.Files.move(temp.toPath(), this.dataFile.toPath(),
                     java.nio.file.StandardCopyOption.REPLACE_EXISTING);
         } catch (IOException e) {
-            this.plugin.getLogger().log(Level.SEVERE, "data.yml kaydedilemedi!", e);
+            this.plugin.getLogger().log(Level.SEVERE, "data.yml could not be saved!", e);
             if (temp.exists() && !temp.delete()) {
-                this.plugin.getLogger().warning("Gecici kayit dosyasi silinemedi: " + temp.getName());
+                this.plugin.getLogger().warning("Could not delete the temporary save file: " + temp.getName());
             }
         }
     }
@@ -684,7 +684,7 @@ public class OrderManager {
                         potionMeta.setBasePotionType(potionType);
                         stack.setItemMeta((ItemMeta) potionMeta);
                     } catch (Exception e) {
-                        plugin.getLogger().warning("[Siparis] Iksir metaverisi uygulanamadi, siparis " + order.getId() + ": " + e.getMessage());
+                        plugin.getLogger().warning("[Order] Could not apply potion metadata, order " + order.getId() + ": " + e.getMessage());
                     }
                 }
 
@@ -705,7 +705,7 @@ public class OrderManager {
                         }
                         stack.setItemMeta((ItemMeta) bookMeta);
                     } catch (Exception e) {
-                        plugin.getLogger().warning("[Siparis] Buyu metaverisi uygulanamadi, siparis " + order.getId() + ": " + e.getMessage());
+                        plugin.getLogger().warning("[Order] Could not apply enchantment metadata, order " + order.getId() + ": " + e.getMessage());
                     }
                 } else if (order.getEnchantmentType() != null && !order.getEnchantmentType().isEmpty()) {
                     try {
@@ -725,7 +725,7 @@ public class OrderManager {
                         }
                         stack.setItemMeta(meta);
                     } catch (Exception e) {
-                        plugin.getLogger().warning("[Siparis] Buyu metaverisi uygulanamadi, siparis " + order.getId() + ": " + e.getMessage());
+                        plugin.getLogger().warning("[Order] Could not apply enchantment metadata, order " + order.getId() + ": " + e.getMessage());
                     }
                 }
 
@@ -914,7 +914,7 @@ public class OrderManager {
         // If the pending write isn't cancelled, the deleted file would come back within seconds.
         this.saveRequested = false;
         if (this.dataFile.exists() && !this.dataFile.delete()) {
-            this.plugin.getLogger().warning("data.yml silinemedi.");
+            this.plugin.getLogger().warning("data.yml could not be deleted.");
         }
         return count;
     }
@@ -991,7 +991,7 @@ public class OrderManager {
                     }
                 });
             }
-            plugin.getLogger().info("[Siparis] " + deletedIds.size() + " suresi dolmus siparis temizlendi.");
+            plugin.getLogger().info("[Order] " + deletedIds.size() + " expired orders cleaned up.");
         }
         if (!keptOrders.isEmpty()) {
             if (useSQL) {
@@ -1001,7 +1001,7 @@ public class OrderManager {
                     }
                 });
             }
-            plugin.getLogger().info("[Siparis] " + keptOrders.size() + " suresi dolmus siparis esya toplama icin korundu.");
+            plugin.getLogger().info("[Order] " + keptOrders.size() + " expired orders kept for item collection.");
         }
         if (changed && !useSQL) {
             saveOrders();

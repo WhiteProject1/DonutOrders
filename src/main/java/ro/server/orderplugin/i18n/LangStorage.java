@@ -50,7 +50,7 @@ public final class LangStorage {
         try {
             config.save(file);
         } catch (IOException e) {
-            plugin.getLogger().log(Level.SEVERE, "lang-players.yml kaydedilemedi!", e);
+            plugin.getLogger().log(Level.SEVERE, "lang-players.yml could not be saved!", e);
         }
     }
 }

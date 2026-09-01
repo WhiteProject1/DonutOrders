@@ -69,7 +69,7 @@ public final class MenuItem {
         if (rawMaterial != null && !rawMaterial.isBlank()) {
             Material parsed = Material.matchMaterial(rawMaterial.trim().toUpperCase(Locale.ROOT));
             if (parsed == null) {
-                warn.accept("Bilinmeyen materyal '" + rawMaterial + "' (" + key + "), varsayilan kullaniliyor.");
+                warn.accept("Unknown material '" + rawMaterial + "' (" + key + "), using the default.");
             } else {
                 material = parsed;
             }
@@ -132,7 +132,7 @@ public final class MenuItem {
                     out.add(Integer.parseInt(p));
                 }
             } catch (NumberFormatException e) {
-                warn.accept("Gecersiz slot ifadesi '" + p + "' (" + key + "), atlandi.");
+                warn.accept("Invalid slot expression '" + p + "' (" + key + "), skipped.");
             }
         }
     }

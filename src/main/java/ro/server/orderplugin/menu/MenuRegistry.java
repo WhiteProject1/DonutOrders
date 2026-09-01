@@ -149,7 +149,7 @@ public final class MenuRegistry {
         menus.clear();
         File dir = new File(plugin.getDataFolder(), "menus");
         if (!dir.exists() && !dir.mkdirs()) {
-            plugin.getLogger().warning("menus/ klasoru olusturulamadi: " + dir);
+            plugin.getLogger().warning("Could not create the menus/ folder: " + dir);
         }
 
         int addedTotal = 0;
@@ -171,15 +171,15 @@ public final class MenuRegistry {
                     try {
                         onDisk.save(file);
                     } catch (Exception e) {
-                        plugin.getLogger().warning("menus/" + id + ".yml guncellenemedi (" + e.getMessage()
-                                + "); yeni alanlar yalnizca bu oturum icin gecerli.");
+                        plugin.getLogger().warning("menus/" + id + ".yml could not be updated (" + e.getMessage()
+                                + "); the new fields only apply for this session.");
                     }
                 }
                 config = onDisk;
             } else if (bundled != null) {
                 config = bundled;
             } else {
-                plugin.getLogger().severe("menus/" + id + ".yml ne diskte ne jar'da bulunabildi!");
+                plugin.getLogger().severe("menus/" + id + ".yml could not be found on disk or in the jar!");
                 continue;
             }
 
@@ -188,15 +188,15 @@ public final class MenuRegistry {
         }
 
         if (addedTotal > 0) {
-            plugin.getLogger().info(addedTotal + " yeni menu ayari mevcut dosyalara eklendi (surum yukseltmesi).");
+            plugin.getLogger().info(addedTotal + " new menu settings added to existing files (version upgrade).");
         }
-        plugin.getLogger().info(menus.size() + " menu yerlesimi yuklendi.");
+        plugin.getLogger().info(menus.size() + " menu layouts loaded.");
     }
 
     public MenuConfig get(String id) {
         MenuConfig config = menus.get(id);
         if (config == null) {
-            throw new IllegalStateException("Menu yuklenmemis: " + id);
+            throw new IllegalStateException("Menu not loaded: " + id);
         }
         return config;
     }
@@ -208,7 +208,7 @@ public final class MenuRegistry {
             if (in == null) return null;
             return YamlConfiguration.loadConfiguration(new InputStreamReader(in, StandardCharsets.UTF_8));
         } catch (Exception e) {
-            plugin.getLogger().warning("Paketli menus/" + id + ".yml okunamadi: " + e.getMessage());
+            plugin.getLogger().warning("Could not read the bundled menus/" + id + ".yml: " + e.getMessage());
             return null;
         }
     }
@@ -219,7 +219,7 @@ public final class MenuRegistry {
         try (InputStream in = plugin.getResource("menus/" + id + ".yml")) {
             if (in != null) java.nio.file.Files.copy(in, out.toPath());
         } catch (Exception e) {
-            plugin.getLogger().warning("menus/" + id + ".yml cikarilamadi: " + e.getMessage());
+            plugin.getLogger().warning("Could not extract menus/" + id + ".yml: " + e.getMessage());
         }
     }
 

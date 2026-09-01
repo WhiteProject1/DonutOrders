@@ -538,7 +538,7 @@ public class GuiManager {
         try {
             openMainMenuInternal(player, page, searchQuery);
         } catch (Exception ex) {
-            LOGGER.log(Level.SEVERE, "[DonutOrders] Ana menu acilamadi (sayfa=" + page + ")", ex);
+            LOGGER.log(Level.SEVERE, "[DonutOrders] Failed to open the main menu (page=" + page + ")", ex);
             player.sendMessage(plugin.msg(player, "errors.order-unavailable"));
         }
     }
@@ -864,7 +864,7 @@ public class GuiManager {
         try {
             openYourOrdersInternal(player, page);
         } catch (Exception ex) {
-            LOGGER.log(Level.SEVERE, "[DonutOrders] Siparislerim menusu acilamadi: " + player.getName(), ex);
+            LOGGER.log(Level.SEVERE, "[DonutOrders] Failed to open the My Orders menu: " + player.getName(), ex);
             player.sendMessage(plugin.msg(player, "errors.order-unavailable"));
         }
     }
@@ -1278,7 +1278,7 @@ public class GuiManager {
                 potionItem.setItemMeta(meta);
                 inventory.setItem(contentSlots[index++], potionItem);
             } catch (Exception e) {
-                plugin.getLogger().warning("Iksir eklenemedi: " + potionType.name() + " - " + e.getMessage());
+                plugin.getLogger().warning("Could not add potion: " + potionType.name() + " - " + e.getMessage());
             }
         }
 
@@ -1467,7 +1467,7 @@ public class GuiManager {
             player.openInventory(inventory);
             playOpen(player, menu);
         } catch (Exception ex) {
-            LOGGER.log(Level.SEVERE, "[DonutOrders] Siparis duzenleme menusu acilamadi: " + order.getId(), ex);
+            LOGGER.log(Level.SEVERE, "[DonutOrders] Failed to open the order-edit menu: " + order.getId(), ex);
             player.sendMessage(plugin.msg(player, "errors.order-unavailable"));
         }
     }

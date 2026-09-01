@@ -82,7 +82,7 @@ public final class MenuConfig {
         if (itemsSection != null) {
             for (String key : itemsSection.getKeys(false)) {
                 if (!defaults.containsKey(key)) {
-                    warn.accept("menus/" + id + ".yml icinde taninmayan buton '" + key + "', yok sayildi.");
+                    warn.accept("menus/" + id + ".yml contains an unrecognized button '" + key + "', ignored.");
                 }
             }
         }
@@ -95,7 +95,7 @@ public final class MenuConfig {
 
     private static int clampRows(int rows, java.util.function.Consumer<String> warn, String id, int fallback) {
         if (rows < 1 || rows > 6) {
-            warn.accept("menus/" + id + ".yml -> rows " + rows + " gecersiz (1-6 olmali), " + fallback + " kullaniliyor.");
+            warn.accept("menus/" + id + ".yml -> rows " + rows + " is invalid (must be 1-6), using " + fallback + ".");
             return fallback;
         }
         return rows;
@@ -120,13 +120,13 @@ public final class MenuConfig {
                     out.add(Integer.parseInt(p));
                 }
             } catch (NumberFormatException e) {
-                warn.accept("menus/" + id + ".yml -> content-slots icinde gecersiz deger '" + p + "'.");
+                warn.accept("menus/" + id + ".yml -> content-slots has an invalid value '" + p + "'.");
             }
         }
         List<Integer> valid = new ArrayList<>(out.size());
         for (int slot : out) {
             if (slot < 0 || slot >= size) {
-                warn.accept("menus/" + id + ".yml -> content-slots slot " + slot + " envanter disinda (0-" + (size - 1) + "), atlandi.");
+                warn.accept("menus/" + id + ".yml -> content-slots slot " + slot + " is outside the inventory (0-" + (size - 1) + "), skipped.");
                 continue;
             }
             valid.add(slot);
