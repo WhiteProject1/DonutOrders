@@ -21,8 +21,8 @@ public class OrderCommand implements CommandExecutor {
             return true;
         }
         Player player = (Player) sender;
-        // Menu acmak siparis listesini suzup siralar ve 54 esya kurar; komutu
-        // tekrar tekrar yazarak bunu tetiklemek ucuz bir yuk saldirisidir.
+        // Opening the menu filters and sorts the order list and builds 54 items;
+        // triggering that by spamming the command is a cheap load attack.
         if (!this.plugin.cooldowns().checkAndWarn(player, CooldownManager.Type.COMMAND)) {
             return true;
         }

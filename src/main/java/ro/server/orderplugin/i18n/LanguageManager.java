@@ -23,61 +23,63 @@ import ro.server.orderplugin.util.MiniFont;
 import ro.server.orderplugin.util.TextUtil;
 
 /**
- * Alici bazli (per-player) cok dilli metin cozumleyici.
+ * Per-player multilingual text resolver.
  *
- * <p>Her metin {@code lang/<kod>.yml} icinde yasar. {@code lang/en.yml} kanonik kaynaktir:
- * bir cevirinin eksik biraktigi her anahtar oradan tamamlanir.</p>
+ * <p>Every string lives in {@code lang/<code>.yml}. {@code lang/en.yml} is the canonical
+ * source: any key a translation leaves out is filled in from there.</p>
  *
- * <p>Bir alici icin cozum sirasi:</p>
+ * <p>Resolution order for a given recipient:</p>
  * <ol>
- *   <li>oyuncunun kendi secimi (/orderlang, diskte saklanir)</li>
- *   <li>oyuncunun Minecraft istemci dili (otomatik)</li>
- *   <li>sunucu varsayilani (config.yml -> language)</li>
- *   <li>Ingilizce</li>
+ *   <li>the player's own choice (/orderlang, stored on disk)</li>
+ *   <li>the player's Minecraft client language (automatic)</li>
+ *   <li>server default (config.yml -> language)</li>
+ *   <li>English</li>
  * </ol>
  *
- * <p>Eski kurulumlardan gelen {@code messages.yml} ilk aciliste sunucunun varsayilan
- * dil dosyasina tasinir; boylece surum yukseltmesinde sunucu sahibinin duzenledigi
- * metinler kaybolmaz ve hicbir dosyayi elle silmek zorunda kalmaz.</p>
+ * <p>A legacy {@code messages.yml} left over from an old install is moved into the
+ * server's default language file on first startup; that way an update doesn't lose
+ * text the server owner edited, and nobody has to delete a file by hand.</p>
  */
 public final class LanguageManager {
 
-    /** Eklentiyle birlikte gelen diller. */
+    /** Languages bundled with the plugin. */
     /**
-     * Jar ile gelen diller.
+     * Languages bundled with the jar.
      *
-     * <p>Sunucu sahibi {@code lang/} klasorune kendi dosyasini birakarak 14., 15.
-     * dili ekleyebilir; {@link #load()} klasordeki her {@code *.yml} dosyasini da
-     * tarar, bu liste yalnizca "jar'dan cikarilacaklar" demektir.</p>
+     * <p>The server owner can add a 14th, 15th language by dropping their own
+     * file into the {@code lang/} folder; {@link #load()} also scans every
+     * {@code *.yml} file in that folder, so this list only means "what gets
+     * extracted from the jar".</p>
      *
-     * <p>Sira onemli degil ama {@code en} her zaman burada olmali: eksik anahtarlar
-     * ona duser.</p>
+     * <p>Order doesn't matter, but {@code en} must always be here: missing
+     * keys fall back to it.</p>
      */
     public static final List<String> BUNDLED = List.of(
             "en", "tr", "de", "es", "fr", "it", "pt", "ru", "pl", "nl", "cs", "zh", "ja");
 
     private final OrderPlugin plugin;
 
-    private final Map<String, YamlConfiguration> overlays = new HashMap<>();   // kod -> dil dosyasi
-    private final Map<String, String> localeMap = new HashMap<>();             // normalize locale -> kod
-    private final Map<UUID, String> overrides = new ConcurrentHashMap<>();     // oyuncunun kendi secimi
-    private final Map<String, String> cache = new ConcurrentHashMap<>();       // kod\0anahtar -> ham metin
+    private final Map<String, YamlConfiguration> overlays = new HashMap<>();   // code -> language file
+    private final Map<String, String> localeMap = new HashMap<>();             // normalized locale -> code
+    private final Map<UUID, String> overrides = new ConcurrentHashMap<>();     // player's own choice
+    private final Map<String, String> cache = new ConcurrentHashMap<>();       // code\0key -> raw text
 
     /**
-     * Onek eklenmis + minifont uygulanmis + renklendirilmis metin.
+     * Prefix-added + minifont-applied + colorized text.
      *
-     * <p>Bu uc islem yalnizca dil dosyasina ve config'e bagli; ayni anahtar icin
-     * her cagrida ayni sonucu verir. Eskiden her {@link #msg} cagrisinda bastan
-     * yapiliyordu: tek bir menu acilisinda 300'den fazla kez onek arama
-     * ({@code getConfig().getString}), minifont karakter donusumu ve hex renk
-     * regex'i calisiyordu. Artik yalnizca yer tutucu degistirme kaliyor.</p>
+     * <p>These three steps depend only on the language file and the config;
+     * for a given key they produce the same result on every call. This used
+     * to be redone from scratch on every {@link #msg} call: a single menu
+     * opening ran the prefix lookup ({@code getConfig().getString}), the
+     * minifont character conversion, and the hex-color regex over 300 times.
+     * Now only the placeholder substitution is left to do each time.</p>
      *
-     * <p>{@link #load()} bu onbellegi de temizler, yani {@code /reload} sonrasi
-     * eski metin takili kalmaz.</p>
+     * <p>{@link #load()} clears this cache too, so stale text doesn't stick
+     * around after {@code /reload}.</p>
      */
-    private final Map<String, String> prepared = new ConcurrentHashMap<>();    // kod\0anahtar -> hazir metin
+    private final Map<String, String> prepared = new ConcurrentHashMap<>();    // code\0key -> prepared text
 
-    /** Onek her mesajda config'den okunmasin diye yuklemede bir kez alinir. */
+    /** Fetched once at load so the prefix isn't read from config on every message. */
     private String prefix = "";
 
     private String serverDefault = "tr";
@@ -87,9 +89,9 @@ public final class LanguageManager {
         this.plugin = plugin;
     }
 
-    // ------------------------------------------------------------------ yukleme
+    // ------------------------------------------------------------------ loading
 
-    /** Paketli dosyalari (eksikse) cikarir ve tum dilleri bellege alir. */
+    /** Extracts the bundled files (if missing) and loads all languages into memory. */
     public void load() {
         overlays.clear();
         localeMap.clear();
@@ -116,8 +118,8 @@ public final class LanguageManager {
             }
 
             YamlConfiguration onDisk = YamlConfiguration.loadConfiguration(file);
-            // Surum yukseltmesinde yeni anahtarlari getir. Birlestirme ONCE bellekte yapilir:
-            // dosyaya yazamasak bile oyuncu "eksik metin" gormemeli.
+            // Bring in new keys on a version upgrade. The merge happens in memory FIRST:
+            // even if we can't write the file, the player must not see "missing text".
             int added = mergeMissing(onDisk, bundled);
             if (added > 0) {
                 addedTotal += added;
@@ -135,7 +137,7 @@ public final class LanguageManager {
             plugin.getLogger().info(addedTotal + " yeni metin anahtari dil dosyalarina eklendi (surum yukseltmesi).");
         }
 
-        // Diskte olup paketlenmemis ek diller (sunucu sahibinin kendi cevirisi) de yuklenir.
+        // Extra languages that are on disk but not bundled (the server owner's own translation) are loaded too.
         File[] extra = dir.listFiles((d, n) -> n.endsWith(".yml"));
         if (extra != null) {
             for (File f : extra) {
@@ -163,14 +165,15 @@ public final class LanguageManager {
     }
 
     /**
-     * Eski surumden kalan {@code messages.yml}'i <b>bir kez</b> dil dosyasina tasir.
+     * Moves a leftover {@code messages.yml} from an old version into a language file, <b>once</b>.
      *
-     * <p>Dosyayi kalici bir ezme katmani olarak okumak, sunucu sahibinin duzenledigi
-     * metinleri korurdu ama oyuncu-bazli dili de olduururdu: Ingilizce oynayan biri de
-     * messages.yml'deki Turkce metni gorurdu. Bu yuzden icerik sunucunun varsayilan
-     * diline yazilir, dosya {@code messages.yml.migrated} olarak yeniden adlandirilir.
-     * Boylece hicbir duzenleme kaybolmaz, kimse elle dosya silmek zorunda kalmaz ve
-     * diller birbirine karismaz.</p>
+     * <p>Treating the file as a permanent override layer would preserve the
+     * server owner's edits, but it would also kill per-player language: a
+     * player playing in English would still see the Turkish text from
+     * messages.yml. So the content is written into the server's default
+     * language instead, and the file is renamed to {@code messages.yml.migrated}.
+     * That way no edit is lost, nobody has to delete a file by hand, and
+     * languages don't get mixed up.</p>
      */
     private void migrateLegacyMessages(File langDir) {
         File file = new File(plugin.getDataFolder(), "messages.yml");
@@ -218,9 +221,9 @@ public final class LanguageManager {
                 + ".yml'e tasindi. Yedek: messages.yml.migrated");
     }
 
-    // ------------------------------------------------------------------ cozumleme
+    // ------------------------------------------------------------------ resolution
 
-    /** Alicinin kullanacagi dil kodu. */
+    /** The language code the recipient should use. */
     public String resolve(CommandSender sender) {
         if (perPlayer && sender instanceof Player p) {
             String override = overrides.get(p.getUniqueId());
@@ -231,24 +234,24 @@ public final class LanguageManager {
         return serverDefault;
     }
 
-    /** Renk kodlari uygulanmis metin; {@code %anahtar%} ciftleri sirayla degistirilir. */
+    /** Text with color codes applied; {@code %key%} pairs are substituted in order. */
     public String msg(CommandSender target, String key, String... replacements) {
         String text = prepared(resolve(target), key);
         for (int i = 0; i + 1 < replacements.length; i += 2) {
             text = text.replace(replacements[i], replacements[i + 1]);
         }
-        // Renklendirme yer tutucudan SONRA yapilir: yerine konan metin de
-        // (ornegin sunucu sahibinin renkli yazdigi bir esya adi) renklensin.
+        // Colorizing happens AFTER placeholder substitution, so that the
+        // substituted text (e.g. an item name the server owner wrote in color) gets colorized too.
         return TextUtil.colorize(text);
     }
 
     /**
-     * Liste degerli metin (lore, tabela satirlari, animasyon kareleri).
+     * List-valued text (lore, sign lines, animation frames).
      *
-     * <p>Deger dosyada <b>duz metin</b> olarak yazilmissa tek satirlik liste
-     * gibi islenir. Sunucu sahibi {@code price: "Fiyat yaz"} yazdiginda eskiden
-     * {@code isList} false donuyor, metin yokmus gibi davranilip tabela BOS
-     * aciliyordu; artik yazdigi metin gorunur.</p>
+     * <p>If the value is written as <b>plain text</b> in the file, it's treated
+     * as a single-line list. When the server owner wrote {@code price: "Set the price"},
+     * {@code isList} used to return false, the text was treated as absent, and
+     * the sign opened BLANK; now the text they wrote shows up.</p>
      */
     public List<String> msgList(CommandSender target, String key, String... replacements) {
         String code = resolve(target);
@@ -269,12 +272,12 @@ public final class LanguageManager {
     }
 
     /**
-     * Onek eklenmis ve minifont uygulanmis metin; yer tutucular ile renk kodlari
-     * <b>henuz islenmemistir</b>. Sonuc onbelleklenir.
+     * Text with the prefix added and minifont applied; placeholders and color
+     * codes are <b>not processed yet</b>. The result is cached.
      *
-     * <p>Renklendirme disarida birakilir cunku yer tutucunun yerine gelen deger de
-     * renk kodu tasiyabilir; onbellek yalnizca anahtara bagli olan (ve bu yuzden
-     * degismeyen) kismi tutar.</p>
+     * <p>Colorizing is left out because the value substituted into a placeholder
+     * can carry color codes of its own; the cache only holds the part that
+     * depends solely on the key (and therefore never changes).</p>
      */
     private String prepared(String code, String key) {
         return prepared.computeIfAbsent(code + '\0' + key, k -> {
@@ -285,25 +288,27 @@ public final class LanguageManager {
     }
 
     /**
-     * Minifont donusumunu metnin <b>turune</b> gore uygular.
+     * Applies the minifont conversion based on the <b>type</b> of the text.
      *
-     * <p>Tur, dil anahtarinin onekinden anlasilir; boylece her cagri yerine ayri
-     * bir parametre eklemek gerekmez ve yeni bir buton eklendiginde otomatik
-     * dogru davranir:</p>
+     * <p>The type is read off the language key's prefix, so no extra parameter
+     * needs to be added to every call, and a newly added button behaves
+     * correctly automatically:</p>
      * <ul>
      *   <li>{@code *.buttons.*} -> {@code text.minifont.buttons}</li>
      *   <li>{@code menus.*}     -> {@code text.minifont.titles}</li>
      *   <li>{@code *.lore.*}    -> {@code text.minifont.lore}</li>
-     *   <li>digerleri (sohbet mesajlari) -> {@code text.minifont.messages}</li>
+     *   <li>everything else (chat messages) -> {@code text.minifont.messages}</li>
      * </ul>
      *
-     * <p>Lore sohbet mesajlarindan ayri tutuldu: buton aciklamalari menude
-     * butonun kendisiyle yan yana durur ve biri kucuk harfliyken digerinin normal
-     * olmasi dagilmis gorunur. Sohbet mesajlari ise uzun cumlelerdir, kucuk harfe
-     * cevrilince okunmasi zorlasir — bu yuzden onlar varsayilan olarak kapali.</p>
+     * <p>Lore is kept separate from chat messages: button descriptions sit
+     * right next to the button itself in the menu, and having one in small
+     * caps while the other is normal looks inconsistent. Chat messages, on
+     * the other hand, are long sentences that get harder to read once
+     * converted to small caps — so those are off by default.</p>
      *
-     * <p>Donusum yer tutucu <b>degistirilmeden once</b> yapilir: etiket kucuk harfe
-     * doner ama icine yazilan oyuncu adi, fiyat ve esya adi okunakli kalir.</p>
+     * <p>The conversion happens <b>before</b> placeholder substitution: the
+     * label turns into small caps, but the player name, price, and item name
+     * written into it stay readable.</p>
      */
     private String miniFont(String key, String text) {
         if (key == null || text == null || text.isEmpty()) return text;
@@ -323,7 +328,7 @@ public final class LanguageManager {
         return apply ? MiniFont.apply(text, settings.miniFontMap()) : text;
     }
 
-    /** Anahtarin bu dilde tanimli olup olmadigi (fallback dahil). */
+    /** Whether the key is defined in this language (fallback included). */
     public boolean has(String key) {
         for (YamlConfiguration ov : overlays.values()) {
             if (ov.isSet(key)) return true;
@@ -331,7 +336,7 @@ public final class LanguageManager {
         return false;
     }
 
-    /** Ham metin — renk kodu uygulanmamis, yer tutucular degistirilmemis. */
+    /** Raw text — no color codes applied, no placeholders substituted. */
     public String raw(String code, String key) {
         return cache.computeIfAbsent(code + '\0' + key, k -> {
             String value = lookup(code, key);
@@ -344,20 +349,21 @@ public final class LanguageManager {
     }
 
     /**
-     * {@link #raw} ile ayni cozumleme, ama anahtar yoksa <b>uyari basmaz</b> ve
-     * {@code null} doner.
+     * Same resolution as {@link #raw}, but does <b>not warn</b> if the key is
+     * missing and returns {@code null} instead.
      *
-     * <p>Bazi anahtarlarin yoklugu normaldir: {@code names.items.OAK_LOG} gibi
-     * "istege bagli tam ad" girdileri dil dosyalarinda bilerek bostur ve kelime
-     * sozlugunden uretilir. {@link #raw} bunlarin her biri icin bir uyari
-     * basiyordu — esya secme menusu ilk acildiginda konsola ~1300 satir dolduran,
-     * her biri diske senkron yazilan bir gurultu olusuyordu.</p>
+     * <p>Some keys are normally absent: entries like {@code names.items.OAK_LOG}
+     * — "optional full name" overrides — are deliberately left blank in the
+     * language files and are generated from the word dictionary instead.
+     * {@link #raw} used to print a warning for every one of them — filling the
+     * console with ~1300 lines the first time the item-selection menu opened,
+     * each one written to disk synchronously.</p>
      */
     public String rawOrNull(String code, String key) {
         return lookup(code, key);
     }
 
-    /** Oyuncunun dili -> Ingilizce -> Turkce sirasiyla arar; hicbirinde yoksa null. */
+    /** Looks up in order: the player's language -> English -> Turkish; null if in none of them. */
     private String lookup(String code, String key) {
         YamlConfiguration ov = overlays.get(code);
         String value = ov == null ? null : ov.getString(key);
@@ -373,13 +379,14 @@ public final class LanguageManager {
     }
 
     /**
-     * Liste degerli ham metin — renk kodu uygulanmamis, yer tutucular degistirilmemis,
-     * ve <b>yalnizca verilen dilde</b> aranir (ing/tr fallback yapmaz).
+     * List-valued raw text — no color codes applied, no placeholders substituted,
+     * and looked up <b>only in the given language</b> (no en/tr fallback).
      *
-     * <p>Deger duz metin olarak yazilmissa tek elemanli liste dondurulur — sunucu
-     * sahibinin bicimi degistirmesi metni kaybettirmez. Anahtar hic yoksa
-     * {@code null} doner; cagiran taraf (orn. lore sablonlari) bunu "bu dilde
-     * tanimli degil, digerine bak ya da eski koda dus" olarak yorumlayabilir.</p>
+     * <p>If the value is written as plain text, a single-element list is
+     * returned — the server owner switching formats doesn't lose the text.
+     * If the key doesn't exist at all, {@code null} is returned; the caller
+     * (e.g. lore templates) can interpret that as "not defined in this
+     * language, check another one or fall back to old code".</p>
      */
     public List<String> rawList(String code, String key) {
         YamlConfiguration ov = overlays.get(code);
@@ -389,13 +396,13 @@ public final class LanguageManager {
         return single == null ? null : List.of(single);
     }
 
-    /** Bir bolumun (section) altindaki anahtarlar — sozluk yuklemek icin. */
+    /** The keys under a section — for loading a dictionary. */
     public ConfigurationSection section(String code, String path) {
         YamlConfiguration ov = overlays.get(code);
         return ov == null ? null : ov.getConfigurationSection(path);
     }
 
-    // ------------------------------------------------------------------ oyuncu secimi
+    // ------------------------------------------------------------------ player choice
 
     public boolean isSupported(String code) {
         return overlays.containsKey(code);
@@ -426,14 +433,14 @@ public final class LanguageManager {
         return serverDefault;
     }
 
-    /** Dilin kendi adi (lang dosyasindaki {@code language.name}), menude gostermek icin. */
+    /** The language's own name (from {@code language.name} in the lang file), for showing in menus. */
     public String displayName(String code) {
         YamlConfiguration ov = overlays.get(code);
         String name = ov == null ? null : ov.getString("language.name");
         return name != null ? name : code;
     }
 
-    // ------------------------------------------------------------------ yardimcilar
+    // ------------------------------------------------------------------ helpers
 
     private String fromLocale(Player p) {
         try {
@@ -480,9 +487,9 @@ public final class LanguageManager {
     }
 
     /**
-     * Jar'da olup diskte olmayan anahtarlari ekler; var olanlara DOKUNMAZ.
+     * Adds keys that exist in the jar but not on disk; does NOT touch existing ones.
      *
-     * @return eklenen anahtar sayisi
+     * @return number of keys added
      */
     private static int mergeMissing(YamlConfiguration onDisk, YamlConfiguration bundled) {
         if (bundled == null) return 0;

@@ -10,10 +10,10 @@ import org.bukkit.event.player.PlayerQuitEvent;
 import ro.server.orderplugin.OrderPlugin;
 
 /**
- * Oyuncunun kayitli dil secimini girisde yukler, cikista bellekten dusurur.
+ * Loads the player's saved language choice on join, drops it from memory on quit.
  *
- * <p>Okuma diskten yapilir ama dosya zaten bellekte tutuldugu icin giris islemi
- * ana is parcaciginda bloklamaz.</p>
+ * <p>The read happens from disk, but since the file is already kept in memory,
+ * the join handling doesn't block the main thread.</p>
  */
 public final class LangListener implements Listener {
 

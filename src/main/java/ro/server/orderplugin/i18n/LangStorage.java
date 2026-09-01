@@ -11,12 +11,13 @@ import org.bukkit.configuration.file.YamlConfiguration;
 import ro.server.orderplugin.OrderPlugin;
 
 /**
- * Oyuncularin {@code /orderlang} ile sectigi dili kalici olarak saklar.
+ * Persistently stores the language players chose with {@code /orderlang}.
  *
- * <p>Tek bir kucuk YAML dosyasi ({@code lang-players.yml}) yeterli: kayit basina bir
- * dil kodu tutulur ve dosya acilista tamamen bellege alinir. Veritabani kurulumu
- * gerektirmemesi, dil secimini depolama turunden ({@code storage.type}) bagimsiz
- * kilar — MEMORY modunda calisan bir sunucuda da secim kalici olur.</p>
+ * <p>A single small YAML file ({@code lang-players.yml}) is enough: one
+ * language code is kept per record, and the file is loaded entirely into
+ * memory on startup. Not requiring a database keeps the language choice
+ * independent of the storage type ({@code storage.type}) — the choice stays
+ * persistent even on a server running in MEMORY mode.</p>
  */
 public final class LangStorage {
 
@@ -34,12 +35,12 @@ public final class LangStorage {
         this.config = file.exists() ? YamlConfiguration.loadConfiguration(file) : new YamlConfiguration();
     }
 
-    /** Kayitli dil kodu, yoksa null. */
+    /** The stored language code, or null if there isn't one. */
     public String get(UUID uuid) {
         return config.getString(uuid.toString());
     }
 
-    /** Dili kaydeder; {@code code} null ise kayit silinir (otomatik cozume geri doner). */
+    /** Saves the language; if {@code code} is null the record is removed (falls back to automatic resolution). */
     public synchronized void set(UUID uuid, String code) {
         config.set(uuid.toString(), code);
         save();

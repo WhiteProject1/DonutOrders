@@ -13,11 +13,11 @@ import org.bukkit.entity.Player;
 import ro.server.orderplugin.OrderPlugin;
 
 /**
- * {@code /orderlang} — oyuncunun kendi dilini secmesi.
+ * {@code /orderlang} — lets a player choose their own language.
  *
- * <p>Argumansiz kullanim dil menusunu acar; {@code /orderlang <kod>} dogrudan secer,
- * {@code /orderlang auto} secimi silip otomatik cozume (istemci dili -> sunucu
- * varsayilani) geri doner.</p>
+ * <p>Used with no arguments, it opens the language menu; {@code /orderlang <code>}
+ * selects directly, and {@code /orderlang auto} clears the selection and reverts to
+ * automatic resolution (client language -> server default).</p>
  */
 public final class LangCommand implements CommandExecutor, TabCompleter {
 

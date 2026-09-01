@@ -12,17 +12,17 @@ import org.bukkit.configuration.file.YamlConfiguration;
 import ro.server.orderplugin.OrderPlugin;
 
 /**
- * Oyuncularin seviye/xp kayitlarini saklar ({@code levels-players.yml}).
+ * Stores players' level/xp records ({@code levels-players.yml}).
  *
- * <p>{@link ro.server.orderplugin.i18n.LangStorage} ile ayni gerekce: tek bir
- * kucuk YAML dosyasi, {@code storage.type}'dan bagimsiz. MEMORY modunda calisan
- * bir sunucuda da seviyeler kalici olur ve sunucu sahibinin veritabani kurmasi
- * gerekmez.</p>
+ * <p>Same rationale as {@link ro.server.orderplugin.i18n.LangStorage}: a single
+ * small YAML file, independent of {@code storage.type}. Even on a server
+ * running in MEMORY mode, levels persist and the server owner doesn't need to
+ * set up a database.</p>
  *
- * <p>Yazma islemi <b>gecikmelidir</b>: her xp kazaniminda diske yazmak yerine
- * degisiklik isaretlenir ve periyodik olarak kaydedilir. Siparis teslim eden bir
- * oyuncu saniyede birkac kez xp kazanabilir; her seferinde dosya yazmak ana is
- * parcacigini bloklardi.</p>
+ * <p>Writing is <b>deferred</b>: instead of writing to disk on every xp gain,
+ * the change is flagged and saved periodically. A player delivering orders can
+ * gain xp several times a second; writing the file every time would block the
+ * main thread.</p>
  */
 public final class LevelStorage {
 
@@ -41,7 +41,7 @@ public final class LevelStorage {
         this.config = file.exists() ? YamlConfiguration.loadConfiguration(file) : new YamlConfiguration();
     }
 
-    /** Kayit yoksa null. */
+    /** Null if there is no record. */
     public PlayerLevel load(UUID uuid) {
         ConfigurationSection section = config.getConfigurationSection(uuid.toString());
         if (section == null) return null;
@@ -63,12 +63,13 @@ public final class LevelStorage {
     }
 
     /**
-     * Bekleyen degisiklikleri diske yazar. Degisiklik yoksa dosyaya dokunmaz.
+     * Writes pending changes to disk. Leaves the file untouched if nothing changed.
      *
-     * <p>Yazma <b>arka planda</b> yapilir: dosya buyudukce (binlerce oyuncu)
-     * senkron yazma temizlik gorevini, dolayisiyla ana is parcacigini bloklardi.
-     * Yazilacak metin ana is parcaciginda uretilir, boylece {@code config} arka
-     * planda okunurken baska bir yerden degistirilmis olmaz.</p>
+     * <p>The write happens <b>in the background</b>: as the file grows (thousands
+     * of players), a synchronous write would block the cleanup task, and thus the
+     * main thread. The text to be written is produced on the main thread, so
+     * {@code config} can't be mutated from elsewhere while it's being read in the
+     * background.</p>
      */
     public void flush() {
         String data;
@@ -80,7 +81,7 @@ public final class LevelStorage {
         plugin.getSchedulerAdapter().runAsync(plugin, () -> write(data));
     }
 
-    /** Kapanista: scheduler durdugu icin yazma bu is parcaciginda yapilir. */
+    /** On shutdown: since the scheduler has stopped, the write happens on this thread. */
     public void flushNow() {
         String data;
         synchronized (this) {
@@ -99,7 +100,7 @@ public final class LevelStorage {
                     java.nio.file.StandardCopyOption.REPLACE_EXISTING);
         } catch (IOException e) {
             plugin.getLogger().log(Level.SEVERE, "levels-players.yml kaydedilemedi!", e);
-            // Yazamadik: bir sonraki flush tekrar denesin diye isaret geri konur.
+            // Write failed: the flag is set again so the next flush retries.
             dirty = true;
         }
     }

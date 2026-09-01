@@ -36,23 +36,23 @@ public class ItemBuilder {
         return this;
     }
 
-    /** Kaynak paketi model numarasi; 0 ya da negatif ise dokunulmaz. */
+    /** Resource pack model number; left untouched if 0 or negative. */
     public ItemBuilder setCustomModelData(int data) {
         if (data > 0) this.meta.setCustomModelData(data);
         return this;
     }
 
     /**
-     * Buyu parildamasi ekler.
+     * Adds an enchant glow.
      *
-     * <p>Gorunmez bir buyu + HIDE_ENCHANTS ile yapilir; boylece esyanin
-     * aciklamasinda "Unbreaking I" gibi bir satir belirmez.</p>
+     * <p>Done with an invisible enchant + HIDE_ENCHANTS, so a line like
+     * "Unbreaking I" never shows up in the item's tooltip.</p>
      */
     public ItemBuilder setGlowing() {
         try {
             this.meta.addEnchant(org.bukkit.enchantments.Enchantment.UNBREAKING, 1, true);
         } catch (Exception ignored) {
-            // Eski/yeni surum enum farki parildamayi kaybettirir, menuyu bozmaz.
+            // An old/new version enum mismatch just loses the glow, doesn't break the menu.
         }
         this.meta.addItemFlags(ItemFlag.HIDE_ENCHANTS);
         return this;

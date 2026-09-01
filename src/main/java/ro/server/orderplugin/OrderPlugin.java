@@ -122,10 +122,10 @@ public final class OrderPlugin extends JavaPlugin {
         this.sync = createSyncService();
         this.sync.start();
 
-        // MySQL depolama acikken network.enabled: false ise, bu veritabanini
-        // paylasan baska bir sunucu varsa iki sunucu ayni teslimati odeyebilir
-        // (tryFillAtomic dogrulamasi devre disi kalir). Sessizce yanlis
-        // calismaktansa sahibi burada acikca uyarilir.
+        // If MySQL storage is on but network.enabled: false, and another server
+        // shares this same database, two servers could pay out the same
+        // delivery (the tryFillAtomic check is disabled in that case). Rather
+        // than fail silently, the owner is warned explicitly here.
         if (this.orderManager.mysqlStorage() != null && !this.sync.enabled()) {
             LOGGER.warning(String.format(
                     "[%s] storage.type MYSQL/MARIADB olarak ayarli ama network.enabled: false! "
@@ -151,8 +151,8 @@ public final class OrderPlugin extends JavaPlugin {
         long interval = this.settings.cleanupIntervalTicks();
         this.cleanupTaskHandle = this.schedulerAdapter.runGlobalTimer(this, () -> {
             this.orderManager.cleanupExpiredOrders();
-            // Seviye kayitlari her xp kazaniminda degil, burada toplu yazilir;
-            // teslim eden bir oyuncu saniyede birkac kez xp kazanabilir.
+            // Level records are batched and written here instead of on every xp
+            // gain; a player delivering orders can earn xp several times a second.
             this.levelStorage.flush();
         }, interval, interval);
 
@@ -167,7 +167,8 @@ public final class OrderPlugin extends JavaPlugin {
         }
         if (this.sync != null) this.sync.stop();
         if (this.levels != null) this.levels.flush();
-        // Kapanista scheduler durdugu icin arka plana atmadan, burada yazilir.
+        // The scheduler is already stopped at shutdown, so this is written
+        // synchronously here instead of being dispatched to run later.
         if (this.levelStorage != null) this.levelStorage.flushNow();
         if (this.orderManager != null) {
             this.orderManager.saveOrders();
@@ -178,12 +179,12 @@ public final class OrderPlugin extends JavaPlugin {
 
 
     /**
-     * Ag servisini kurar.
+     * Sets up the network service.
      *
-     * <p>Cross-server ortak bir veritabani gerektirir. MEMORY/SQLITE secilmisken
-     * acilirsa <b>sessizce yanlis calismaktansa</b> net bir hata basilip
-     * senkronizasyon kapatilir: her sunucu kendi dosyasini yazardi ve siparisler
-     * asla eslesmezdi.</p>
+     * <p>Cross-server sync requires a shared database. If network is enabled while
+     * MEMORY/SQLITE is selected, <b>rather than fail silently</b>, a clear error is
+     * logged and sync is disabled: each server would otherwise write its own file
+     * and orders would never match up.</p>
      */
     private SyncService createSyncService() {
         String id = getConfig().getString("network.server-id", "");
@@ -226,45 +227,45 @@ public final class OrderPlugin extends JavaPlugin {
         return economy != null;
     }
 
-    // ------------------------------------------------------------------ metin
+    // ------------------------------------------------------------------ text
 
-    /** Alicinin dilinde, renkleri uygulanmis metin. */
+    /** Text in the recipient's language, with colors applied. */
     public String msg(CommandSender target, String key, String... replacements) {
         return this.language.msg(target, key, replacements);
     }
 
-    /** Renk kodlari uygulanmamis ham metin (karsilastirma yapmak icin). */
+    /** Raw text without color codes applied (for comparisons). */
     public String rawMsg(CommandSender target, String key) {
         return this.language.raw(this.language.resolve(target), key);
     }
 
-    /** Liste degerli metin (lore, tabela satirlari, animasyon kareleri). */
+    /** List-valued text (lore, sign lines, animation frames). */
     public List<String> msgList(CommandSender target, String key, String... replacements) {
         return this.language.msgList(target, key, replacements);
     }
 
-    /** Oyuncuya ses calar; {@code sounds.enabled} kapaliysa ya da anahtar yoksa sessizdir. */
+    /** Plays a sound for the player; silent if {@code sounds.enabled} is off or the key is missing. */
     public void playSound(Player player, String soundKey, float volume, float pitch) {
         if (soundKey == null || !this.settings.soundsEnabled()) return;
         try {
             player.playSound(player.getLocation(), soundKey, volume, pitch);
         } catch (Exception e) {
-            // Gecersiz ses anahtari menuyu bozmamali.
+            // An invalid sound key must not break the menu.
             getLogger().warning("Ses calinamadi: " + soundKey + " (" + e.getMessage() + ")");
         }
     }
 
-    /** Yapilandirilmis bir ses tanimini calar. */
+    /** Plays a configured sound definition. */
     public void playSound(Player player, SoundSpec sound) {
         if (sound == null || sound.silent()) return;
         playSound(player, sound.key(), sound.volume(), sound.pitch());
     }
 
     /**
-     * {@code sounds.events.<id>} altinda tanimli olay sesini calar.
+     * Plays the event sound defined under {@code sounds.events.<id>}.
      *
-     * <p>Bilinmeyen kimlik sessizce yok sayilir; yeni bir olay eklerken sesi
-     * config'e yazmayi unutmak eklentiyi bozmaz.</p>
+     * <p>An unknown id is silently ignored; forgetting to add a sound to the
+     * config when adding a new event does not break the plugin.</p>
      */
     public void playEventSound(Player player, String id) {
         playSound(player, this.settings.eventSound(id));
@@ -278,7 +279,7 @@ public final class OrderPlugin extends JavaPlugin {
         playEventSound(player, "success");
     }
 
-    // ------------------------------------------------------------------ yeniden yukleme
+    // ------------------------------------------------------------------ reload
 
     public void reloadAllConfigs() {
         LOGGER.info("Tum yapilandirmalar yeniden yukleniyor...");
@@ -292,8 +293,8 @@ public final class OrderPlugin extends JavaPlugin {
         this.menus.load();
         this.customItems.load();
         if (this.levels != null) {
-            // Once bekleyen xp diske yazilir: yeniden yukleme veri kaybettirmemeli.
-            // Arka plana atilamaz — reload() dosyayi hemen ardindan okuyor.
+            // Pending xp is flushed to disk first: a reload must not lose data.
+            // This can't be dispatched to run later — reload() reads the file right after.
             this.levels.flush();
             this.levelStorage.flushNow();
             this.levelStorage.reload();
@@ -303,13 +304,13 @@ public final class OrderPlugin extends JavaPlugin {
             this.guiManager.invalidateAllOrderCaches();
             this.guiManager.rebuildItemList();
         }
-        // Sayaclar sifirlanir: sureleri kisaltan bir sunucu sahibi eski, uzun
-        // beklemenin bitmesini beklemek zorunda kalmasin.
+        // Cooldowns are cleared: a server owner shortening durations shouldn't
+        // have players stuck waiting out the old, longer cooldown.
         if (this.cooldowns != null) this.cooldowns.clear();
         LOGGER.info("Yapilandirmalar yeniden yuklendi.");
     }
 
-    // ------------------------------------------------------------------ erisim
+    // ------------------------------------------------------------------ access
 
     public static OrderPlugin getInstance() { return instance; }
     public static Economy getEconomy() { return economy; }
@@ -334,7 +335,7 @@ public final class OrderPlugin extends JavaPlugin {
     public InputManager input() { return this.inputManager; }
     public CooldownManager cooldowns() { return this.cooldowns; }
 
-    /** config.yml -> prefix, renkleri uygulanmis. */
+    /** config.yml -> prefix, with colors applied. */
     public String prefix() {
         return TextUtil.colorize(getConfig().getString("prefix", ""));
     }

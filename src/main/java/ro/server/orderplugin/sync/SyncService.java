@@ -3,14 +3,14 @@ package ro.server.orderplugin.sync;
 import java.util.List;
 
 /**
- * Sunucular arasi eslesme.
+ * Cross-server sync.
  *
- * <p>Kapali oldugunda {@link NoOpSyncService} devreye girer; cagiran taraflarin
- * "ag acik mi" diye sormasi gerekmez.</p>
+ * <p>{@link NoOpSyncService} takes over when disabled; callers never need to
+ * ask "is networking on?".</p>
  */
 public interface SyncService {
 
-    /** Olay turleri. */
+    /** Event types. */
     String ORDER_CREATED = "ORDER_CREATED";
     String ORDER_UPDATED = "ORDER_UPDATED";
     String ORDER_REMOVED = "ORDER_REMOVED";
@@ -21,16 +21,16 @@ public interface SyncService {
 
     void stop();
 
-    /** Olayi aga duyurur. Kapaliyken hicbir sey yapmaz. */
+    /** Broadcasts the event to the network. Does nothing when disabled. */
     void publish(SyncMessage message);
 
-    /** Bu sunucunun ag icindeki kimligi. */
+    /** This server's id within the network. */
     String serverId();
 
-    /** Son 'heartbeat-timeout' icinde haber veren sunucular. */
+    /** Servers that have checked in within the last 'heartbeat-timeout'. */
     List<String> knownServers();
 
-    /** Son basarili eslesmenin zamani (epoch ms); hic olmadiysa 0. */
+    /** Time of the last successful sync (epoch ms); 0 if it never happened. */
     long lastSyncMillis();
 
     default boolean enabled() {

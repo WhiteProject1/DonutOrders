@@ -15,14 +15,15 @@ import ro.server.orderplugin.OrderPlugin;
 import ro.server.orderplugin.storage.MySQLStorage;
 
 /**
- * Ortak veritabanini periyodik tarayan eslesme.
+ * Sync implementation that periodically polls the shared database.
  *
- * <p>Ek yazilim gerektirmez: agdaki tum sunucular zaten ayni MySQL/MariaDB'yi
- * kullaniyorsa calisir. Redis'e gore gecikmeli ({@code poll.interval-ticks}
- * kadar) ama kurulumu sifir.</p>
+ * <p>Requires no extra software: it works as long as every server on the
+ * network already uses the same MySQL/MariaDB. Compared to Redis it's
+ * delayed (by {@code poll.interval-ticks}), but setup is zero.</p>
  *
- * <p>Sorgu <b>asenkron</b> calisir; sonuclar ana is parcacigina tasinip
- * uygulanir. Ana is parcaciginda SQL beklemek sunucuyu dondururdu.</p>
+ * <p>The query runs <b>asynchronously</b>; results are carried over to the
+ * main thread and applied there. Blocking on SQL on the main thread would
+ * freeze the server.</p>
  */
 public final class PollingSyncService implements SyncService {
 
@@ -56,8 +57,9 @@ public final class PollingSyncService implements SyncService {
 
     @Override
     public void start() {
-        // Baslangicta kuyrugun SONUNDAN devam edilir: sunucu kapaliyken birikmis
-        // olaylar tekrar islenirse ayni mesaj oyunculara ikinci kez gider.
+        // Resumes from the END of the queue on startup: if events that piled up
+        // while the server was off got reprocessed, the same message would go
+        // out to players a second time.
         plugin.getSchedulerAdapter().runAsync(plugin, this::initCursor);
         taskHandle = plugin.getSchedulerAdapter().runGlobalTimer(plugin,
                 () -> plugin.getSchedulerAdapter().runAsync(plugin, this::poll),
@@ -105,10 +107,10 @@ public final class PollingSyncService implements SyncService {
         });
     }
 
-    // ------------------------------------------------------------------ tarama
+    // ------------------------------------------------------------------ polling
 
     private void poll() {
-        if (lastSeenId < 0) return;   // imlec henuz hazir degil
+        if (lastSeenId < 0) return;   // cursor not ready yet
 
         heartbeat();
         List<SyncMessage> batch = new ArrayList<>();
@@ -142,16 +144,16 @@ public final class PollingSyncService implements SyncService {
         });
     }
 
-    /** Ana is parcaciginda calisir. */
+    /** Runs on the main thread. */
     private void apply(SyncMessage message) {
         switch (message.type()) {
             case ORDER_CREATED, ORDER_UPDATED, ORDER_REMOVED -> {
-                // Siparis listesi baska bir sunucuda degisti: onbellegi tazele.
+                // The order list changed on another server: invalidate the cache.
                 if (message.orderId() != null) {
                     try {
                         plugin.getGuiManager().invalidateOrderCache(UUID.fromString(message.orderId()));
                     } catch (IllegalArgumentException ignored) {
-                        // Bozuk kimlik: yalnizca bu olay atlanir.
+                        // Malformed id: only this event is skipped.
                     }
                 }
                 plugin.getOrderManager().reloadFromStorage();
@@ -168,8 +170,8 @@ public final class PollingSyncService implements SyncService {
                 if (player != null && player.isOnline()) {
                     player.sendMessage(message.payload());
                 }
-                // Cevrimdisiysa hicbir sey yapilmaz: mesaj zaten onu goren
-                // sunucuda PendingMessageManager'a yazilmistir.
+                // If offline, nothing happens: the message has already been
+                // written to PendingMessageManager on the server that sees them.
             }
             default -> { }
         }
@@ -199,7 +201,7 @@ public final class PollingSyncService implements SyncService {
             }
             servers = List.copyOf(alive);
 
-            // 24 saatten eski olaylar kuyrugu sisirmesin.
+            // Don't let events older than 24 hours bloat the queue.
             try (PreparedStatement ps = conn.prepareStatement("DELETE FROM " + storage.prefix()
                     + "sync_events WHERE created_at < ?")) {
                 ps.setLong(1, now - 86_400_000L);

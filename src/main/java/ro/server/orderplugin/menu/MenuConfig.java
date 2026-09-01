@@ -13,10 +13,11 @@ import org.bukkit.configuration.file.FileConfiguration;
 import ro.server.orderplugin.util.SoundSpec;
 
 /**
- * Tek bir GUI'nin yerlesimi: satir sayisi, icerik slotlari, dolgu ve butonlar.
+ * The layout of a single GUI: row count, content slots, filler, and buttons.
  *
- * <p>Baslik metni burada tutulmaz — o dil dosyasindan gelir ki her oyuncu kendi
- * dilinde gorsun. Menu dosyasindaki {@code title} yalnizca bir ezmedir.</p>
+ * <p>The title text isn't kept here — it comes from the language file so every
+ * player sees it in their own language. The {@code title} in the menu file is
+ * only an override.</p>
  */
 public final class MenuConfig {
 
@@ -46,10 +47,10 @@ public final class MenuConfig {
     }
 
     /**
-     * @param defaults kodun bekledigi varsayilanlar: buton anahtari -> materyal.
-     *                 Config'de materyal yazilmamissa bu kullanilir, boylece
-     *                 eksik bir alan menuyu bozmaz.
-     * @param defaultRows dosyada {@code rows} yoksa kullanilacak satir sayisi
+     * @param defaults the defaults the code expects: button key -> material.
+     *                 Used when the config doesn't specify a material, so a
+     *                 missing field doesn't break the menu.
+     * @param defaultRows row count to use if the file has no {@code rows}
      */
     public static MenuConfig parse(String id, FileConfiguration config, int defaultRows,
                                    Map<String, Material> defaults,
@@ -69,14 +70,15 @@ public final class MenuConfig {
         for (Map.Entry<String, Material> entry : defaults.entrySet()) {
             ConfigurationSection sec = itemsSection == null ? null : itemsSection.getConfigurationSection(entry.getKey());
             if (sec == null) {
-                // Butonu kod biliyor ama config'de yok: kapali say. Sunucu sahibi bir
-                // butonu dosyadan silerek kaldirabilsin diye bilerek boyle.
+                // The code knows this button but it's not in the config: treat it as
+                // disabled. This is deliberate, so a server owner can remove a button
+                // just by deleting it from the file.
                 items.put(entry.getKey(), MenuItem.disabled(entry.getKey()));
                 continue;
             }
             items.put(entry.getKey(), MenuItem.parse(entry.getKey(), sec, entry.getValue(), warn));
         }
-        // Config'de olup kodun tanimadigi butonlar: uyar, yok say.
+        // Buttons present in the config but unknown to the code: warn, ignore.
         if (itemsSection != null) {
             for (String key : itemsSection.getKeys(false)) {
                 if (!defaults.containsKey(key)) {
@@ -134,14 +136,14 @@ public final class MenuConfig {
         return result;
     }
 
-    // ------------------------------------------------------------------ erisim
+    // ------------------------------------------------------------------ access
 
     public String id() { return id; }
     public int rows() { return rows; }
     public int size() { return rows * 9; }
     public String titleOverride() { return titleOverride; }
     public int[] contentSlots() { return contentSlots; }
-    /** Sayfa basina icerik slotu sayisi. */
+    /** Number of content slots per page. */
     public int pageSize() { return contentSlots.length; }
     public MenuItem filler() { return filler; }
     public SoundSpec openSound() { return openSound; }
@@ -157,15 +159,15 @@ public final class MenuConfig {
     }
 
     /**
-     * Menu dosyasinin ham hali — yalnizca tek bir menuye ozel ek bolumler icin
-     * (orn. dil menusundeki {@code icons}). Genel ayarlar icin yukaridaki
-     * yardimcilar kullanilmali.
+     * The raw form of the menu file — only for extra sections specific to a
+     * single menu (e.g. {@code icons} in the language menu). The helpers above
+     * should be used for general settings.
      */
     public FileConfiguration raw() {
         return raw;
     }
 
-    /** Verilen slotu kullanan butonun anahtari; yoksa null. */
+    /** The key of the button occupying the given slot; null if none. */
     public String buttonAt(int slot) {
         for (MenuItem item : items.values()) {
             if (item.enabled() && item.hasSlots() && item.matches(slot)) return item.key();
@@ -173,7 +175,7 @@ public final class MenuConfig {
         return null;
     }
 
-    /** {@code contentSlots} icindeki sirasi; slot icerik alaninda degilse -1. */
+    /** Its index within {@code contentSlots}; -1 if the slot isn't in the content area. */
     public int contentIndexOf(int slot) {
         for (int i = 0; i < contentSlots.length; i++) {
             if (contentSlots[i] == slot) return i;

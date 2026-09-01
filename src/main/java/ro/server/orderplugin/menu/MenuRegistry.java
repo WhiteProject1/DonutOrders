@@ -15,16 +15,15 @@ import org.bukkit.configuration.file.YamlConfiguration;
 import ro.server.orderplugin.OrderPlugin;
 
 /**
- * {@code menus/} klasorundeki tum GUI yerlesimlerini yukler.
+ * Loads all GUI layouts from the {@code menus/} folder.
  *
- * <p>Her menu kendi dosyasinda. Bir menuyu degistirmek digerlerini etkilemez ve
- * yeni surumde eklenen alanlar var olan dosyalara <b>uzerine yazmadan</b> eklenir
- * (bkz. {@link #mergeMissing}) — sunucu sahibinin config'i silmesi hicbir zaman
- * gerekmez.</p>
+ * <p>Each menu has its own file. Changing one menu doesn't affect the others, and
+ * fields added in a new version are added to existing files <b>without overwriting</b>
+ * (see {@link #mergeMissing}) — the server owner never needs to delete their config.</p>
  */
 public final class MenuRegistry {
 
-    // Menu kimlikleri — kodun her yerinden bu sabitlerle erisilir.
+    // Menu ids — referenced by these constants everywhere in the code.
     public static final String MAIN_MENU = "main-menu";
     public static final String YOUR_ORDERS = "your-orders";
     public static final String NEW_ORDER = "new-order";
@@ -40,7 +39,7 @@ public final class MenuRegistry {
     public static final String ADMIN_MENU = "admin-menu";
     public static final String ADMIN_ORDERS = "admin-orders";
 
-    /** Menu tanimi: varsayilan satir sayisi ve kodun bildigi butonlar. */
+    /** Menu definition: default row count and the buttons the code knows about. */
     private record Definition(int rows, Map<String, Material> buttons) {}
 
     private static final Map<String, Definition> DEFINITIONS = new LinkedHashMap<>();
@@ -202,7 +201,7 @@ public final class MenuRegistry {
         return config;
     }
 
-    // ------------------------------------------------------------------ yardimcilar
+    // ------------------------------------------------------------------ helpers
 
     private YamlConfiguration loadBundled(String id) {
         try (InputStream in = plugin.getResource("menus/" + id + ".yml")) {
@@ -225,12 +224,12 @@ public final class MenuRegistry {
     }
 
     /**
-     * Jar'da olup diskte olmayan ayarlari ekler; var olanlara dokunmaz.
+     * Adds settings that exist in the jar but not on disk; leaves existing ones untouched.
      *
-     * <p>Bir butonu <b>silmek</b> isteyen sunucu sahibi icin bilincli bir istisna var:
-     * bolumun kendisi diskte varsa (orn. {@code items.search} bolumu duruyor ama icindeki
-     * yeni bir alan eksikse) yalnizca eksik alan eklenir. Bolumun tamami silinmisse
-     * geri gelmez — silme kalicidir.</p>
+     * <p>There's a deliberate exception for a server owner who wants to <b>delete</b> a
+     * button: if the section itself still exists on disk (e.g. the {@code items.search}
+     * section is there but a new field inside it is missing), only the missing field is
+     * added. If the whole section was deleted, it does not come back — deletion is permanent.</p>
      */
     private static int mergeMissing(YamlConfiguration onDisk, YamlConfiguration bundled) {
         if (bundled == null) return 0;
@@ -238,7 +237,7 @@ public final class MenuRegistry {
         for (String path : bundled.getKeys(true)) {
             if (bundled.isConfigurationSection(path)) continue;
             if (onDisk.contains(path)) continue;
-            // Ust bolumu tamamen silinmis bir alani geri getirme.
+            // Don't bring back a field whose parent section was fully deleted.
             int dot = path.lastIndexOf('.');
             if (dot > 0 && !onDisk.contains(path.substring(0, dot))) continue;
             onDisk.set(path, bundled.get(path));

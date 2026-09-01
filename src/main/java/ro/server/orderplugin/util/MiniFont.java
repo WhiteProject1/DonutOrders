@@ -3,36 +3,36 @@ package ro.server.orderplugin.util;
 import java.util.Map;
 
 /**
- * Metni "kucuk buyuk harf" (small caps) gorunumune cevirir: {@code Order -> ᴏʀᴅᴇʀ}.
+ * Converts text to "small caps" appearance: {@code Order -> ᴏʀᴅᴇʀ}.
  *
- * <p>Harf tablosu yapilandirmadan gelir ({@code text.minifont.map}); tabloda
- * olmayan karakter oldugu gibi birakilir. Boylece rakamlar, noktalama ve
- * sunucu sahibinin istemedigi harfler degismez.</p>
+ * <p>The letter table comes from config ({@code text.minifont.map}); any
+ * character not in the table is left as-is. So digits, punctuation, and
+ * letters the server owner didn't map stay unchanged.</p>
  *
- * <p>Iki sey <b>hicbir zaman</b> donusturulmez:</p>
+ * <p>Two things are <b>never</b> converted:</p>
  * <ul>
- *   <li><b>Renk kodlari</b> ({@code &a}, {@code §a}, {@code &#RRGGBB}) — donusturulurse
- *       renk bozulur ve metinde ham kod gorunur.</li>
- *   <li><b>Yer tutucu adlari</b> ({@code %player%}) — donusturulurse
- *       {@code text.replace("%player%", ...)} artik eslesmez ve oyuncu ekranda
- *       ham yer tutucuyu gorur.</li>
+ *   <li><b>Color codes</b> ({@code &a}, {@code §a}, {@code &#RRGGBB}) — converting
+ *       these would break the color and leave a raw code visible in the text.</li>
+ *   <li><b>Placeholder names</b> ({@code %player%}) — converting these would
+ *       make {@code text.replace("%player%", ...)} stop matching, and the
+ *       player would see the raw placeholder on screen.</li>
  * </ul>
  *
- * <p>Bu sinif yer tutucu <i>degerlerine</i> de dokunmaz, cunku donusum
- * degistirme isleminden <b>once</b> uygulanir: sabit etiket kucuk harfe doner,
- * icine yazilan oyuncu adi / fiyat okunakli kalir.</p>
+ * <p>This class also leaves placeholder <i>values</i> untouched, because the
+ * conversion is applied <b>before</b> substitution: the fixed label becomes
+ * small caps, while the player name / price written into it stays readable.</p>
  */
 public final class MiniFont {
 
-    /** Renk kodu isaretcisi (U+00A7). pom.xml sourceEncoding=UTF-8 oldugu icin duz yazilabilir. */
+    /** Color code marker (U+00A7). Can be written literally since pom.xml sourceEncoding=UTF-8. */
     private static final char SECTION = '§';
 
     private MiniFont() {
     }
 
     /**
-     * @param input ham metin (renk kodlari ve yer tutucular icerebilir)
-     * @param map   kucuk harf -> gosterilecek karakter; bos ise metin degismez
+     * @param input raw text (may contain color codes and placeholders)
+     * @param map   lowercase letter -> character to display; if empty the text is unchanged
      */
     public static String apply(String input, Map<String, String> map) {
         if (input == null || input.isEmpty() || map == null || map.isEmpty()) return input;
@@ -43,9 +43,9 @@ public final class MiniFont {
         while (i < length) {
             char c = input.charAt(i);
 
-            // Renk kodu: isaretci + bir karakter aynen gecer.
+            // Color code: marker + one character passes through unchanged.
             if ((c == '&' || c == SECTION) && i + 1 < length) {
-                // &#RRGGBB bicimli hex renkler de korunur.
+                // &#RRGGBB style hex colors are preserved too.
                 if (input.charAt(i + 1) == '#' && i + 8 <= length) {
                     out.append(input, i, Math.min(i + 8, length));
                     i = Math.min(i + 8, length);
@@ -56,8 +56,9 @@ public final class MiniFont {
                 continue;
             }
 
-            // Yer tutucu: %ad% arasi aynen gecer. Kapanis yuzdesi yoksa (metinde
-            // tek basina duran % isareti) normal karakter gibi islenir.
+            // Placeholder: everything between %name% passes through unchanged. If
+            // there's no closing percent sign (a lone % in the text), it's treated
+            // as a normal character.
             if (c == '%') {
                 int end = input.indexOf('%', i + 1);
                 if (end > i && isPlaceholderName(input, i + 1, end)) {
@@ -75,10 +76,11 @@ public final class MiniFont {
     }
 
     /**
-     * {@code %...%} arasindaki metin gercekten bir yer tutucu adi mi?
+     * Is the text between {@code %...%} actually a placeholder name?
      *
-     * <p>Yer tutucu adlari harf/rakam/alt cizgi/tire icerir. "%50 indirim%" gibi
-     * bir cumle yanlislikla korunmasin diye bosluk kabul edilmez.</p>
+     * <p>Placeholder names contain letters/digits/underscore/hyphen. Spaces
+     * aren't allowed, so a sentence like "%50 indirim%" ("%50 off%") doesn't
+     * get accidentally preserved.</p>
      */
     private static boolean isPlaceholderName(String text, int from, int to) {
         if (to - from == 0 || to - from > 40) return false;

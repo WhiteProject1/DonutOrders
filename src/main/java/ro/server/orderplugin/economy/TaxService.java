@@ -6,21 +6,21 @@ import org.bukkit.entity.Player;
 import ro.server.orderplugin.OrderPlugin;
 
 /**
- * Tum vergi hesabinin tek adresi.
+ * The single place for all tax calculation.
  *
- * <p>Vergi kapaliyken {@link #calculate} her zaman sifir doner. Bu bilincli:
- * cagiran taraflarin "vergi acik mi" diye ayrica sormasi gerekmez, boylece bir
- * yerde kontrol unutulunca yanlislikla para kesilmez.</p>
+ * <p>When tax is disabled, {@link #calculate} always returns zero. This is
+ * deliberate: callers don't need to separately ask "is tax on", so a forgotten
+ * check somewhere else can't accidentally deduct money.</p>
  *
- * <p>Oran zinciri (hepsi {@code config.yml -> tax}):</p>
+ * <p>The rate chain (all from {@code config.yml -> tax}):</p>
  * <ol>
- *   <li>{@code enabled: false} -&gt; %0</li>
- *   <li>muafiyet izni -&gt; %0</li>
- *   <li>taban oran (islem turune gore)</li>
- *   <li>rutbe orani daha dusukse onu al</li>
- *   <li>rutbe indirimi uygula</li>
- *   <li>seviye indirimi uygula</li>
- *   <li>min/max mutlak tutar sinirlari</li>
+ *   <li>{@code enabled: false} -&gt; 0%</li>
+ *   <li>exemption permission -&gt; 0%</li>
+ *   <li>base rate (by transaction type)</li>
+ *   <li>if the rank rate is lower, use it instead</li>
+ *   <li>apply the rank discount</li>
+ *   <li>apply the level discount</li>
+ *   <li>min/max absolute amount limits</li>
  * </ol>
  */
 public final class TaxService {
@@ -32,10 +32,10 @@ public final class TaxService {
     }
 
     /**
-     * @param rate   uygulanan yuzde (5.0 = %5)
-     * @param amount kesilen tutar
-     * @param total  ara toplam + vergi
-     * @param reason neden bu oran uygulandi: disabled | exempt | base | rank | level
+     * @param rate   percentage applied (5.0 = 5%)
+     * @param amount amount deducted
+     * @param total  subtotal + tax
+     * @param reason why this rate was applied: disabled | exempt | base | rank | level
      */
     public record TaxResult(double subtotal, double rate, double amount, double total, String reason) {
 
@@ -82,8 +82,8 @@ public final class TaxService {
         double amount = subtotal * percent / 100d;
         double min = plugin.settings().taxMinAmount();
         double max = plugin.settings().taxMaxAmount();
-        // Alt sinir yalnizca vergi zaten alinacaksa gecerli: %0 oran "vergi yok"
-        // demektir, alt sinir yuzunden birden para kesilmemeli.
+        // The minimum only applies if tax is already being charged: a 0% rate
+        // means "no tax", it shouldn't suddenly start deducting money because of the floor.
         if (min >= 0d && amount > 0d && amount < min) amount = min;
         if (max >= 0d && amount > max) amount = max;
 
@@ -91,10 +91,10 @@ public final class TaxService {
     }
 
     /**
-     * Seviye sisteminden gelen indirim.
+     * Discount coming from the level system.
      *
-     * <p>Seviye sistemi henuz yuklenmediyse ya da kapaliysa 0 doner; vergi
-     * hesabi seviye sistemine bagimli olmadan calisir.</p>
+     * <p>Returns 0 if the level system hasn't loaded yet or is disabled; tax
+     * calculation works without depending on the level system.</p>
      */
     private double levelDiscount(Player player) {
         if (player == null || plugin.levels() == null || !plugin.levels().enabled()) return 0d;
@@ -102,11 +102,11 @@ public final class TaxService {
     }
 
     /**
-     * Toplanan vergiyi yerine yatirir.
+     * Deposits collected tax to its destination.
      *
-     * <p>{@code VOID} (varsayilan) hicbir sey yapmaz — para ekonomiden silinir,
-     * bu enflasyonu dizginler. {@code ACCOUNT} secilirse tutar yapilandirilan
-     * hesaba gecer.</p>
+     * <p>{@code VOID} (default) does nothing — the money is removed from the
+     * economy, which curbs inflation. If {@code ACCOUNT} is chosen, the amount
+     * goes to the configured account.</p>
      */
     public void deposit(double amount) {
         if (amount <= 0d || !enabled()) return;

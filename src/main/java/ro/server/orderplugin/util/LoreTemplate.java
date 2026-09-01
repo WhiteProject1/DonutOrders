@@ -7,26 +7,27 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
- * Yapilandirmadan gelen satir listesini ({@code lang/*.yml -> ...template})
- * gercek lore'a cevirir.
+ * Turns the line list coming from config ({@code lang/*.yml -> ...template})
+ * into actual lore.
  *
- * <p>Iki tur yer tutucu vardir:</p>
+ * <p>There are two kinds of placeholders:</p>
  * <ul>
- *   <li><b>Skaler</b> ({@code %price%} gibi) — satir icinde gectigi yerde
- *       degeriyle degistirilir.</li>
- *   <li><b>Liste</b> ({@code %enchants%} gibi) — satirin <b>tamami</b> yalnizca
- *       bu yer tutucudan ibaretse, o tek satir listedeki eleman sayisi kadar
- *       satira genisler. Liste bossa satir tamamen <b>silinir</b> — geride bos
- *       bir satir birakmaz. Boylece buyusu olmayan bir siparis, buyu bolumunde
- *       bosluk birakmaz.</li>
+ *   <li><b>Scalar</b> (like {@code %price%}) — replaced with its value at the
+ *       spot it appears within the line.</li>
+ *   <li><b>List</b> (like {@code %enchants%}) — if the line consists <b>entirely</b>
+ *       of just this placeholder, that single line expands into as many lines
+ *       as there are elements in the list. If the list is empty the line is
+ *       <b>removed</b> entirely — it doesn't leave a blank line behind. That
+ *       way an order with no enchantments doesn't leave a gap in the
+ *       enchantment section.</li>
  * </ul>
  *
- * <p>Taninmayan bir yer tutucu (yazim hatasi, silinmis anahtar) oldugu gibi
- * birakilir; sunucu sahibinin bir harf hatasi butun GUI'yi bozmamali.</p>
+ * <p>An unrecognized placeholder (typo, deleted key) is left as-is; a single
+ * typo by the server owner shouldn't break the whole GUI.</p>
  *
- * <p>Renklendirme ({@code &#RRGGBB}, {@code &a}, {@code §a}) her satirda
- * {@link TextUtil#colorize} ile en sonda yapilir; yer tutucu degerleri
- * (ornegin oyuncunun renkli yazdigi bir esya adi) de boylece renklenir.</p>
+ * <p>Colorizing ({@code &#RRGGBB}, {@code &a}, {@code §a}) is applied last,
+ * per line, via {@link TextUtil#colorize}; placeholder values (e.g. an item
+ * name a player typed in color) get colorized this way too.</p>
  */
 public final class LoreTemplate {
 
@@ -36,10 +37,10 @@ public final class LoreTemplate {
     }
 
     /**
-     * @param template   yapilandirmadaki ham satirlar ({@code ''} kasti bos satir demektir)
-     * @param values     skaler yer tutucu -> deger (renklendirilmemis, ham metin)
-     * @param listValues liste yer tutucu -> hazir (zaten bicimlendirilmis) satirlar
-     * @return renklendirilmis, oynamaya hazir lore
+     * @param template   raw lines from config ({@code ''} deliberately means an empty line)
+     * @param values     scalar placeholder -> value (uncolored, raw text)
+     * @param listValues list placeholder -> ready-made (already formatted) lines
+     * @return colorized lore, ready to display
      */
     public static List<String> render(List<String> template, Map<String, String> values,
             Map<String, List<String>> listValues) {
@@ -58,7 +59,7 @@ public final class LoreTemplate {
                         out.add(TextUtil.colorize(item));
                     }
                 }
-                // Liste bos ise satir hic eklenmez -> geride bosluk kalmaz.
+                // If the list is empty the line is never added -> no gap left behind.
                 continue;
             }
 
@@ -68,8 +69,8 @@ public final class LoreTemplate {
     }
 
     /**
-     * Satir, bastan sona (bosluklar haric) tek bir {@code %isim%} yer tutucusundan
-     * ibaretse o ismi dondurur; degilse {@code null}.
+     * If the line consists entirely (ignoring whitespace) of a single
+     * {@code %name%} placeholder, returns that name; otherwise {@code null}.
      */
     private static String pureListPlaceholder(String line) {
         String trimmed = line.trim();
@@ -88,7 +89,7 @@ public final class LoreTemplate {
         StringBuilder buffer = new StringBuilder(line.length() + 16);
         while (matcher.find()) {
             String replacement = values.get(matcher.group(1));
-            // Bilinmeyen yer tutucu -> oldugu gibi birakilir (hata firlatmaz).
+            // Unknown placeholder -> left as-is (does not throw).
             matcher.appendReplacement(buffer, Matcher.quoteReplacement(replacement != null ? replacement : matcher.group()));
         }
         matcher.appendTail(buffer);

@@ -13,29 +13,30 @@ import org.bukkit.inventory.meta.ItemMeta;
 import ro.server.orderplugin.OrderPlugin;
 
 /**
- * Ozel esya eklentileriyle (ItemsAdder / Oraxen / Nexo) ve vanilya
- * {@code custom-model-data} esyalariyla koprulenme.
+ * Bridges to custom item plugins (ItemsAdder / Oraxen / Nexo) and to vanilla
+ * {@code custom-model-data} items.
  *
- * <p>Hicbir saglayici {@code pom.xml}'e derleme bagimliligi olarak eklenmez;
- * hepsi <b>reflection</b> ile cagrilir. Boylece eklenti bu uc eklentiden hicbiri
- * kurulu olmadan da calisir ve biri kaldirildiginda sunucu hata vermez.</p>
+ * <p>None of the providers are added to {@code pom.xml} as a compile
+ * dependency; all of them are invoked via <b>reflection</b>. This way the
+ * plugin still works with none of these three plugins installed, and the
+ * server doesn't error out when one of them is removed.</p>
  *
- * <p>Kimlik bicimi: {@code saglayici:anahtar} — ornegin {@code itemsadder:ruby},
+ * <p>Identity format: {@code provider:key} — e.g. {@code itemsadder:ruby},
  * {@code oraxen:mythic_sword}, {@code cmd:DIAMOND_SWORD:10001}.</p>
  */
 public final class CustomItemBridge {
 
-    /** Tek bir ozel esya kaynagi. */
+    /** A single custom item source. */
     public interface Provider {
         String id();
 
-        /** Eklenti kurulu ve API'si erisilebilir mi? */
+        /** Is the plugin installed and its API reachable? */
         boolean available();
 
-        /** Anahtardan esya uretir; bulunamazsa null. */
+        /** Builds an item from a key; null if not found. */
         ItemStack build(String key);
 
-        /** Esya bu saglayiciya aitse anahtarini, degilse null doner. */
+        /** The item's key if it belongs to this provider, null otherwise. */
         String keyOf(ItemStack stack);
     }
 
@@ -93,7 +94,7 @@ public final class CustomItemBridge {
         return List.copyOf(out);
     }
 
-    // ------------------------------------------------------------------ erisim
+    // ------------------------------------------------------------------ access
 
     public boolean enabled() {
         return enabled && !providers.isEmpty();
@@ -107,7 +108,7 @@ public final class CustomItemBridge {
         return "BOTTOM".equals(placement);
     }
 
-    /** {@code saglayici:anahtar} -> esya; bulunamazsa null. */
+    /** {@code provider:key} -> item; null if not found. */
     public ItemStack build(String fullKey) {
         if (!enabled() || fullKey == null) return null;
         int colon = fullKey.indexOf(':');
@@ -121,7 +122,7 @@ public final class CustomItemBridge {
         }
     }
 
-    /** Esyanin ozel kimligi; ozel esya degilse null. */
+    /** The item's custom identity; null if it's not a custom item. */
     public String identify(ItemStack stack) {
         if (!enabled() || stack == null) return null;
         for (Provider provider : providers.values()) {
@@ -129,13 +130,13 @@ public final class CustomItemBridge {
                 String key = provider.keyOf(stack);
                 if (key != null && !key.isBlank()) return provider.id() + ":" + key;
             } catch (Exception ignored) {
-                // Saglayici API'si degistiyse digerleriyle devam et.
+                // If a provider's API changed, keep going with the others.
             }
         }
         return null;
     }
 
-    /** Bu kimlige siparis verilebilir mi? */
+    /** Can orders be placed for this identity? */
     public boolean allowed(String fullKey) {
         if (fullKey == null) return true;
         String key = fullKey.toLowerCase(Locale.ROOT);
@@ -144,11 +145,10 @@ public final class CustomItemBridge {
     }
 
     /**
-     * Teslim edilen esya siparise uyuyor mu?
+     * Does the delivered item match the order?
      *
-     * <p>STRICT modda ad ve model verisi de karsilastirilir; LOOSE modda yalnizca
-     * ozel kimlik yeterlidir (yipranmis ya da yeniden adlandirilmis esya kabul
-     * edilir).</p>
+     * <p>In STRICT mode, name and model data are compared too; in LOOSE mode
+     * the custom identity alone is enough (a worn or renamed item is accepted).</p>
      */
     public boolean matches(String orderCustomId, ItemStack stack) {
         String stackId = identify(stack);
@@ -157,7 +157,7 @@ public final class CustomItemBridge {
         if (!strictMatch) return true;
 
         ItemStack reference = build(orderCustomId);
-        if (reference == null) return true;   // ornek uretilemedi: kimlik yeterli
+        if (reference == null) return true;   // couldn't build a reference: identity is enough
         return sameMeta(reference, stack);
     }
 
@@ -171,9 +171,9 @@ public final class CustomItemBridge {
         return !ma.hasDisplayName() || ma.getDisplayName().equals(mb.getDisplayName());
     }
 
-    // ================================================================== saglayicilar
+    // ================================================================== providers
 
-    /** Kurulu bir eklentinin sinifi yuklenebiliyor mu? */
+    /** Can the installed plugin's class actually be loaded? */
     private static boolean hasClass(String pluginName, String className) {
         if (Bukkit.getPluginManager().getPlugin(pluginName) == null) return false;
         try {
@@ -244,7 +244,7 @@ public final class CustomItemBridge {
         }
     }
 
-    /** Nexo (Oraxen'in devami) — {@code com.nexomc.nexo.api.NexoItems}. */
+    /** Nexo (successor to Oraxen) — {@code com.nexomc.nexo.api.NexoItems}. */
     private static final class NexoProvider implements Provider {
         @Override public String id() { return "nexo"; }
 
@@ -274,10 +274,10 @@ public final class CustomItemBridge {
     }
 
     /**
-     * Vanilya {@code custom-model-data} esyalari.
+     * Vanilla {@code custom-model-data} items.
      *
-     * <p>Kaynak paketi kullanan ama ozel esya eklentisi olmayan sunucular icin.
-     * Anahtar bicimi: {@code MATERYAL:model}.</p>
+     * <p>For servers that use a resource pack but don't have a custom item
+     * plugin. Key format: {@code MATERIAL:model}.</p>
      */
     private static final class ModelDataProvider implements Provider {
         @Override public String id() { return "cmd"; }

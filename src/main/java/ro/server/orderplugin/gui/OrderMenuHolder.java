@@ -6,17 +6,17 @@ import org.bukkit.inventory.InventoryHolder;
 import ro.server.orderplugin.model.Order;
 
 /**
- * Acilan envanterin hangi DonutOrders menusu oldugunu tasiyan isaretci.
+ * Marker that carries which DonutOrders menu an opened inventory belongs to.
  *
- * <p>Eskiden menuler baslik metnine bakilarak taniniyordu. Basliklar artik hem
- * yapilandirilabilir hem de <b>oyuncunun diline gore</b> degistigi icin bu yontem
- * calismaz: Turkce oynayan biri "SIPARISLER", Ingilizce oynayan "ORDERS" gorur ve
- * ayni karsilastirma ikisinde birden dogru olamaz. Ustelik baslik eslestirmesi,
- * ayni basligi tasiyan baska bir eklentinin menusune yanlislikla mudahale etme
- * riskini de tasiyordu.</p>
+ * <p>Menus used to be identified by looking at the title text. That no longer
+ * works now that titles are both configurable and <b>change per player
+ * language</b>: a Turkish-speaking player sees "SIPARISLER", an English-speaking
+ * one sees "ORDERS", and the same comparison can't be correct for both at once.
+ * On top of that, matching by title also risked accidentally interfering with
+ * another plugin's menu that happened to share the same title.</p>
  *
- * <p>Holder ile menu kimligi, sayfa ve baglam (siparis, filtre) envanterin
- * kendisinde tasinir; metinden tamamen bagimsizdir.</p>
+ * <p>With the holder, the menu id, page and context (order, filter) are carried
+ * on the inventory itself, completely independent of the text.</p>
  */
 public final class OrderMenuHolder implements InventoryHolder {
 
@@ -43,9 +43,9 @@ public final class OrderMenuHolder implements InventoryHolder {
 
     public String menuId() { return menuId; }
     public int page() { return page; }
-    /** Arama ya da filtre metni; yoksa null. */
+    /** Search or filter text; null if none. */
     public String query() { return query; }
-    /** Menunun uzerinde calistigi siparis; yoksa null. */
+    /** The order this menu operates on; null if none. */
     public Order order() { return order; }
 
     public boolean is(String id) {

@@ -9,15 +9,16 @@ import ro.server.orderplugin.OrderPlugin;
 import ro.server.orderplugin.config.Settings;
 
 /**
- * Miktar/fiyat/arama gibi serbest metin girdilerinin tek kapisi.
+ * The single entry point for free-text inputs like amount/price/search.
  *
- * <p>Cagiran taraf girdinin tabeladan mi sohbetten mi geldigini bilmez; hangisinin
- * kullanilacagi {@code orders.input-mode} ile belirlenir. Istem metinleri dil
- * dosyasindan gelir, yani her oyuncu istemi kendi dilinde gorur.</p>
+ * <p>The caller doesn't know whether the input comes from a sign or chat;
+ * which one is used is decided by {@code orders.input-mode}. Prompt texts
+ * come from the language file, so each player sees the prompt in their own
+ * language.</p>
  */
 public final class InputManager {
 
-    /** Hangi girdi isteniyor — dil anahtarini ve varsayilan metni belirler. */
+    /** Which input is being requested — determines the language key and default text. */
     public enum Type {
         AMOUNT("amount"),
         PRICE("price"),
@@ -58,7 +59,7 @@ public final class InputManager {
         plugin.getSignInputManager().requestInput(player, promptLines, onInput, onCancel);
     }
 
-    /** Oyuncu icin bekleyen bir girdi var mi (iki modda da). */
+    /** Whether the player has a pending input (in either mode). */
     public boolean hasPending(Player player) {
         return plugin.getChatInputManager().hasPending(player.getUniqueId())
                 || plugin.getSignInputManager().hasPendingInput(player.getUniqueId());

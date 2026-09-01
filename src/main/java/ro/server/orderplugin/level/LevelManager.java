@@ -19,15 +19,15 @@ import org.bukkit.entity.Player;
 import ro.server.orderplugin.OrderPlugin;
 
 /**
- * Siparis seviye sistemi.
+ * Order level system.
  *
- * <p><b>Sifir sabit deger kurali:</b> seviye sayisi, xp katsayilari, bonus
- * turleri, ilerleme cubugunun karakterleri — hepsi {@code levels.yml}'den gelir.
- * Java tarafinda tek bir seviye/xp sayisi yoktur.</p>
+ * <p><b>Zero hard-coded values rule:</b> the level count, xp coefficients, bonus
+ * types, progress bar characters — all of it comes from {@code levels.yml}.
+ * There is no single level/xp count on the Java side.</p>
  *
- * <p>{@code enabled: false} yapildiginda sistem yalnizca gizlenmez, <b>hic
- * calismaz</b>: tablo okunmaz, xp olaylari islenmez, tum bonuslar sifirdir.
- * Kapali sistemin performans maliyeti yoktur.</p>
+ * <p>When {@code enabled: false} is set, the system isn't just hidden, it
+ * <b>doesn't run at all</b>: the table isn't read, xp events aren't processed,
+ * all bonuses are zero. A disabled system has no performance cost.</p>
  */
 public final class LevelManager {
 
@@ -35,7 +35,7 @@ public final class LevelManager {
 
     private boolean enabled = false;
 
-    // xp kazanc kalemleri
+    // xp gain entries
     private double xpOnCreate;
     private double xpOnCreatePer1000;
     private double xpOnDeliverPerItem;
@@ -43,7 +43,7 @@ public final class LevelManager {
     private double xpOnSellPer1000;
     private double dailyCap;
 
-    // gorunum
+    // appearance
     private int barLength;
     private String barFilledChar;
     private String barEmptyChar;
@@ -54,7 +54,7 @@ public final class LevelManager {
     private int titleStay;
     private int titleFadeOut;
 
-    /** Seviye numarasina gore artan sirali tablo. Bos ise sistem kapali sayilir. */
+    /** Table sorted ascending by level number. Empty means the system is considered disabled. */
     private List<LevelTier> tiers = List.of();
 
     private final Map<UUID, PlayerLevel> cache = new ConcurrentHashMap<>();
@@ -69,7 +69,7 @@ public final class LevelManager {
         return antiAbuse;
     }
 
-    // ------------------------------------------------------------------ yukleme
+    // ------------------------------------------------------------------ loading
 
     public void load() {
         File file = new File(plugin.getDataFolder(), "levels.yml");
@@ -151,13 +151,13 @@ public final class LevelManager {
         return List.copyOf(out);
     }
 
-    // ------------------------------------------------------------------ erisim
+    // ------------------------------------------------------------------ access
 
     public boolean enabled() {
         return enabled;
     }
 
-    /** Bilinen en yuksek seviye. Sistem kapaliysa 1. */
+    /** Highest known level. 1 if the system is disabled. */
     public int maxLevel() {
         return tiers.isEmpty() ? 1 : tiers.get(tiers.size() - 1).level();
     }
@@ -175,7 +175,7 @@ public final class LevelManager {
         cache.remove(uuid);
     }
 
-    /** Oyuncunun mevcut seviye tanimi. Sistem kapaliysa taban (tum bonuslar 0). */
+    /** Player's current level tier. Base tier (all bonuses 0) if the system is disabled. */
     public LevelTier tierOf(Player player) {
         if (!enabled || player == null) return LevelTier.base();
         return tierForLevel(get(player.getUniqueId()).level());
@@ -202,7 +202,7 @@ public final class LevelManager {
         return enabled ? tierOf(player).extraItems() : 0;
     }
 
-    /** Bir sonraki seviyeye gereken toplam xp; zaten en ustteyse mevcut esik. */
+    /** Total xp needed for the next level; if already at the top, the current threshold. */
     public double xpForNext(int level) {
         for (LevelTier tier : tiers) {
             if (tier.level() > level) return tier.xpRequired();
@@ -213,26 +213,27 @@ public final class LevelManager {
     // ------------------------------------------------------------------ xp
 
     /**
-     * Bir olaydan xp kazandirir.
+     * Grants xp for an event.
      *
      * @param source {@code create}, {@code create-money}, {@code deliver},
-     *               {@code complete} ya da {@code sell-money}
-     * @param value  kaynaga gore: adet ya da para tutari (kalem basina katsayi
-     *               {@code levels.yml}'den gelir)
+     *               {@code complete} or {@code sell-money}
+     * @param value  depending on the source: a count or a money amount (the
+     *               per-item coefficient comes from {@code levels.yml})
      */
     public void award(Player player, String source, double value) {
         award(player, source, value, 1d);
     }
 
     /**
-     * Teslim XP'si — istismar korumasindan gecirilir.
+     * Delivery XP — passed through abuse protection.
      *
-     * <p>Ayri bir metot olmasinin sebebi, katsayinin <b>kimle</b> ticaret
-     * yapildigina bagli olmasi: {@link #award} bunu bilemez ve her cagri yerine
-     * partner parametresi eklemek, teslim disindaki kalemlerde anlamsiz olurdu.</p>
+     * <p>The reason this is a separate method is that the coefficient depends
+     * on <b>who</b> the trade is with: {@link #award} has no way to know this,
+     * and adding a partner parameter to every call would be meaningless for
+     * entries other than delivery.</p>
      *
-     * @param owner siparis sahibi (ticaretin karsi tarafi)
-     * @param items teslim edilen esya sayisi
+     * @param owner order owner (the other side of the trade)
+     * @param items number of items delivered
      */
     public void awardDelivery(Player deliverer, UUID owner, int items) {
         if (!enabled || deliverer == null) return;
@@ -243,8 +244,8 @@ public final class LevelManager {
     }
 
     /**
-     * @param multiplier istismar korumasinin belirledigi katsayi (1.0 = tam odul)
-     * @return gercekten verilen xp (gunluk tavana takilmissa daha az olabilir)
+     * @param multiplier coefficient determined by abuse protection (1.0 = full reward)
+     * @return xp actually granted (may be less if it hit the daily cap)
      */
     public double award(Player player, String source, double value, double multiplier) {
         if (!enabled || player == null || multiplier <= 0d) return 0d;
@@ -265,7 +266,7 @@ public final class LevelManager {
         long now = System.currentTimeMillis();
         double dailyXp = current.dailyXp();
         long dailyReset = current.dailyReset();
-        // Gunluk pencere: son sifirlamadan 24 saat sonra sayac sifirlanir.
+        // Daily window: the counter resets 24 hours after the last reset.
         if (now - dailyReset >= 86_400_000L) {
             dailyXp = 0d;
             dailyReset = now;
@@ -314,7 +315,7 @@ public final class LevelManager {
             if (command == null || command.isBlank()) continue;
             String resolved = command.replace("%player%", player.getName())
                     .replace("%level%", String.valueOf(level));
-            // Odul komutlari ana is parcaciginda calismali (Folia dahil).
+            // Reward commands must run on the main thread (Folia included).
             plugin.getSchedulerAdapter().runGlobal(plugin, () ->
                     Bukkit.dispatchCommand(Bukkit.getConsoleSender(), resolved));
         }
@@ -327,9 +328,9 @@ public final class LevelManager {
         }
     }
 
-    // ------------------------------------------------------------------ gorunum
+    // ------------------------------------------------------------------ appearance
 
-    /** Renklendirilmemis ilerleme cubugu; {@code &} kodlari icerir. */
+    /** Uncolored progress bar; contains {@code &} codes. */
     public String progressBar(PlayerLevel state) {
         if (!enabled) return "";
         double next = xpForNext(state.level());
@@ -348,7 +349,7 @@ public final class LevelManager {
         return sb.toString();
     }
 
-    // ------------------------------------------------------------------ yardimcilar
+    // ------------------------------------------------------------------ helpers
 
     private YamlConfiguration loadBundled() {
         try (InputStream in = plugin.getResource("levels.yml")) {
@@ -361,20 +362,21 @@ public final class LevelManager {
     }
 
     /**
-     * Jar'da olup diskte olmayan ayarlari ekler; var olanlara dokunmaz.
+     * Adds settings that exist in the jar but not on disk; leaves existing ones untouched.
      *
-     * <p>{@code levels} bolumunun altina <b>yeni seviye eklenmez</b>: sunucu
-     * sahibi 8 seviyeden 5'ini silmisse guncelleme onlari geri getirmemeli.
-     * Seviye tablosunda bir girdinin yoklugu "bu seviye olmasin" demektir.</p>
+     * <p><b>No new levels are added</b> under the {@code levels} section: if
+     * the server owner deleted 5 of 8 levels, an update must not bring them
+     * back. The absence of an entry in the level table means "this level
+     * shouldn't exist."</p>
      *
-     * <p>Diger ayarlarda ayni kural <b>ters teper</b>. Burada bir zamanlar
-     * "ust bolumu diskte yoksa ekleme" kurali vardi; 3.1'de eklenen
-     * {@code anti-abuse} bolumu eski hicbir dosyada bulunmadigi icin
-     * <b>hicbir ayari</b> eklenmez, sunucu sahibi istismar korumasini ancak
-     * levels.yml'yi silerek yapilandirabilirdi — tam da kacinilmasi gereken
-     * durum. Ustelik bir ayarin yoklugu ile varsayilan degeri ayni anlama gelir,
-     * yani eksik anahtari eklemek davranisi degistirmez; yalnizca gorunur ve
-     * duzenlenebilir yapar.</p>
+     * <p>For other settings the same rule <b>backfires</b>. There used to be a
+     * rule here of "don't add a top-level section if it's not on disk"; since
+     * the {@code anti-abuse} section added in 3.1 doesn't exist in any old
+     * file, <b>no setting from it at all</b> would get added, and the server
+     * owner could only configure abuse protection by deleting levels.yml —
+     * exactly the situation this is meant to avoid. Also, the absence of a
+     * setting is equivalent to its default value, so adding the missing key
+     * doesn't change behavior; it only makes it visible and editable.</p>
      */
     private static int mergeMissing(YamlConfiguration onDisk, YamlConfiguration bundled) {
         if (bundled == null) return 0;
@@ -389,7 +391,7 @@ public final class LevelManager {
         return added;
     }
 
-    /** Onbellekteki tum kayitlari diske yazar (kapanista). */
+    /** Writes all cached entries to disk (on shutdown). */
     public void flush() {
         if (!enabled) return;
         for (PlayerLevel value : Collections.unmodifiableCollection(cache.values())) {

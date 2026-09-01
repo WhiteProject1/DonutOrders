@@ -3,11 +3,11 @@ package ro.server.orderplugin.sync;
 import java.util.List;
 
 /**
- * Ag kapaliyken kullanilan bos uygulama.
+ * Empty implementation used when networking is disabled.
  *
- * <p>null yerine bunun donmesi, cagiran her yerde {@code if (sync != null)}
- * kontrolu yazma ihtiyacini ortadan kaldirir; unutulan bir kontrol
- * {@code NullPointerException} uretemez.</p>
+ * <p>Returning this instead of null removes the need to write
+ * {@code if (sync != null)} checks everywhere it's called; a forgotten check
+ * can never produce a {@code NullPointerException}.</p>
  */
 public final class NoOpSyncService implements SyncService {
 

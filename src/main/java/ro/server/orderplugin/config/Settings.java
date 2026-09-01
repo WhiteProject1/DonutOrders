@@ -17,26 +17,26 @@ import ro.server.orderplugin.OrderPlugin;
 import ro.server.orderplugin.util.SoundSpec;
 
 /**
- * {@code config.yml}'in tipli hali.
+ * The typed form of {@code config.yml}.
  *
- * <p>Ayarlar acilista bir kez okunup burada tutulur; GUI acilirken ya da her
- * tiklamada {@code getConfig().getString(...)} cagrilmaz. Bir GUI'de 54 slot x
- * saniyede birkac oyuncu dusunuldugunde bu fark eder.</p>
+ * <p>Settings are read once at startup and kept here; {@code getConfig().getString(...)}
+ * is not called every time a GUI opens or on every click. With 54 slots per GUI and
+ * several players a second, that difference is noticeable.</p>
  *
- * <p>Rutbe bazli limit/vergi burada cozulur: oyuncunun sahip oldugu izinler
- * arasindan <b>en avantajlisi</b> uygulanir, boylece VIP'e ikinci bir izin
- * vermek onu asla dezavantajli hale getirmez.</p>
+ * <p>Rank-based limits/tax are resolved here: among all permissions the player
+ * holds, the <b>most favorable one</b> is applied, so granting a VIP a second
+ * permission can never leave them worse off.</p>
  */
 public final class Settings {
 
-    /** Miktar/fiyat girdisi nasil alinacak. */
+    /** How amount/price input is taken. */
     public enum InputMode { SIGN, CHAT }
 
     private record PermValue(String permission, double value) {}
 
     private final OrderPlugin plugin;
 
-    // --- ozellikler
+    // --- features
     private boolean featurePotions = true;
     private boolean featureEnchantments = true;
     private boolean featureEnchantedBooks = true;
@@ -47,7 +47,7 @@ public final class Settings {
     private boolean featureSort = true;
     private boolean featureLanguageMenu = true;
 
-    // --- siparis kurallari
+    // --- order rules
     private InputMode inputMode = InputMode.SIGN;
     private int defaultMaxActive = 10;
     private List<PermValue> activeLimits = List.of();
@@ -56,7 +56,7 @@ public final class Settings {
     private int minAmount = 1;
     private int maxAmount = -1;
 
-    // --- vergi (yuzde olarak tutulur: 5.0 = %5)
+    // --- tax (kept as a percentage: 5.0 = 5%)
     private boolean taxEnabled = true;
     private double taxCreationPercent = 0.0;
     private double taxDeliveryPercent = 0.0;
@@ -77,16 +77,16 @@ public final class Settings {
     private boolean orderBroadcastEnabled = false;
     private double orderBroadcastMinTotal = 0d;
 
-    // --- sesler
+    // --- sounds
     private boolean soundsEnabled = true;
     private Map<String, SoundSpec> eventSounds = Map.of();
 
     /**
-     * Kodun caldigi olay sesleri ve varsayilanlari.
+     * The event sounds the code plays, and their defaults.
      *
-     * <p>Bu liste ayni zamanda belgedir: config.yml'de olmayan bir olay burada
-     * tanimli varsayilanla calar, boylece yeni bir olay eklendiginde eski
-     * kurulumlarda sessizlik olusmaz.</p>
+     * <p>This list also serves as documentation: an event missing from
+     * config.yml plays with the default defined here, so adding a new event
+     * doesn't leave old installs silent.</p>
      */
     private static final Map<String, String> EVENT_DEFAULTS = Map.ofEntries(
             Map.entry("error", "block.note_block.bass:1.0:0.8"),
@@ -102,7 +102,7 @@ public final class Settings {
             Map.entry("tax-paid", "entity.villager.yes:0.7:1.0"),
             Map.entry("no-money", "entity.villager.no:1.0:1.0"));
 
-    // --- yazi bicimi (minifont)
+    // --- text style (minifont)
     private boolean miniFontButtons = true;
     private boolean miniFontTitles = true;
     private boolean miniFontMessages = false;
@@ -111,25 +111,25 @@ public final class Settings {
     private String currencySymbol = "$";
     private boolean currencySuffix = false;
 
-    // --- sayi bicimi (sipariş lore sablonu icin: text.number-format)
+    // --- number format (for the order lore template: text.number-format)
     private String numberFormatStyle = "full";
     private String numberFormatSeparator = ".";
     private int numberFormatDecimals = 0;
     private String percentFormat = "%%%s";
 
-    // --- ilerleme cubugu (text.progress-bar)
+    // --- progress bar (text.progress-bar)
     private int progressBarLength = 10;
     private String progressBarFilledChar = "■";
     private String progressBarEmptyChar = "■";
     private String progressBarFilledColor = "&#49F267";
     private String progressBarEmptyColor = "&#555555";
 
-    /** Yonetici panelinde sirayla acilip kapatilan ozellikler; features.panel-toggles. */
+    /** Features that can be toggled on/off in order in the admin panel; features.panel-toggles. */
     private List<String> featurePanelToggles = List.of(
             "potions", "enchantments", "enchanted-books", "sell-all",
             "quick-fill", "search", "filter", "sort");
 
-    // --- spam korumasi (0 = ilgili kontrol kapali)
+    // --- spam protection (0 = corresponding check disabled)
     private long cooldownClickMs = 200L;
     private long cooldownMenuMs = 250L;
     private long cooldownCommandMs = 1000L;
@@ -140,7 +140,7 @@ public final class Settings {
     private boolean protectionWarn = true;
     private String protectionBypassPermission = "orders.bypass.cooldown";
 
-    // --- basarim
+    // --- performance
     private long saveDelayTicks = 40L;
     private long chatInputTimeoutTicks = 1200L;
 
@@ -230,8 +230,8 @@ public final class Settings {
         progressBarFilledColor = c.getString("text.progress-bar.filled-color", "&#49F267");
         progressBarEmptyColor = c.getString("text.progress-bar.empty-color", "&#555555");
 
-        // features.panel-toggles yoksa (eski/kismi config) varsayilan 8'i kullan;
-        // sunucu sahibi bilerek bos birakmissa ([]) o tercihe saygi duyulur.
+        // If features.panel-toggles is absent (old/partial config), use the default 8;
+        // if the server owner deliberately left it empty ([]), that choice is respected.
         featurePanelToggles = c.isSet("features.panel-toggles")
                 ? List.copyOf(c.getStringList("features.panel-toggles"))
                 : List.of("potions", "enchantments", "enchanted-books", "sell-all",
@@ -247,21 +247,21 @@ public final class Settings {
         protectionWarn = c.getBoolean("protection.warn-player", true);
         protectionBypassPermission = c.getString("protection.bypass-permission", "orders.bypass.cooldown");
 
-        // 0 = gecikmesiz (her degisiklikte hemen yaz). Ust sinir yok ama cok
-        // buyuk bir deger cokme aninda veri kaybi riskini artirir.
+        // 0 = no delay (write immediately on every change). There's no upper
+        // bound, but a very large value increases the risk of data loss on a crash.
         saveDelayTicks = Math.max(0L, c.getLong("performance.save-delay-ticks", 40L));
         chatInputTimeoutTicks = Math.max(20L, c.getLong("performance.chat-input-timeout-ticks", 1200L));
     }
 
-    /** Negatif deger "kapali" demektir; 0 zaten kapalidir. */
+    /** A negative value means "disabled"; 0 is already disabled. */
     private long readCooldown(FileConfiguration c, String path, long fallback) {
         return Math.max(0L, c.getLong(path, fallback));
     }
 
     /**
-     * Minifont harf tablosu. Anahtar tek karakter olmalidir; birden fazla karakter
-     * yazilirsa uyarilip atlanir (yoksa "ab -> X" gibi bir kural sessizce hic
-     * calismaz ve sunucu sahibi nedenini anlayamaz).
+     * The minifont character table. Keys must be a single character; a key with
+     * more than one character is warned about and skipped (otherwise a rule like
+     * "ab -> X" would silently never fire and the server owner couldn't tell why).
      */
     private Map<String, String> readMiniFontMap(ConfigurationSection section) {
         if (section == null) return Map.of();
@@ -274,21 +274,21 @@ public final class Settings {
             }
             String value = section.getString(key);
             if (value == null || value.isEmpty()) continue;
-            // String.toLowerCase yerine Character.toLowerCase: 'I' (U+0130) String
-            // olarak kucultuldugunde iki karaktere ("i" + birlesen nokta) bolunur
-            // ve tablo anahtari bir daha hicbir zaman eslesmezdi.
+            // Character.toLowerCase instead of String.toLowerCase: lowercasing 'I'
+            // (U+0130) as a String splits it into two characters ("i" + a combining
+            // dot), and the table key would then never match again.
             out.put(String.valueOf(Character.toLowerCase(key.charAt(0))), value);
         }
         return Map.copyOf(out);
     }
 
     /**
-     * Olay seslerini okur.
+     * Reads event sounds.
      *
-     * <p>Once 2.0'daki {@code sounds.error} / {@code sounds.success} anahtarlarina
-     * bakilir: dosyada hala duruyorlarsa (ConfigUpdater tasimayi yapmamissa, orn.
-     * dosya salt okunursa) degerleri kaybolmasin diye kullanilirlar. Sonra
-     * {@code sounds.events.*} okunur ve varsa uzerine yazar.</p>
+     * <p>The old 2.0 {@code sounds.error} / {@code sounds.success} keys are checked
+     * first: if they're still present in the file (e.g. ConfigUpdater couldn't
+     * migrate them because the file is read-only), their values are used so they
+     * aren't lost. Then {@code sounds.events.*} is read and overrides them if present.</p>
      */
     private Map<String, SoundSpec> readEventSounds(FileConfiguration c) {
         Map<String, SoundSpec> out = new java.util.HashMap<>();
@@ -296,7 +296,7 @@ public final class Settings {
             out.put(entry.getKey(), SoundSpec.parse(entry.getValue(), SoundSpec.NONE));
         }
 
-        // 2.0 yazimi (geriye donuk)
+        // 2.0-era format (backward compatible)
         if (c.isString("sounds.error")) {
             out.put("error", SoundSpec.parse(c.getString("sounds.error"), out.get("error")));
         }
@@ -321,11 +321,11 @@ public final class Settings {
     }
 
     /**
-     * {@code izin: deger} ciftlerini okur. Iki bicimi de kabul eder:
+     * Reads {@code permission: value} pairs. Both forms are accepted:
      * <pre>
      * rank-limits:
-     *   orders.limit.vip: 25          # kisa hali
-     *   orders.limit.mvp:             # uzun hali
+     *   orders.limit.vip: 25          # short form
+     *   orders.limit.mvp:             # long form
      *     max-active: 50
      * </pre>
      */
@@ -351,11 +351,11 @@ public final class Settings {
         return List.copyOf(out);
     }
 
-    // ------------------------------------------------------------------ rutbe bazli
+    // ------------------------------------------------------------------ rank-based
 
     /**
-     * Oyuncunun ayni anda tutabilecegi aktif siparis sayisi.
-     * {@code orders.unlimited} izni ya da -1 degeri sinirsiz demektir.
+     * The number of active orders a player can hold at once.
+     * The {@code orders.unlimited} permission, or a value of -1, means unlimited.
      */
     public int maxActiveOrders(Player player) {
         if (player.hasPermission("orders.unlimited")) return -1;
@@ -364,16 +364,16 @@ public final class Settings {
         for (PermValue pv : activeLimits) {
             if (!player.hasPermission(pv.permission())) continue;
             int value = (int) pv.value();
-            if (value < 0) return -1;                       // sinirsiz her zaman kazanir
+            if (value < 0) return -1;                       // unlimited always wins
             if (!matched || value > best) { best = value; matched = true; }
         }
         return best;
     }
 
     /**
-     * Islem turune gore taban vergi yuzdesi (5.0 = %5).
+     * Base tax percentage by transaction type (5.0 = 5%).
      *
-     * @param type {@code "creation"}, {@code "delivery"} ya da {@code "sell"}
+     * @param type {@code "creation"}, {@code "delivery"}, or {@code "sell"}
      */
     public double taxBasePercent(String type) {
         return switch (type) {
@@ -384,10 +384,10 @@ public final class Settings {
     }
 
     /**
-     * Rutbeye bagli vergi ORANI (yuzde). Izni yoksa {@link Double#NaN}.
+     * Rank-based tax RATE (percentage). {@link Double#NaN} if no permission matches.
      *
-     * <p>EN DUSUK oran kazanir: ikinci bir rutbe izni vermek oyuncuyu asla
-     * cezalandirmaz.</p>
+     * <p>The LOWEST rate wins: granting a second rank permission can never
+     * penalize the player.</p>
      */
     public double taxRankRate(Player player) {
         if (player == null) return Double.NaN;
@@ -401,9 +401,9 @@ public final class Settings {
     }
 
     /**
-     * Rutbeye bagli vergi INDIRIMI (yuzde, 0-100). Izni yoksa 0.
+     * Rank-based tax DISCOUNT (percentage, 0-100). 0 if no permission matches.
      *
-     * <p>EN YUKSEK indirim kazanir — ayni gerekce.</p>
+     * <p>The HIGHEST discount wins — same reasoning.</p>
      */
     public double taxRankDiscount(Player player) {
         if (player == null) return 0.0;
@@ -415,7 +415,7 @@ public final class Settings {
         return Math.min(100.0, best);
     }
 
-    // ------------------------------------------------------------------ erisim
+    // ------------------------------------------------------------------ access
 
     public boolean potions() { return featurePotions; }
     public boolean enchantments() { return featureEnchantments; }
@@ -448,7 +448,7 @@ public final class Settings {
     public double orderBroadcastMinTotal() { return orderBroadcastMinTotal; }
     public boolean soundsEnabled() { return soundsEnabled; }
 
-    /** Olay sesi; tanimsiz olay icin {@link SoundSpec#NONE} doner (asla null). */
+    /** The event sound; returns {@link SoundSpec#NONE} for an undefined event (never null). */
     public SoundSpec eventSound(String id) {
         SoundSpec spec = eventSounds.get(id);
         return spec != null ? spec : SoundSpec.NONE;

@@ -9,41 +9,41 @@ import org.bukkit.entity.Player;
 import ro.server.orderplugin.OrderPlugin;
 
 /**
- * Spam ve makro korumasi.
+ * Spam and macro protection.
  *
- * <p>Menuler her tiklamada sunucuya is yaptirir: siparis listesi suzulur,
- * siralanir, 54 esya yeniden kurulur. Otomatik tiklayan bir makro (ya da sadece
- * sinirsiz hizli tiklayan bir oyuncu) bunu saniyede onlarca kez tetikleyebilir.
- * Burasi "bu oyuncu bu islemi cok kisa sure once yapti mi" sorusunun tek
- * cevabidir.</p>
+ * <p>Menus make the server do work on every click: the order list gets
+ * filtered, sorted, and 54 items get rebuilt. An auto-clicking macro (or just
+ * a player clicking unrealistically fast) can trigger this dozens of times a
+ * second. This is the single answer to "did this player just do this action
+ * too recently".</p>
  *
- * <h2>Neden mesaj da sinirlaniyor</h2>
- * <p>Engellenen her tiklamaya "cok hizlisin" yazmak, spam'i onlemek yerine
- * sohbeti spam'lardi. Uyari kendi araligina tabidir; oyuncu bir kez uyarilir,
- * sonraki engellemeler sessizdir.</p>
+ * <h2>Why the message is also throttled</h2>
+ * <p>Sending "you're too fast" on every blocked click would spam chat instead
+ * of preventing spam. The warning has its own cooldown; the player is warned
+ * once, and subsequent blocks stay silent.</p>
  *
- * <h2>Bellek</h2>
- * <p>Kayitlar oyuncu cikisinda silinir ({@link #forget}). Ayrica her erisimde
- * suresi gecmis girdiler yerinde temizlendigi icin harita cevrimici oyuncu
- * sayisiyla sinirli kalir.</p>
+ * <h2>Memory</h2>
+ * <p>Records are cleared when a player quits ({@link #forget}). Expired
+ * entries are also cleaned up in place on every access, so the map stays
+ * bounded by the number of online players.</p>
  */
 public final class CooldownManager {
 
-    /** Bir bekleme turu — her birinin kendi suresi ve kendi kaydi vardir. */
+    /** A cooldown type — each has its own duration and its own record. */
     public enum Type {
-        /** Menu icindeki her tiklama. */
+        /** Every click inside a menu. */
         CLICK,
-        /** Menu acma (komut ya da buton). */
+        /** Opening a menu (command or button). */
         MENU,
-        /** {@code /order} ve diger komutlar. */
+        /** {@code /order} and other commands. */
         COMMAND,
-        /** Yeni siparis olusturma. */
+        /** Creating a new order. */
         CREATE,
-        /** Siparise esya teslim etme. */
+        /** Delivering an item to an order. */
         DELIVER,
-        /** Sohbet/tabela girdisi isteme. */
+        /** Requesting chat/sign input. */
         INPUT,
-        /** "Cok hizlisin" uyarisinin kendisi. */
+        /** The "you're too fast" warning itself. */
         WARNING
     }
 
@@ -58,12 +58,12 @@ public final class CooldownManager {
     }
 
     /**
-     * Islem simdi yapilabilir mi? Yapilabiliyorsa sayac <b>bu cagride</b> baslar.
+     * Is the action allowed right now? If so the timer starts <b>on this call</b>.
      *
-     * <p>Kontrol ve isaretleme tek metotta birlestirildi: iki ayri cagri olsaydi
-     * bir yerde isaretlemeyi unutmak korumayi sessizce devre disi birakirdi.</p>
+     * <p>Checking and stamping are combined into one method: with two separate
+     * calls, forgetting to stamp somewhere would silently disable the protection.</p>
      *
-     * @return true ise islem serbest, false ise oyuncu beklemeli
+     * @return true if the action is allowed, false if the player must wait
      */
     public boolean check(Player player, Type type) {
         if (player == null) return true;
@@ -82,8 +82,8 @@ public final class CooldownManager {
     }
 
     /**
-     * {@link #check} ile ayni, ama engellendiginde oyuncuya (aralikli olarak)
-     * uyari mesaji ve hata sesi gonderir.
+     * Same as {@link #check}, but when blocked sends the player a (throttled)
+     * warning message and an error sound.
      */
     public boolean checkAndWarn(Player player, Type type) {
         if (check(player, type)) return true;
@@ -91,7 +91,7 @@ public final class CooldownManager {
         return false;
     }
 
-    /** Uyari mesaji — kendi araligina tabidir, aksi halde spam'in kendisi olurdu. */
+    /** Warning message — has its own cooldown, otherwise it would become the spam itself. */
     public void warn(Player player) {
         if (player == null || !plugin.settings().protectionWarn()) return;
         if (!check(player, Type.WARNING)) return;
@@ -99,7 +99,7 @@ public final class CooldownManager {
         plugin.playError(player);
     }
 
-    /** Oyuncunun tum kayitlarini siler (cikista). */
+    /** Clears all of the player's records (on quit). */
     public void forget(UUID playerId) {
         if (playerId == null) return;
         for (Map<UUID, Long> map : stamps.values()) {
@@ -107,7 +107,7 @@ public final class CooldownManager {
         }
     }
 
-    /** Yeniden yuklemede tum sayaclari sifirlar. */
+    /** Resets all counters on reload. */
     public void clear() {
         for (Map<UUID, Long> map : stamps.values()) {
             map.clear();

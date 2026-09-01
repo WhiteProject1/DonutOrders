@@ -22,16 +22,16 @@ public class Order {
     private String potionType = null;
     private String enchantmentType = null;
     /**
-     * Ozel esya kimligi ({@code itemsadder:ruby}); vanilya siparislerde null.
+     * Custom item id ({@code itemsadder:ruby}); null for vanilla orders.
      *
-     * <p>null olmasi eski davranisin aynen surdugu anlamina gelir: 2.0'da
-     * olusturulmus kayitlar bu alan olmadan yuklenir ve materyal esitligine
-     * gore calismaya devam eder.</p>
+     * <p>Being null means the old behavior continues unchanged: records
+     * created in 2.0 load without this field and keep working based on
+     * material equality.</p>
      */
     private String customId = null;
     private final List<ItemStack> inventory = new CopyOnWriteArrayList<>();
 
-    /** İptal/kaldırma ile doldurmayı birbirine dışlayan bayrak. Monitör: this. */
+    /** Flag that makes cancel/removal mutually exclusive with filling. Monitor: this. */
     private boolean closed = false;
 
     public Order(UUID owner, Material material, int needed, double pricePerItem) {
@@ -47,11 +47,12 @@ public class Order {
     }
 
     /**
-     * @param neverExpires siparis sahibi olusturma aninda {@code orders.expire-bypass-permission}
-     *        iznine sahipse {@code true}. Ayri bir alan olarak DEGIL, {@code expiry}
-     *        {@link Long#MAX_VALUE} yapilarak saklanir — boylece depolama semasi
-     *        degismez ve mevcut suresi-dolma kontrolleri ({@code expiry <= now})
-     *        hic degistirilmeden dogru calisir.
+     * @param neverExpires {@code true} if the order owner holds the
+     *        {@code orders.expire-bypass-permission} permission at creation time.
+     *        It is NOT stored as a separate field — instead {@code expiry} is set
+     *        to {@link Long#MAX_VALUE}, so the storage schema stays unchanged and
+     *        the existing expiry checks ({@code expiry <= now}) work correctly
+     *        without any modification.
      */
     public Order(UUID owner, Material material, int needed, double pricePerItem, String potionType, String enchantmentType, boolean neverExpires) {
         this.id = UUID.randomUUID();
@@ -66,17 +67,18 @@ public class Order {
     }
 
     /**
-     * Siparisin gecerlilik suresi — {@code orders.expiry-hours}.
+     * The order's validity period — {@code orders.expiry-hours}.
      *
-     * <p>Eklenti henuz yuklenmediyse (birim testi, erken cagri) 7 gunluk eski
-     * varsayilana duser; boylece yapilandirma okunamadiginda da siparis olusur.</p>
+     * <p>Falls back to the old 7-day default if the plugin isn't loaded yet
+     * (unit test, early call), so an order can still be created even when
+     * config can't be read.</p>
      */
     private static long expiryDuration() {
         try {
             ro.server.orderplugin.OrderPlugin plugin = ro.server.orderplugin.OrderPlugin.getInstance();
             if (plugin != null && plugin.settings() != null) return plugin.settings().expiryMillis();
         } catch (Exception ignored) {
-            // Yapilandirma yoksa varsayilan sure kullanilir.
+            // No config available: fall back to the default duration.
         }
         return TimeUnit.DAYS.toMillis(7L);
     }
@@ -133,10 +135,11 @@ public class Order {
     }
 
     /**
-     * Depodan tek bir yığını atomik olarak çıkarır. Kopyala-değiştir-yaz
-     * yerine bunu kullanın: arada gelen bir teslimatın eklediği eşya silinmez.
+     * Atomically removes a single stack from storage. Use this instead of
+     * copy-modify-write: an item added by a delivery landing in between won't
+     * be lost.
      *
-     * @return çıkarılan yığın, index geçersizse null
+     * @return the removed stack, or null if the index is invalid
      */
     public synchronized ItemStack removeItemAt(int index) {
         if (index < 0 || index >= this.inventory.size()) return null;
@@ -144,12 +147,12 @@ public class Order {
     }
 
     /**
-     * Depodan ardışık bir sayfa aralığını atomik olarak çıkarır (sayfa bazlı
-     * toplama/dökme için). Kopyala-değiştir-yaz yerine bunu kullanın: arada
-     * gelen bir teslimatın eklediği eşya silinmez. Aralık dizi sınırlarına
-     * göre kırpılır; geçersiz aralıkta boş liste döner.
+     * Atomically removes a contiguous page range from storage (for page-based
+     * collect/dump). Use this instead of copy-modify-write: an item added by
+     * a delivery landing in between won't be lost. The range is clamped to
+     * the array bounds; an invalid range returns an empty list.
      *
-     * @return çıkarılan yığınlar, orijinal sıraları korunarak (boş olabilir, asla null değil)
+     * @return the removed stacks, in their original order (may be empty, never null)
      */
     public synchronized List<ItemStack> removeItemsInRange(int from, int to) {
         int size = this.inventory.size();
@@ -163,9 +166,10 @@ public class Order {
     }
 
     /**
-     * Referans eşitliğiyle ({@code ==}) eşleşen belirli yığınları depodan
-     * atomik olarak çıkarır (sat-tümü onayı için). Kopyala-değiştir-yaz
-     * yerine bunu kullanın: arada gelen bir teslimatın eklediği eşya silinmez.
+     * Atomically removes specific stacks from storage that match by reference
+     * equality ({@code ==}) (for sell-all confirmation). Use this instead of
+     * copy-modify-write: an item added by a delivery landing in between won't
+     * be lost.
      */
     public synchronized void removeItemsByIdentity(List<ItemStack> toRemove) {
         if (toRemove == null || toRemove.isEmpty()) return;
@@ -235,10 +239,11 @@ public class Order {
     }
 
     /**
-     * Sipariş hâlâ açıksa doldurur. Kapatma ile aynı monitörü kullandığı için
-     * bir iptalle araya girilemez; tryFill'in aksine kapanışa karşı da güvenlidir.
+     * Fills the order only if it's still open. Uses the same monitor as
+     * closing, so a cancellation can't interleave with it; unlike tryFill,
+     * this is also safe against closure.
      *
-     * @return gerçekten doldurulan miktar; 0 ise sipariş kapalı veya dolu
+     * @return the amount actually filled; 0 means the order is closed or full
      */
     public synchronized int tryFillIfOpen(int amount) {
         if (closed) return 0;
@@ -251,10 +256,11 @@ public class Order {
     }
 
     /**
-     * Siparişi kapatır ve o anki filled değerini döndürür. İade tutarı bu
-     * anlık görüntüden hesaplanmalıdır — sonradan okumak yarışa açıktır.
+     * Closes the order and returns its filled value at that instant. The
+     * refund amount must be computed from this snapshot — reading it
+     * afterward is a race.
      *
-     * @return kapatma anındaki filled; sipariş zaten kapalıysa -1
+     * @return filled at the moment of closing; -1 if the order is already closed
      */
     public synchronized int closeAndGetFilled() {
         if (closed) return -1;

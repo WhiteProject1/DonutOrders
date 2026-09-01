@@ -28,8 +28,8 @@ public class AdminCommand implements CommandExecutor, TabCompleter {
             sender.sendMessage(this.plugin.msg(sender, "general.no-permission"));
             return true;
         }
-        // Argumansiz cagri ve "menu": paneli acar. Konsoldan calistirilirsa
-        // menu acilamayacagi icin yardim metni gosterilir.
+        // No-argument invocation and "menu": opens the panel. If run from the
+        // console, the menu can't be opened, so the help text is shown instead.
         if (args.length == 0 || args[0].equalsIgnoreCase("menu")) {
             if (sender instanceof Player player) {
                 this.plugin.adminGui().openAdminMenu(player);
@@ -72,8 +72,8 @@ public class AdminCommand implements CommandExecutor, TabCompleter {
                 return true;
             }
 
-            // Kaldirma mantigi OrderManager'da tek yerde: yonetici paneli de ayni
-            // metodu cagirir, boylece iki yol birbirinden ayrisamaz.
+            // The removal logic lives in one place, OrderManager: the admin panel
+            // calls the same method, so the two paths can't drift apart.
             this.plugin.getOrderManager().adminRemoveOrder(sender, targetOrder);
             return true;
         }

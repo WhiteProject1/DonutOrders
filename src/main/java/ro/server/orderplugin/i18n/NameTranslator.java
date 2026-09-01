@@ -11,40 +11,44 @@ import org.bukkit.enchantments.Enchantment;
 import org.bukkit.potion.PotionType;
 
 /**
- * Esya, buyu ve iksir adlarini alicinin diline cevirir.
+ * Translates item, enchantment, and potion names into the recipient's language.
  *
- * <p>Minecraft'ta ~1300 materyal var; hepsini tek tek yazmak dil dosyasini
- * kullanilmaz hale getirirdi. Bu yuzden iki katmanli calisir:</p>
+ * <p>Minecraft has ~1300 materials; writing out every single one would make
+ * the language file unusable. So this works in two layers:</p>
  * <ol>
- *   <li><b>Tam ad</b> ({@code names.items.OAK_LOG}) — varsa dogrudan kullanilir.
- *       Turkce'deki tamlama eklerini ("Mese Kutugu") duzeltmek icin buradadir.</li>
- *   <li><b>Kelime sozlugu</b> ({@code names.words.OAK}) — tam ad yoksa materyal adi
- *       alt cizgiden bolunur, her parca sozlukten cevrilir ve birlestirilir.
- *       Yaklasik 400 kelime, 1300 materyalin neredeyse tamamini karsilar.</li>
+ *   <li><b>Exact name</b> ({@code names.items.OAK_LOG}) — used directly if present.
+ *       This exists to fix up grammatical suffixes in languages like Turkish
+ *       (e.g. "Mese Kutugu" needs a possessive-style ending that a naive
+ *       word-by-word join wouldn't produce).</li>
+ *   <li><b>Word dictionary</b> ({@code names.words.OAK}) — if there's no exact
+ *       name, the material name is split on underscores, each piece is
+ *       translated from the dictionary, and the pieces are joined back up.
+ *       About 400 words cover almost all of the 1300 materials.</li>
  * </ol>
- * <p>Iki katman da bosa duserse Ingilizce ad duzgun bicimde ("Oak Log") gosterilir —
- * ceviri eksigi hicbir zaman ham enum adi ("OAK_LOG") olarak sizmaz.</p>
+ * <p>If both layers come up empty, the English name is shown in proper case
+ * ("Oak Log") — a missing translation never leaks out as the raw enum name
+ * ("OAK_LOG").</p>
  */
 public final class NameTranslator {
 
     private final LanguageManager language;
 
-    /** kod\0tur\0anahtar -> cevrilmis ad. */
+    /** code\0type\0key -> translated name. */
     private final Map<String, String> cache = new ConcurrentHashMap<>();
-    /** kod -> kelime sozlugu (buyuk harfli anahtar -> karsilik). */
+    /** code -> word dictionary (uppercase key -> translation). */
     private final Map<String, Map<String, String>> words = new ConcurrentHashMap<>();
 
     public NameTranslator(LanguageManager language) {
         this.language = language;
     }
 
-    /** Dil dosyalari yeniden yuklendiginde cagrilir. */
+    /** Called when language files are reloaded. */
     public void invalidate() {
         cache.clear();
         words.clear();
     }
 
-    // ------------------------------------------------------------------ genel API
+    // ------------------------------------------------------------------ public API
 
     public String material(CommandSender target, Material material) {
         if (material == null) return unknown(language.resolve(target));
@@ -54,8 +58,8 @@ public final class NameTranslator {
     public String material(String code, String materialName) {
         if (materialName == null || materialName.isEmpty()) return unknown(code);
         return cache.computeIfAbsent(code + "\0m\0" + materialName, k -> {
-            // rawOrNull: bu anahtarin bos olmasi NORMALDIR (asagidaki iki katmanli
-            // aciklamaya bakin), bu yuzden uyari basan raw() kullanilmaz.
+            // rawOrNull: this key being empty is NORMAL (see the two-layer
+            // explanation above), so raw(), which prints a warning, isn't used.
             String exact = language.rawOrNull(code, "names.items." + materialName);
             if (exact != null) return exact;
             return composeFromWords(code, materialName);
@@ -76,12 +80,12 @@ public final class NameTranslator {
         return enchantment == null ? unknown(code) : enchantment(code, enchantment.getKey().getKey());
     }
 
-    /** "Keskinlik V" gibi seviyeli buyu adi. */
+    /** A leveled enchantment name like "Sharpness V". */
     public String enchantmentWithLevel(String code, String enchantKey, int level) {
         return enchantment(code, enchantKey) + " " + toRoman(level);
     }
 
-    /** Buyulu kitap adi: "Keskinlik V Kitabi". */
+    /** Enchanted book name: "Sharpness V Book". */
     public String enchantedBook(String code, String enchantKey, int level) {
         String pattern = language.raw(code, "names.enchanted-book");
         String name = enchantment(code, enchantKey);
@@ -90,10 +94,12 @@ public final class NameTranslator {
     }
 
     /**
-     * Iksir adi: temel tur + sise turu (patlamali/kalici) + sure/guc eki.
+     * Potion name: base type + bottle type (splash/lingering) + duration/strength suffix.
      *
-     * <p>Kaliplar dil dosyasindan geldigi icin kelime sirasi da cevrilebilir —
-     * "Splash Potion of Swiftness" ile "Patlamali Hizlanma Iksiri" ayni koddan cikar.</p>
+     * <p>The patterns come from the language file, so word order can be
+     * translated too — "Splash Potion of Swiftness" and the Turkish
+     * "Patlamali Hizlanma Iksiri" (modifier before the noun) come out of the
+     * same code.</p>
      */
     public String potion(String code, Material bottle, PotionType type) {
         if (type == null) return material(code, bottle == null ? "POTION" : bottle.name());
@@ -131,11 +137,11 @@ public final class NameTranslator {
         return language.raw(code, "names.unknown");
     }
 
-    // ------------------------------------------------------------------ ic isleyis
+    // ------------------------------------------------------------------ internals
 
     /**
-     * Materyal adini alt cizgiden bolup her parcayi sozlukten cevirir.
-     * Sozlukte olmayan parca, ilk harfi buyuk olacak sekilde oldugu gibi kalir.
+     * Splits the material name on underscores and translates each piece from
+     * the dictionary. A piece not in the dictionary is left as-is, capitalized.
      */
     private String composeFromWords(String code, String rawName) {
         Map<String, String> dict = wordsFor(code);
@@ -156,8 +162,8 @@ public final class NameTranslator {
     private Map<String, String> wordsFor(String code) {
         return words.computeIfAbsent(code, c -> {
             Map<String, String> map = new java.util.HashMap<>();
-            // Ingilizce sozluk her zaman taban: ceviri dosyasi bir kelimeyi
-            // atlarsa Ingilizce karsiligi kullanilir, ham enum adi degil.
+            // The English dictionary is always the base: if a translation file
+            // skips a word, the English equivalent is used, not the raw enum name.
             fill(map, language.section("en", "names.words"));
             if (!"en".equals(c)) fill(map, language.section(c, "names.words"));
             return map;

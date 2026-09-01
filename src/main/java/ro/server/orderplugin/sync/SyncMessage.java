@@ -1,13 +1,13 @@
 package ro.server.orderplugin.sync;
 
 /**
- * Sunucular arasi tek bir olay.
+ * A single cross-server event.
  *
- * @param type      {@link SyncService} icindeki sabitlerden biri
- * @param serverId  olayi URETEN sunucu (kendi olayimizi tekrar islemeyiz)
- * @param orderId   ilgili siparis kimligi ya da null
- * @param playerId  ilgili oyuncu kimligi ya da null
- * @param payload   serbest metin (mesaj govdesi vb.) ya da null
+ * @param type      one of the constants in {@link SyncService}
+ * @param serverId  the server that PRODUCED the event (we never reprocess our own)
+ * @param orderId   the related order id, or null
+ * @param playerId  the related player id, or null
+ * @param payload   free-form text (message body etc.), or null
  * @param timestamp epoch ms
  */
 public record SyncMessage(String type, String serverId, String orderId,

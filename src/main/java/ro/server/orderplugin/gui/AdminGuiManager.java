@@ -21,12 +21,12 @@ import ro.server.orderplugin.util.LoreTemplate;
 import ro.server.orderplugin.util.TextUtil;
 
 /**
- * Yonetici panelinin cizimi.
+ * Draws the admin panel.
  *
- * <p>{@link GuiManager} ile ayni pakettedir; buton/dolgu/baslik yardimcilarini
- * oradan dogrudan kullanir. Amac kod tekrarini onlemek: bir menu ayari
- * ({@code custom-model-data}, {@code glow}, ses bicimi...) eklendiginde
- * yonetici paneli de kendiliginden destekler.</p>
+ * <p>It's in the same package as {@link GuiManager} and uses its
+ * button/filler/title helpers directly. The goal is to avoid code duplication:
+ * when a menu setting ({@code custom-model-data}, {@code glow}, sound format...)
+ * is added, the admin panel supports it automatically.</p>
  */
 public final class AdminGuiManager {
 
@@ -38,7 +38,7 @@ public final class AdminGuiManager {
         this.gui = gui;
     }
 
-    // ================================================================== ana panel
+    // ================================================================== main panel
 
     public void openAdminMenu(Player player) {
         MenuConfig menu = plugin.menus().get(MenuRegistry.ADMIN_MENU);
@@ -137,19 +137,19 @@ public final class AdminGuiManager {
         return LoreTemplate.render(template, values, lists);
     }
 
-    /** Panelden acilip kapatilabilen ozellikler; config.yml -> features.panel-toggles. */
+    /** Features that can be toggled from the panel; config.yml -> features.panel-toggles. */
     public static List<String> features(OrderPlugin plugin) {
         return plugin.settings().featurePanelToggles();
     }
 
     /**
-     * Bir ozellik satirinin gorunumu.
+     * How a feature row looks.
      *
-     * <p>Eskiden {@code label} dogrudan config anahtariydi ({@code enchanted-books}
-     * gibi); yonetici cevrilmemis, ham bir metin goruyordu. Artik
-     * {@code admin.features.<anahtar>} altindan cevrilmis adi alinir; renk,
-     * madde isareti ve ayrac ise {@code admin.lore.toggle-line-on/off}
-     * sablonundan gelir, boylece kod hicbirini sabit yazmaz.</p>
+     * <p>{@code label} used to be the raw config key ({@code enchanted-books}
+     * for example); the admin saw untranslated, raw text. Now the translated
+     * name is pulled from {@code admin.features.<key>}; the color, bullet and
+     * separator come from the {@code admin.lore.toggle-line-on/off} template,
+     * so none of it is hardcoded in the code.</p>
      */
     private String toggleLine(Player player, String feature, boolean on) {
         String label = plugin.msg(player, "admin.features." + feature);
@@ -193,10 +193,10 @@ public final class AdminGuiManager {
             return levelsLoreLegacy(player, on);
         }
 
-        // Istismar korumasinin durumu burada gorunur: kapali oldugunu fark
-        // etmeyen bir sunucu sahibi arkadas ciftliginin farkina varmazdi.
-        // Seviye sistemi kapaliyken bu iki satir hic yok (liste bos -> LoreTemplate
-        // satiri tamamen siler), boylece geride bosluk kalmaz.
+        // The anti-abuse status shows up here: a server owner who didn't notice
+        // it was disabled would never notice friend-farming happening. When the
+        // leveling system is off, these two lines don't exist at all (empty
+        // list -> LoreTemplate removes the line entirely), so no gap is left behind.
         List<String> details = new ArrayList<>();
         if (on) {
             details.add(plugin.msg(player, "admin.levels.count",
@@ -227,9 +227,9 @@ public final class AdminGuiManager {
     }
 
     /**
-     * {@code admin.templates.<isim>} — oyuncunun dili -> en -> tr sirasiyla aranir.
-     * Anahtar yoksa ya da bossa {@code null} doner; cagiran taraf eski sabit-kodlu
-     * gorunume duser.
+     * {@code admin.templates.<name>} — looked up in the player's language -> en -> tr.
+     * Returns {@code null} if the key doesn't exist or is empty; the caller
+     * falls back to the old hardcoded look.
      */
     private List<String> adminTemplate(Player player, String name) {
         String key = "admin.templates." + name;
@@ -249,9 +249,9 @@ public final class AdminGuiManager {
         return count;
     }
 
-    // ================================================================== siparis listesi
+    // ================================================================== order list
 
-    /** Panelde listelenecek siparisler — tiklama isleyicisi ayni siralamayi kullanir. */
+    /** Orders to be listed in the panel — the click handler uses the same ordering. */
     public List<Order> adminOrders(String query) {
         long now = System.currentTimeMillis();
         String needle = query == null || query.isBlank() ? null : query.toLowerCase(java.util.Locale.ROOT);
@@ -266,7 +266,7 @@ public final class AdminGuiManager {
             }
             out.add(order);
         }
-        // En pahali siparis en ustte: yonetici once buyuk islemleri gormeli.
+        // Most expensive order on top: the admin should see the big transactions first.
         out.sort((a, b) -> Double.compare(
                 (double) b.getRemaining() * b.getPricePerItem(),
                 (double) a.getRemaining() * a.getPricePerItem()));
@@ -354,7 +354,7 @@ public final class AdminGuiManager {
         return lore;
     }
 
-    /** {@code admin.templates.order} ve {@code admin.templates.detail} icin ortak skaler degerler. */
+    /** Shared scalar values for {@code admin.templates.order} and {@code admin.templates.detail}. */
     private Map<String, String> adminOrderValues(Player viewer, Order order, double refund) {
         Map<String, String> values = new HashMap<>();
         values.put("owner", gui.ownerName(order.getOwner()));
@@ -362,13 +362,13 @@ public final class AdminGuiManager {
         values.put("total", String.valueOf(order.getNeeded()));
         values.put("price", TextUtil.formatNumber(order.getPricePerItem()));
         values.put("refund", TextUtil.formatNumber(refund));
-        // Panel ikonunda kisa kimlik yeterli; sohbet dokumunde tam kimlik gerekir
-        // (bkz. orderDetails), orada ustune yazilir.
+        // A short id is enough on the panel icon; the chat dump needs the full
+        // id (see orderDetails), which overwrites this there.
         values.put("id", order.getId().toString().substring(0, 8));
         return values;
     }
 
-    /** Sohbete yazilan ayrinti dokumu (sol tik). */
+    /** The detail dump printed to chat (left-click). */
     public List<String> orderDetails(Player viewer, Order order) {
         double refund = (double) order.getRemaining() * order.getPricePerItem();
 
@@ -379,7 +379,7 @@ public final class AdminGuiManager {
         Map<String, String> values = adminOrderValues(viewer, order, refund);
         values.put("item", gui.getOrderDisplayName(viewer, order));
         values.put("waiting", String.valueOf(order.getInventoryCount()));
-        // Tam kimlik: /donutordersadmin removeorder ile kullanilabilsin diye.
+        // Full id: so it can be used with /donutordersadmin removeorder.
         values.put("id", order.getId().toString());
         return LoreTemplate.render(template, values, Map.of());
     }
@@ -399,7 +399,7 @@ public final class AdminGuiManager {
                 "%price%", TextUtil.formatNumber(refund)));
         lines.add(plugin.msg(viewer, "gui.lore.items-waiting",
                 "%amount%", String.valueOf(order.getInventoryCount())));
-        // Tam kimlik: /donutordersadmin removeorder ile kullanilabilsin diye.
+        // Full id: so it can be used with /donutordersadmin removeorder.
         lines.add(plugin.msg(viewer, "admin.lore.order-id", "%id%", order.getId().toString()));
         return lines;
     }

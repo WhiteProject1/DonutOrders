@@ -10,12 +10,12 @@ import org.bukkit.configuration.ConfigurationSection;
 import ro.server.orderplugin.util.SoundSpec;
 
 /**
- * {@code menus/*.yml} icindeki tek bir buton/dolgu tanimi.
+ * A single button/filler definition inside {@code menus/*.yml}.
  *
- * <p>Metin (isim/lore) normalde dil dosyasindan gelir; buradaki {@code name} ve
- * {@code lore} alanlari <b>istege bagli</b> ezmelerdir. Ezme kullanildiginda metin
- * artik oyuncunun diline gore degismez — bu bilincli bir tercihtir: sunucu sahibi
- * "bu butonda her zaman sunu yazsin" diyebilsin diye.</p>
+ * <p>Text (name/lore) normally comes from the language file; the {@code name} and
+ * {@code lore} fields here are <b>optional</b> overrides. Once an override is used,
+ * the text no longer changes with the player's language — this is deliberate, so a
+ * server owner can say "this button always shows this text".</p>
  */
 public final class MenuItem {
 
@@ -45,14 +45,14 @@ public final class MenuItem {
         this.overwrite = overwrite;
     }
 
-    /** Config'de tanimsiz butonlar icin: kapali, slot yok. */
+    /** For buttons undefined in the config: disabled, no slots. */
     public static MenuItem disabled(String key) {
         return new MenuItem(key, false, new int[0], null, 0, false, null, null, SoundSpec.NONE, false);
     }
 
     /**
-     * @param fallbackMaterial config'de {@code material} yoksa kullanilacak materyal
-     *                         (kodun bekledigi varsayilan)
+     * @param fallbackMaterial material to use if the config has no {@code material}
+     *                         (the default the code expects)
      */
     public static MenuItem parse(String key, ConfigurationSection section, Material fallbackMaterial,
                                  java.util.function.Consumer<String> warn) {
@@ -76,13 +76,13 @@ public final class MenuItem {
         }
 
         String name = section.getString("name");
-        if (name != null && name.isEmpty()) name = " "; // bilerek bos birakilan isim
+        if (name != null && name.isEmpty()) name = " "; // deliberately left-blank name
 
         List<String> lore = section.isList("lore") ? section.getStringList("lore") : null;
         if (lore != null && lore.isEmpty()) lore = List.of();
 
-        // sound-volume / sound-pitch eski (2.0) yazim bicimidir ve hala calisir;
-        // "anahtar:seviye:perde" tek satirli bicim onlarin uzerine yazar.
+        // sound-volume / sound-pitch are the old (2.0) format and still work;
+        // the single-line "key:volume:pitch" format overrides them.
         SoundSpec sound = SoundSpec.parse(section.getString("sound"), SoundSpec.NONE,
                 (float) section.getDouble("sound-volume", 1.0),
                 (float) section.getDouble("sound-pitch", 1.0));
@@ -95,8 +95,8 @@ public final class MenuItem {
     }
 
     /**
-     * {@code slot: 13}, {@code slots: [45, 46]} ve {@code slots: "0-44, 53"}
-     * bicimlerinin hepsini kabul eder.
+     * Accepts all of {@code slot: 13}, {@code slots: [45, 46]}, and
+     * {@code slots: "0-44, 53"} as valid formats.
      */
     private static int[] parseSlots(ConfigurationSection section, java.util.function.Consumer<String> warn, String key) {
         List<Integer> out = new ArrayList<>();
@@ -137,17 +137,17 @@ public final class MenuItem {
         }
     }
 
-    // ------------------------------------------------------------------ erisim
+    // ------------------------------------------------------------------ access
 
     public String key() { return key; }
     public boolean enabled() { return enabled; }
     public boolean hasSlots() { return slots.length > 0; }
     public int[] slots() { return slots; }
     /**
-     * Ilk slot; tanimli slot yoksa -1.
+     * The first slot; -1 if no slot is defined.
      *
-     * <p>-1 bazi butonlarda "otomatik yerlesim" anlamina gelir (orn. Siparislerim
-     * ekranindaki "Yeni Siparis"), bu yuzden negatif deger hatali sayilmaz.</p>
+     * <p>-1 means "auto placement" for some buttons (e.g. "New Order" on the My
+     * Orders screen), so a negative value isn't treated as an error.</p>
      */
     public int slot() { return slots.length == 0 ? -1 : slots[0]; }
     public Material material() { return material; }
@@ -155,17 +155,17 @@ public final class MenuItem {
     public boolean glow() { return glow; }
     public String nameOverride() { return nameOverride; }
     public List<String> loreOverride() { return loreOverride; }
-    /** Tiklama sesi; hicbir zaman null degildir ({@link SoundSpec#NONE} = sessiz). */
+    /** Click sound; never null ({@link SoundSpec#NONE} = silent). */
     public SoundSpec sound() { return sound; }
     /**
-     * Yalnizca dolgu icin anlamli: true ise dolu bir slotun uzerine de yazar.
+     * Only meaningful for filler: if true, it also overwrites an occupied slot.
      *
-     * <p>Varsayilan false. Eskiden dolgu her zaman ezerdi ve "45-53" gibi bir aralik
-     * sayfa/geri/arama butonlarini gorunmez yapardi.</p>
+     * <p>Defaults to false. Filler used to always overwrite, and a range like
+     * "45-53" would hide the page/back/search buttons.</p>
      */
     public boolean overwrite() { return overwrite; }
 
-    /** Verilen slot bu butona mi ait? */
+    /** Does the given slot belong to this button? */
     public boolean matches(int slot) {
         for (int s : slots) {
             if (s == slot) return true;

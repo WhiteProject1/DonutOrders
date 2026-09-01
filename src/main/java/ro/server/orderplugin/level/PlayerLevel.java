@@ -3,13 +3,13 @@ package ro.server.orderplugin.level;
 import java.util.UUID;
 
 /**
- * Tek bir oyuncunun seviye kaydi.
+ * A single player's level record.
  *
- * @param xp         toplam kazanilmis xp
- * @param level      onbellege alinmis seviye (xp'den turetilir, kaydedilir ki
- *                   seviye tablosu degistiginde "dustu/yukseldi" farki gorulebilsin)
- * @param dailyXp    bugun kazanilan xp ({@code daily-cap} icin)
- * @param dailyReset gunluk sayacin sifirlandigi zaman (epoch ms)
+ * @param xp         total xp earned
+ * @param level      cached level (derived from xp, but saved so that a
+ *                   "went up/went down" difference is visible if the level table changes)
+ * @param dailyXp    xp earned today (for {@code daily-cap})
+ * @param dailyReset when the daily counter was last reset (epoch ms)
  */
 public record PlayerLevel(UUID uuid, double xp, int level, double dailyXp, long dailyReset) {
 

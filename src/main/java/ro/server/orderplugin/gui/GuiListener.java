@@ -58,18 +58,19 @@ import ro.server.orderplugin.util.PriceUtil;
 import ro.server.orderplugin.util.TextUtil;
 
 /**
- * Tum menu tiklamalarinin tek isleyicisi.
+ * Single handler for all menu clicks.
  *
- * <p>Menuler artik <b>basliklarindan degil</b> {@link OrderMenuHolder} isaretcisinden
- * taninir. Baslik hem yapilandirilabilir hem de oyuncunun diline gore degistigi icin
- * metin karsilastirmasi calismazdi; ustelik ayni basligi tasiyan yabanci bir menuye
- * mudahale etme riski vardi.</p>
+ * <p>Menus are now identified <b>not by their titles</b> but by the
+ * {@link OrderMenuHolder} marker. Text comparison wouldn't work since the title
+ * is both configurable and changes per player language; on top of that, there
+ * was a risk of interfering with an unrelated menu that happened to share the
+ * same title.</p>
  *
- * <p>Slot numaralari da kodda sabit degildir: hangi butonun nerede oldugunu
- * {@code menus/*.yml} soyler, burada yalnizca <i>hangi butona</i> basildigi
- * ({@link MenuConfig#buttonAt(int)}) ve icerik alanindaki kacinci sira oldugu
- * ({@link MenuConfig#contentIndexOf(int)}) sorulur. Sunucu sahibi butonlari
- * istedigi yere tasiyabilir.</p>
+ * <p>Slot numbers aren't fixed in code either: {@code menus/*.yml} says which
+ * button is where, and here we only ask <i>which button</i> was clicked
+ * ({@link MenuConfig#buttonAt(int)}) and which position in the content area it
+ * is ({@link MenuConfig#contentIndexOf(int)}). The server owner can move
+ * buttons wherever they want.</p>
  */
 public class GuiListener implements Listener {
 
@@ -79,16 +80,16 @@ public class GuiListener implements Listener {
     private final GuiManager gui;
     private final SchedulerAdapter scheduler;
 
-    /** Teslim ekraninda bekleyen esyalar (onay ekranina tasinir). */
+    /** Items pending on the delivery screen (moved to the confirmation screen). */
     private final ConcurrentHashMap<UUID, List<ItemStack>> deliveryItems = new ConcurrentHashMap<>();
     private final ConcurrentHashMap<UUID, Integer> deliveryAmount = new ConcurrentHashMap<>();
     private final ConcurrentHashMap<UUID, Double> deliveryPayment = new ConcurrentHashMap<>();
-    /** Teslim animasyonu suresince tutulan esyalar; oyuncu duserse iade edilir. */
+    /** Items held during the delivery animation; refunded if the player disconnects. */
     private final ConcurrentHashMap<UUID, List<ItemStack>> animationItems = new ConcurrentHashMap<>();
-    /** "Hepsini sat" onayi bekleyen esyalar. */
+    /** Items pending "sell all" confirmation. */
     private final ConcurrentHashMap<UUID, List<ItemStack>> sellItems = new ConcurrentHashMap<>();
     private final ConcurrentHashMap<UUID, Double> sellPayment = new ConcurrentHashMap<>();
-    /** Yonetici panelinde "ozellikler" butonunun kacinci ozellige geldigi. */
+    /** Which feature the admin panel's "features" button currently points to. */
     private final ConcurrentHashMap<UUID, Integer> featureCursor = new ConcurrentHashMap<>();
 
     public GuiListener(OrderPlugin plugin) {
@@ -97,7 +98,7 @@ public class GuiListener implements Listener {
         this.scheduler = plugin.getSchedulerAdapter();
     }
 
-    // ================================================================== yardimcilar
+    // ================================================================== helpers
 
     private static OrderMenuHolder holderOf(Inventory inventory) {
         return inventory != null && inventory.getHolder() instanceof OrderMenuHolder holder ? holder : null;
@@ -115,14 +116,14 @@ public class GuiListener implements Listener {
         return stack == null || stack.getType() == Material.AIR;
     }
 
-    /** Bir slotun icerik alaninda olup olmadigi. */
+    /** Whether a slot is inside the content area. */
     private static boolean isContentSlot(MenuConfig menu, int slot) {
         return menu.contentIndexOf(slot) >= 0;
     }
 
     /**
-     * "64", "1k", "2.5m" gibi girdileri sayiya cevirir.
-     * Bicim dilden bagimsizdir; k/m/b evrensel olarak anlasilir.
+     * Converts inputs like "64", "1k", "2.5m" into a number.
+     * The format is language-independent; k/m/b are universally understood.
      */
     private int parseAmount(String input) throws NumberFormatException {
         if (input == null || input.isEmpty()) throw new NumberFormatException("Bos girdi");
@@ -148,21 +149,22 @@ public class GuiListener implements Listener {
         return result;
     }
 
-    /** Verilen esya siparisin istedigi seyle (iksir turu/buyuler/ozel kimlik dahil) birebir esliyor mu. */
+    /** Whether the given item matches exactly what the order wants (including potion type/enchantments/custom id). */
     private boolean matchesOrder(ItemStack stack, Order order) {
         if (isEmpty(stack) || order == null) return false;
         if (stack.getType() != order.getMaterial()) return false;
 
-        // Ozel esya kontrolu materyal kontrolunden HEMEN SONRA, cunku her iki yon de
-        // onemli:
-        //   * Ozel siparise yalnizca ayni ozel esya gider.
-        //   * Ozel esya, ayni materyalden NORMAL bir siparise gitmez — aksi halde
-        //     oyuncu 500 taslik siparise degerli "Ruby"sini teslim edip kaybederdi.
+        // Custom item check comes RIGHT AFTER the material check, because both
+        // directions matter:
+        //   * A custom order should only accept the same custom item.
+        //   * A custom item should not go into a NORMAL order of the same
+        //     material — otherwise a player could deliver their valuable "Ruby"
+        //     into a 500-stone order and lose it.
         if (plugin.customItems().enabled()) {
             if (!plugin.customItems().matches(order.getCustomId(), stack)) return false;
         } else if (order.isCustom()) {
-            // Ozel esya destegi kapatildi ama eski ozel siparis duruyor: kimse
-            // yanlis esya teslim edemesin.
+            // Custom item support is disabled but an old custom order still
+            // exists: make sure nobody can deliver the wrong item into it.
             return false;
         }
 
@@ -201,7 +203,7 @@ public class GuiListener implements Listener {
         return true;
     }
 
-    /** "SHARPNESS_5" -> {"sharpness", "5"}; cozulemezse null. */
+    /** "SHARPNESS_5" -> {"sharpness", "5"}; null if it can't be parsed. */
     private static String[] splitEnchant(String raw) {
         if (raw == null) return null;
         int split = raw.lastIndexOf('_');
@@ -216,7 +218,7 @@ public class GuiListener implements Listener {
         return new String[]{name, level};
     }
 
-    /** Envantere sigmayani yere birakir; hicbir esya kaybolmaz. */
+    /** Drops on the ground whatever doesn't fit in the inventory; no item is ever lost. */
     private void giveOrDrop(Player player, ItemStack stack) {
         if (isEmpty(stack)) return;
         HashMap<Integer, ItemStack> leftover = player.getInventory().addItem(stack);
@@ -225,7 +227,7 @@ public class GuiListener implements Listener {
         }
     }
 
-    // ================================================================== surukleme
+    // ================================================================== dragging
 
     @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = false)
     public void onInventoryDrag(InventoryDragEvent event) {
@@ -237,27 +239,29 @@ public class GuiListener implements Listener {
         boolean deliver = holder.is(MenuRegistry.DELIVER_ITEMS);
 
         for (int rawSlot : event.getRawSlots()) {
-            if (rawSlot >= topSize) continue;                       // oyuncunun kendi envanteri
-            if (deliver && isContentSlot(menu, rawSlot)) continue;  // teslim alani serbest
+            if (rawSlot >= topSize) continue;                       // player's own inventory
+            if (deliver && isContentSlot(menu, rawSlot)) continue;  // delivery area is free
             event.setCancelled(true);
             return;
         }
     }
 
-    // ================================================================== tiklama
+    // ================================================================== clicking
 
     @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = false)
     public void onInventoryClick(InventoryClickEvent event) {
         OrderMenuHolder holder = holderOf(event.getInventory());
         if (holder == null || !(event.getWhoClicked() instanceof Player player)) return;
 
-        // Varsayilan: menu kilitli. Yalnizca teslim ekraninin icerik alani serbest
-        // birakilir; boylece yeni bir menu eklendiginde esya kacirma acigi olusmaz.
+        // Default: the menu is locked. Only the delivery screen's content area
+        // is left free; this way adding a new menu never opens up an item-dupe
+        // or item-theft hole.
         event.setCancelled(true);
 
-        // Spam korumasi. Teslim ekrani DISARIDA birakilir: orada oyuncu kendi
-        // envanterinden esya tasir, her tasimayi beklemeye tabi tutmak menuyu
-        // kullanilamaz hale getirirdi (ve orasi zaten siparis listesi kurmuyor).
+        // Spam protection. The delivery screen is EXCLUDED: the player is moving
+        // items from their own inventory there, and subjecting every move to a
+        // cooldown would make the menu unusable (and it doesn't build up a list
+        // of orders anyway).
         if (!holder.is(MenuRegistry.DELIVER_ITEMS)
                 && !plugin.cooldowns().checkAndWarn(player, CooldownManager.Type.CLICK)) {
             return;
@@ -279,7 +283,7 @@ public class GuiListener implements Listener {
                 && event.getClickedInventory().equals(event.getView().getTopInventory());
         int slot = event.getSlot();
 
-        // Teslim ekrani tek istisnadir: oyuncu oraya esya birakabilmeli.
+        // The delivery screen is the one exception: the player must be able to drop items into it.
         if (holder.is(MenuRegistry.DELIVER_ITEMS)) {
             handleDeliverItems(event, holder, menu, player, topClicked, slot);
             return;
@@ -309,13 +313,14 @@ public class GuiListener implements Listener {
         }
     }
 
-    // ================================================================== yonetici paneli
+    // ================================================================== admin panel
 
     /**
-     * Yonetici panelinin izin kontrolu.
+     * Permission check for the admin panel.
      *
-     * <p>Menu acildiktan sonra izni alinan bir oyuncu panelde kalabilir; bu yuzden
-     * izin her tiklamada yeniden sorulur, yalnizca acilista degil.</p>
+     * <p>A player whose permission is revoked after the menu opens could otherwise
+     * stay in the panel; that's why permission is re-checked on every click, not
+     * just when it opens.</p>
      */
     private boolean adminAllowed(Player player) {
         if (player.hasPermission("orders.admin")) return true;
@@ -339,7 +344,7 @@ public class GuiListener implements Listener {
                 plugin.adminGui().openAdminMenu(player);
             }
             case "orders" -> plugin.adminGui().openAdminOrders(player, 1, null);
-            case "stats" -> plugin.adminGui().openAdminMenu(player);   // istatistikler yeniden hesaplanir
+            case "stats" -> plugin.adminGui().openAdminMenu(player);   // stats are recalculated
             case "cleanup" -> {
                 int before = plugin.getOrderManager().getActiveOrders().size();
                 plugin.getOrderManager().cleanupExpiredOrders();
@@ -350,8 +355,8 @@ public class GuiListener implements Listener {
                 plugin.adminGui().openAdminMenu(player);
             }
             case "features" -> {
-                // Her tiklama bir sonraki ozelligi cevirir; hangisinin degistigi
-                // mesajda yazar ki yonetici yanlislikla baskasini kapatmasin.
+                // Each click cycles to the next feature; the message states which
+                // one changed so the admin doesn't accidentally toggle the wrong one.
                 String next = nextFeature(player);
                 boolean value = !plugin.getConfig().getBoolean("features." + next, true);
                 writeConfig(player, "features." + next, value);
@@ -374,7 +379,7 @@ public class GuiListener implements Listener {
         }
     }
 
-    /** Panelde sirayla cevrilecek bir sonraki ozellik. */
+    /** The next feature to cycle to in the panel. */
     private String nextFeature(Player player) {
         int index = featureCursor.merge(player.getUniqueId(), 1, Integer::sum);
         List<String> features = AdminGuiManager.features(plugin);
@@ -382,10 +387,11 @@ public class GuiListener implements Listener {
     }
 
     /**
-     * Ayari config.yml'ye yazar ve aninda uygular.
+     * Writes the setting into config.yml and applies it immediately.
      *
-     * <p>Diske yazilamazsa degisiklik yalnizca bu oturum icin gecerli olur;
-     * yonetici bunu bilmeli, bu yuzden uyari hem konsola hem oyuncuya gider.</p>
+     * <p>If it can't be written to disk, the change only applies for this
+     * session; the admin needs to know that, so the warning goes to both the
+     * console and the player.</p>
      */
     private void writeConfig(Player player, String path, Object value) {
         plugin.getConfig().set(path, value);
@@ -398,7 +404,7 @@ public class GuiListener implements Listener {
         plugin.settings().load();
     }
 
-    /** Seviye sistemi levels.yml'de tutuldugu icin ayri yazilir. */
+    /** The leveling system is kept in levels.yml, so it's written separately. */
     private void toggleLevels(Player player) {
         File file = new File(plugin.getDataFolder(), "levels.yml");
         YamlConfiguration config = YamlConfiguration.loadConfiguration(file);
@@ -454,8 +460,8 @@ public class GuiListener implements Listener {
         if (index >= orders.size()) return;
         Order order = orders.get(index);
 
-        // Kaldirma bilerek shift+sag tika baglidir: tek tikla baskasinin
-        // siparisi silinmemeli.
+        // Removal is deliberately tied to shift+right-click: a single click
+        // must not delete someone else's order.
         if (event.isShiftClick() && event.isRightClick()) {
             plugin.getOrderManager().adminRemoveOrder(player, order);
             plugin.adminGui().openAdminOrders(player, page, query);
@@ -467,12 +473,13 @@ public class GuiListener implements Listener {
     }
 
     /**
-     * Butona basildiginda ses calar.
+     * Plays a sound when a button is clicked.
      *
-     * <p>Once menu dosyasindaki {@code sound} denenir. Buton kendi sesini
-     * tanimlamamissa buton turune gore genel olay sesine dusulur; boylece
-     * "tum sayfa cevirme sesleri" tek yerden degistirilebilir. Ikisi birden
-     * calmaz — buton bazli tanim her zaman kazanir.</p>
+     * <p>The {@code sound} in the menu file is tried first. If the button
+     * doesn't define its own sound, it falls back to the generic event sound
+     * for that button type; this way "all page-turn sounds" can be changed
+     * from a single place. Never both — the button-specific definition always
+     * wins.</p>
      */
     private void playButton(Player player, MenuConfig menu, String button) {
         if (button == null) return;
@@ -488,7 +495,7 @@ public class GuiListener implements Listener {
         if (event != null) plugin.playEventSound(player, event);
     }
 
-    // ------------------------------------------------------------------ ana menu
+    // ------------------------------------------------------------------ main menu
 
     private void handleMainMenu(OrderMenuHolder holder, MenuConfig menu, Player player,
                                 String button, int contentIndex) {
@@ -520,8 +527,9 @@ public class GuiListener implements Listener {
                 }
                 case "refresh" -> gui.openMainMenuPaged(player, page, search);
                 case "level" -> {
-                    // Seviye butonu bilgi amaclidir; tiklayinca ozeti sohbete yazar
-                    // ki oyuncu menuden cikmadan da kaydini gorebilsin.
+                    // The level button is informational; clicking it prints the
+                    // summary to chat so the player can see their standing
+                    // without leaving the menu.
                     if (!plugin.levels().enabled()) return;
                     for (String line : gui.levelLore(player)) {
                         if (!line.isEmpty()) player.sendMessage(line);
@@ -569,7 +577,7 @@ public class GuiListener implements Listener {
         return Math.max(1, (int) Math.ceil(itemCount / (double) pageSize));
     }
 
-    // ------------------------------------------------------------------ siparislerim
+    // ------------------------------------------------------------------ your orders
 
     private void handleYourOrders(OrderMenuHolder holder, MenuConfig menu, Player player,
                                   String button, int contentIndex) {
@@ -589,8 +597,8 @@ public class GuiListener implements Listener {
         List<Order> orders = gui.visibleOrders(playerId);
         int index = (holder.page() - 1) * Math.max(1, menu.pageSize()) + contentIndex;
 
-        // slot: -1 ise "yeni siparis" butonu son siparisin hemen ardina konur;
-        // o slota basmak yeni siparis akisini baslatir.
+        // slot: if it's -1, the "new order" button is placed right after the
+        // last order; clicking that slot starts the new-order flow.
         MenuItem newOrder = menu.item("new-order");
         if (index == orders.size() && newOrder.enabled() && newOrder.slot() < 0) {
             plugin.playSound(player, newOrder.sound());
@@ -615,7 +623,7 @@ public class GuiListener implements Listener {
         gui.openNewOrder(player);
     }
 
-    // ------------------------------------------------------------------ yeni siparis
+    // ------------------------------------------------------------------ new order
 
     private void handleNewOrder(Player player, String button) {
         if (button == null) return;
@@ -708,8 +716,8 @@ public class GuiListener implements Listener {
             plugin.playError(player);
             return;
         }
-        // Siparis olusturmanin kendi (daha uzun) beklemesi vardir: her siparis
-        // veritabanina yazilir ve tum oyunculara acilan listeyi tazeler.
+        // Order creation has its own (longer) cooldown: every order gets
+        // written to the database and refreshes the list shown to all players.
         if (!plugin.cooldowns().checkAndWarn(player, CooldownManager.Type.CREATE)) return;
 
         String potionType = gui.selectedPotionType.get(playerId);
@@ -724,7 +732,7 @@ public class GuiListener implements Listener {
         }
     }
 
-    // ------------------------------------------------------------------ esya secme
+    // ------------------------------------------------------------------ item selection
 
     private void handleItemSelector(OrderMenuHolder holder, MenuConfig menu, Player player,
                                     String button, int contentIndex, ItemStack clicked) {
@@ -777,8 +785,10 @@ public class GuiListener implements Listener {
             PotionType type = clicked.getItemMeta() instanceof PotionMeta potionMeta
                     ? potionMeta.getBasePotionType() : null;
             if (type == null) {
-                // Turu belirlenemeyen sise (surum farki, ozel eshya): oyuncu turu
-                // ayri ekrandan sececek. Ozellik kapaliysa siparis turusuz gecer.
+                // A bottle whose type couldn't be determined (version difference,
+                // custom item): the player will pick the type on a separate
+                // screen. If the feature is disabled, the order goes through
+                // without a type.
                 gui.selectedPotionType.remove(playerId);
                 if (plugin.settings().potions()) {
                     gui.openPotionTypeSelector(player);
@@ -814,7 +824,7 @@ public class GuiListener implements Listener {
         gui.openNewOrder(player);
     }
 
-    // ------------------------------------------------------------------ iksir turu
+    // ------------------------------------------------------------------ potion type
 
     private void handlePotionSelector(Player player, String button, int contentIndex, ItemStack clicked) {
         MenuConfig menu = plugin.menus().get(MenuRegistry.POTION_SELECTOR);
@@ -835,7 +845,7 @@ public class GuiListener implements Listener {
         }
     }
 
-    // ------------------------------------------------------------------ buyu secme
+    // ------------------------------------------------------------------ enchantment selection
 
     private void handleEnchantmentPicker(OrderMenuHolder holder, MenuConfig menu, Player player,
                                          String button, int contentIndex) {
@@ -896,8 +906,9 @@ public class GuiListener implements Listener {
             if (parts == null) return;
             Enchantment enchantment = Registry.ENCHANTMENT.get(NamespacedKey.minecraft(parts[0]));
             if (enchantment != null) {
-                // Cakisan buyuler (orn. Keskinlik/Patlama) ayni anda secilemez;
-                // yenisi seciline eskisi sessizce birakilir.
+                // Conflicting enchantments (e.g. Sharpness/Smite) can't be selected
+                // at the same time; when the new one is chosen, the old one is
+                // silently dropped.
                 Set<String> conflicting = new HashSet<>();
                 for (String existing : selected) {
                     String[] existingParts = splitEnchant(existing);
@@ -907,7 +918,7 @@ public class GuiListener implements Listener {
                 }
                 selected.removeAll(conflicting);
             }
-            // Ayni buyunun baska seviyesi seciliyse onun yerine gecer.
+            // If a different level of the same enchantment is selected, replace it.
             String prefix = parts[0].toUpperCase(Locale.ROOT) + "_";
             selected.removeIf(existing -> existing.startsWith(prefix));
             selected.add(option);
@@ -916,7 +927,7 @@ public class GuiListener implements Listener {
         gui.openEnchantmentPicker(player, page);
     }
 
-    // ------------------------------------------------------------------ teslim etme
+    // ------------------------------------------------------------------ delivering
 
     private void handleDeliverItems(InventoryClickEvent event, OrderMenuHolder holder, MenuConfig menu,
                                     Player player, boolean topClicked, int slot) {
@@ -926,9 +937,10 @@ public class GuiListener implements Listener {
             return;
         }
         if (!topClicked) {
-            // Shift-tikta Bukkit esyayi ustteki ILK bos slota koyar; bu, icerik alani
-            // disindaki (buton/dolgu icin ayrilmis) bir slot olabilir ve menu kapaninca
-            // oradaki esya okunmaz. Bu yuzden yerlesimi kendimiz yapiyoruz.
+            // On shift-click Bukkit puts the item into the FIRST empty slot on top;
+            // that slot could be outside the content area (reserved for a button
+            // or filler), and the item there won't be read when the menu closes.
+            // That's why we do the placement ourselves.
             if (event.getClick().isShiftClick() && event.getAction() == InventoryAction.MOVE_TO_OTHER_INVENTORY) {
                 ItemStack moving = event.getCurrentItem();
                 if (isEmpty(moving)) return;
@@ -938,13 +950,13 @@ public class GuiListener implements Listener {
                 } else if (leftover < moving.getAmount()) {
                     moving.setAmount(leftover);
                 }
-                return;   // iptal edilmis kalir; tasimayi biz yaptik
+                return;   // stays cancelled; we did the move ourselves
             }
-            event.setCancelled(false);   // oyuncunun kendi envanteri serbest
+            event.setCancelled(false);   // player's own inventory is free
             return;
         }
         if (isContentSlot(menu, slot)) {
-            event.setCancelled(false);   // teslim alani serbest
+            event.setCancelled(false);   // delivery area is free
             return;
         }
 
@@ -955,8 +967,9 @@ public class GuiListener implements Listener {
     }
 
     /**
-     * Yigini icerik slotlarina yerlestirir; yerlestirilemeyen adedi dondurur.
-     * Once ayni turden yarim yiginlar doldurulur, sonra bos slotlar kullanilir.
+     * Places the stack into content slots; returns the amount that couldn't be
+     * placed. Partial stacks of the same type are topped off first, then empty
+     * slots are used.
      */
     private int placeInContent(Inventory top, MenuConfig menu, ItemStack stack) {
         int left = stack.getAmount();
@@ -982,7 +995,7 @@ public class GuiListener implements Listener {
         return left;
     }
 
-    /** Oyuncunun envanterindeki uygun esyalari teslim alanina otomatik tasir. */
+    /** Automatically moves matching items from the player's inventory into the delivery area. */
     private void quickFill(Inventory top, MenuConfig menu, Player player, Order order) {
         int[] contentSlots = menu.contentSlots();
         int remaining = order.getNeeded() - order.getFilled();
@@ -1039,7 +1052,7 @@ public class GuiListener implements Listener {
         }
     }
 
-    // ------------------------------------------------------------------ teslimat onayi
+    // ------------------------------------------------------------------ delivery confirmation
 
     private void handleConfirmDelivery(OrderMenuHolder holder, Player player, String button) {
         if (button == null) return;
@@ -1066,8 +1079,8 @@ public class GuiListener implements Listener {
             player.closeInventory();
             return;
         }
-        // Beklemeye takilirsa esyalar iade edilir; sessizce yutulmalari
-        // oyuncunun envanterinden esya kaybetmesi demek olurdu.
+        // If the cooldown blocks it, items are refunded; silently swallowing them
+        // would mean the player loses items from their inventory.
         if (!plugin.cooldowns().checkAndWarn(player, CooldownManager.Type.DELIVER)) {
             items.forEach(item -> giveOrDrop(player, item));
             return;
@@ -1078,10 +1091,11 @@ public class GuiListener implements Listener {
     }
 
     /**
-     * Kisa bir eylem cubugu animasyonundan sonra teslimati tamamlar.
+     * Completes the delivery after a short action-bar animation.
      *
-     * <p>Esyalar animasyon suresince {@code animationItems} icinde tutulur; oyuncu
-     * bu arada cikarsa {@link #onPlayerQuit} onlari geri verir, hicbir sey kaybolmaz.</p>
+     * <p>Items are kept in {@code animationItems} for the duration of the
+     * animation; if the player logs out in the meantime, {@link #onPlayerQuit}
+     * gives them back, so nothing is ever lost.</p>
      */
     private void runDeliveryAnimation(Player player, Order order, List<ItemStack> items,
                                       int amount, double payment) {
@@ -1103,13 +1117,13 @@ public class GuiListener implements Listener {
             animationItems.remove(playerId);
 
             if (!player.isOnline()) {
-                // Baglanti koptu: esyalar oyuncunun son konumuna birakilir.
+                // Connection dropped: items are dropped at the player's last location.
                 for (ItemStack item : items) {
                     if (isEmpty(item)) continue;
                     try {
                         player.getWorld().dropItem(player.getLocation(), item);
                     } catch (Exception ignored) {
-                        // Dunya yuklu degilse yapacak bir sey yok; kayit zaten dusmez.
+                        // Nothing to do if the world isn't loaded; the record won't be lost anyway.
                     }
                 }
                 return;
@@ -1158,7 +1172,7 @@ public class GuiListener implements Listener {
         }
     }
 
-    /** Shulker kutusunun icinden siparise uyan esyalari alir; kutu oyuncuya geri doner. */
+    /** Takes items matching the order out of a shulker box; the box goes back to the player. */
     private void takeFromShulker(ItemStack box, Order order, int[] left, List<ItemStack> matched) {
         if (!(box.getItemMeta() instanceof BlockStateMeta blockMeta)) return;
         if (!(blockMeta.getBlockState() instanceof ShulkerBox shulker)) return;
@@ -1186,7 +1200,7 @@ public class GuiListener implements Listener {
         }
     }
 
-    // ------------------------------------------------------------------ satis onayi
+    // ------------------------------------------------------------------ sell confirmation
 
     private void handleConfirmSell(OrderMenuHolder holder, Player player, String button) {
         if (button == null) return;
@@ -1223,9 +1237,10 @@ public class GuiListener implements Listener {
             return;
         }
 
-        // Yalnizca satilan esyalar cikarilir. clearInventory()/setInventory() burada
-        // yanlis olurdu: kopyala-degistir-yaz arada gelen bir teslimatin eklediği
-        // eşyayı silerdi. removeItemsByIdentity() referans esitligiyle atomik siler.
+        // Only the sold items are removed. clearInventory()/setInventory() would be
+        // wrong here: a copy-modify-write would erase an item added by a delivery
+        // that arrived in the meantime. removeItemsByIdentity() removes atomically
+        // by reference equality.
         order.removeItemsByIdentity(items);
         plugin.getOrderManager().saveOrders();
         gui.invalidateOrderCache(order.getId());
@@ -1235,9 +1250,9 @@ public class GuiListener implements Listener {
         player.spigot().sendMessage(ChatMessageType.ACTION_BAR, (BaseComponent) new TextComponent(
                 plugin.msg(player, "success.items-sold", "%price%", formatted)));
         plugin.playSuccess(player);
-        // levels.yml -> xp.on-sell-per-1000 buraya baglidir. Satis kendi
-        // esyasini paraya cevirmektir, karsi taraf yoktur: partner suzgeci
-        // uygulanmaz ama gunluk XP tavani yine gecerlidir.
+        // levels.yml -> xp.on-sell-per-1000 hooks in here. Selling just converts
+        // your own items to money, there's no counterpart: the partner filter
+        // doesn't apply, but the daily XP cap still does.
         plugin.levels().award(player, "sell-money", payment);
 
         if (order.isComplete() && !order.hasItems()) {
@@ -1246,7 +1261,7 @@ public class GuiListener implements Listener {
         gui.openYourOrders(player);
     }
 
-    // ------------------------------------------------------------------ siparis duzenleme
+    // ------------------------------------------------------------------ editing an order
 
     private void handleEditOrder(OrderMenuHolder holder, Player player, String button) {
         if (button == null) return;
@@ -1262,7 +1277,7 @@ public class GuiListener implements Listener {
             case "back" -> gui.openYourOrders(player);
             case "collect-items" -> openCollectionLater(player, order);
             case "cancel-order" -> {
-                // Tamamlanmis sipariste iptal butonunun yerini toplama butonu alir.
+                // On a completed order the cancel button is replaced by the collect button.
                 if (order.isComplete()) {
                     openCollectionLater(player, order);
                     return;
@@ -1279,7 +1294,7 @@ public class GuiListener implements Listener {
         scheduler.runOnEntityLater(plugin, player, () -> gui.openCollectItems(player, order, 1), 2L);
     }
 
-    // ------------------------------------------------------------------ esya toplama
+    // ------------------------------------------------------------------ collecting items
 
     private void handleCollectItems(OrderMenuHolder holder, MenuConfig menu, Player player,
                                     String button, int contentIndex) {
@@ -1310,10 +1325,11 @@ public class GuiListener implements Listener {
         }
         if (contentIndex < 0) return;
 
-        // Kopyala-degistir-yaz yerine atomik cikarma: arada gelen bir teslimatin
-        // eklediği eşya (order.addItem) artik silinmez. Oyuncuya sigmayan kisim
-        // varsa order.addItem ile geri konur (ayni index'e degil, birlestirme/en
-        // sona ekleme kurallarina gore — bu sadece kozmetik bir sira farkidir).
+        // Atomic removal instead of copy-modify-write: an item added by a
+        // delivery that arrives in between (order.addItem) is no longer erased.
+        // If part of it doesn't fit the player, it's put back with order.addItem
+        // (not at the same index, but per the merge/append-at-end rules — this
+        // is only a cosmetic ordering difference).
         int index = (page - 1) * pageSize + contentIndex;
         ItemStack target = order.removeItemAt(index);
         if (target == null) return;
@@ -1336,10 +1352,10 @@ public class GuiListener implements Listener {
         gui.openCollectItems(player, order, page);
     }
 
-    /** Sayfadaki tum esyalari oyuncuya verir, sigmayani yere birakir. */
+    /** Gives the player every item on the page, dropping whatever doesn't fit. */
     private void dropPage(Player player, Order order, int page, int pageSize) {
-        // Kopyala-degistir-yaz yerine atomik araligi cikarma: arada gelen bir
-        // teslimatin eklediği eşya (order.addItem) artik silinmez.
+        // Atomic range removal instead of copy-modify-write: an item added by
+        // a delivery that arrives in between (order.addItem) is no longer erased.
         int from = (page - 1) * pageSize;
         int to = from + pageSize;
         List<ItemStack> taken = order.removeItemsInRange(from, to);
@@ -1369,11 +1385,11 @@ public class GuiListener implements Listener {
     }
 
     /**
-     * Toplanan esyalarin tamamini shop eklentisi fiyatiyla satar.
+     * Sells all collected items at the shop plugin's price.
      *
-     * <p>Fiyat CMI/ShopGUIPlus/EconomyShopGUI/Essentials'tan okunur; hicbiri yoksa
-     * ya da esyanin degeri tanimli degilse satis yapilmaz — uydurma bir fiyat
-     * ekonomiyi bozardi.</p>
+     * <p>The price is read from CMI/ShopGUIPlus/EconomyShopGUI/Essentials; if
+     * none of them is present, or the item's value isn't defined, no sale
+     * happens — a made-up price would break the economy.</p>
      */
     private void sellAll(Player player, Order order) {
         if (!plugin.settings().sellAll()) {
@@ -1409,7 +1425,7 @@ public class GuiListener implements Listener {
         gui.openConfirmSell(player, order, sellable, total);
     }
 
-    // ------------------------------------------------------------------ dil menusu
+    // ------------------------------------------------------------------ language menu
 
     private void handleLanguage(OrderMenuHolder holder, Player player, String button, int contentIndex) {
         MenuConfig menu = plugin.menus().get(MenuRegistry.LANGUAGE);
@@ -1434,7 +1450,7 @@ public class GuiListener implements Listener {
         }
         if (contentIndex < 0) return;
 
-        // Tiklanan slotun sayfa icindeki sirasi + sayfa kaymasi = gercek dil sirasi.
+        // The clicked slot's position on the page + the page offset = actual language index.
         int index = (page - 1) * pageSize + contentIndex;
         if (index >= codes.size()) return;
         String code = codes.get(index);
@@ -1447,19 +1463,20 @@ public class GuiListener implements Listener {
         gui.openLanguageMenu(player, page);
     }
 
-    // ================================================================== kapanma
+    // ================================================================== closing
 
     @EventHandler(priority = EventPriority.HIGH)
     public void onInventoryClose(InventoryCloseEvent event) {
         OrderMenuHolder holder = holderOf(event.getInventory());
         if (holder == null || !(event.getPlayer() instanceof Player player)) return;
 
-        // Kapanis sesi varsayilan olarak "none": bir menuden digerine gecerken de
-        // kapanma olayi tetiklendigi icin ses acik gelseydi surekli calardi.
+        // Close sound defaults to "none": since the close event also fires when
+        // switching from one menu to another, if it were on by default it would
+        // play constantly.
         try {
             gui.playClose(player, plugin.menus().get(holder.menuId()));
         } catch (IllegalStateException ignored) {
-            // Menu yeniden yukleme sirasinda kapandi; ses onemsiz.
+            // Menu closed during a reload; the sound doesn't matter.
         }
 
         if (holder.is(MenuRegistry.DELIVER_ITEMS)) {
@@ -1471,17 +1488,18 @@ public class GuiListener implements Listener {
             return;
         }
         if (holder.is(MenuRegistry.CONFIRM_SELL)) {
-            // Onaylanmadan kapatildi: bekleyen satis dusurulur, esyalar siparisde kalir.
+            // Closed without confirming: the pending sale is dropped, items stay on the order.
             sellItems.remove(player.getUniqueId());
             sellPayment.remove(player.getUniqueId());
         }
     }
 
     /**
-     * Teslim ekrani kapaninca icerideki esyalar okunur ve onay ekrani acilir.
+     * When the delivery screen is closed, the items inside are read and the
+     * confirmation screen is opened.
      *
-     * <p>Siparise uymayan ya da limiti asan her sey aninda iade edilir; oyuncunun
-     * esyasi menude asili kalmaz.</p>
+     * <p>Anything that doesn't match the order or exceeds the limit is refunded
+     * immediately; the player's item never stays stranded in the menu.</p>
      */
     private void onDeliverClosed(InventoryCloseEvent event, OrderMenuHolder holder, Player player) {
         Order order = holder.order();
@@ -1538,10 +1556,11 @@ public class GuiListener implements Listener {
     }
 
     /**
-     * Onay ekrani secim yapilmadan kapatildiysa esyalar teslim ekranina geri konur.
+     * If the confirmation screen closes without a choice, items are put back
+     * into the delivery screen.
      *
-     * <p>Onayla/iptal butonlari kendi verilerini once sildigi icin burada yalnizca
-     * "kacis" durumu kalir.</p>
+     * <p>The confirm/cancel buttons clear their own data first, so what's left
+     * here is only the "escape" case.</p>
      */
     private void onConfirmDeliveryClosed(OrderMenuHolder holder, Player player) {
         UUID playerId = player.getUniqueId();
@@ -1561,7 +1580,7 @@ public class GuiListener implements Listener {
             int[] contentSlots = menu.contentSlots();
             for (ItemStack stack : items) {
                 if (index >= contentSlots.length) {
-                    giveOrDrop(player, stack);   // yerlesim kucuduyse esya kaybolmasin
+                    giveOrDrop(player, stack);   // don't lose the item if the layout shrank
                     continue;
                 }
                 top.setItem(contentSlots[index++], stack);
@@ -1569,14 +1588,14 @@ public class GuiListener implements Listener {
         }, 1L);
     }
 
-    // ================================================================== cikis
+    // ================================================================== quitting
 
     @EventHandler
     public void onPlayerQuit(PlayerQuitEvent event) {
         Player player = event.getPlayer();
         UUID playerId = player.getUniqueId();
 
-        // Onay bekleyen ve animasyondaki esyalar sahibine geri verilir.
+        // Items pending confirmation and items in the animation are returned to their owner.
         returnPending(player, deliveryItems.remove(playerId));
         returnPending(player, animationItems.remove(playerId));
 
@@ -1595,7 +1614,7 @@ public class GuiListener implements Listener {
         gui.playerFilterType.remove(playerId);
         gui.playerSearchQuery.remove(playerId);
 
-        // Cikan oyuncunun bekleme sayaclari ve partner gecmisi bellekte kalmasin.
+        // Don't leave the departing player's cooldowns and partner history sitting in memory.
         plugin.cooldowns().forget(playerId);
         featureCursor.remove(playerId);
     }
@@ -1609,7 +1628,7 @@ public class GuiListener implements Listener {
                 try {
                     player.getWorld().dropItem(player.getLocation(), overflow);
                 } catch (Exception ignored) {
-                    // Dunya erisilemiyorsa yapacak bir sey yok.
+                    // Nothing to do if the world is unreachable.
                 }
             }
         }

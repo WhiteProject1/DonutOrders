@@ -17,14 +17,14 @@ import io.papermc.paper.event.player.AsyncChatEvent;
 import ro.server.orderplugin.OrderPlugin;
 
 /**
- * Sohbet uzerinden metin girdisi ({@code orders.input-mode: CHAT}).
+ * Text input via chat ({@code orders.input-mode: CHAT}).
  *
- * <p>Tabela girdisi bazi sunucularda sorunlu: anti-grief eklentileri gecici blogu
- * engelleyebiliyor, tabela duzenleme ekrani bazi istemcilerde acilmiyor. Sohbet
- * modu bu durumlarda calisir bir alternatif sunar.</p>
+ * <p>Sign input is problematic on some servers: anti-grief plugins can block
+ * temporary placement, and the sign-editing screen doesn't open on some
+ * clients. Chat mode offers a working alternative for those cases.</p>
  *
- * <p>Girdi beklenirken oyuncunun yazdigi mesaj sohbete <b>gonderilmez</b>; boylece
- * fiyat yazarken herkese "1000" diye bagirmis olmaz.</p>
+ * <p>While an input is pending, the message the player types is <b>not</b>
+ * sent to chat; so typing a price doesn't end up shouting "1000" to everyone.</p>
  */
 public final class ChatInputManager implements Listener {
 
@@ -52,7 +52,7 @@ public final class ChatInputManager implements Listener {
                 player.sendMessage(plugin.msg(player, "input.chat.timeout"));
                 expired.onCancel().run();
             }
-            // Sure config.yml -> performance.chat-input-timeout-ticks
+            // Duration: config.yml -> performance.chat-input-timeout-ticks
         }, plugin.settings().chatInputTimeoutTicks());
 
         pending.put(id, new Pending(callback, onCancel, cancelWord, task));
@@ -75,8 +75,8 @@ public final class ChatInputManager implements Listener {
 
         String input = PlainTextComponentSerializer.plainText().serialize(event.message()).trim();
 
-        // Sohbet olayi asenkron gelir; GUI acmak ve envantere dokunmak ana is
-        // parcaciginda (Folia'da oyuncunun bolgesinde) olmak zorunda.
+        // The chat event fires asynchronously; opening a GUI and touching the
+        // inventory has to happen on the main thread (on Folia, on the player's region).
         plugin.getSchedulerAdapter().runOnEntity(plugin, player, () -> {
             if (!player.isOnline()) return;
             if (input.isEmpty() || input.equalsIgnoreCase(data.cancelWord())) {
@@ -93,7 +93,7 @@ public final class ChatInputManager implements Listener {
         cancel(event.getPlayer().getUniqueId(), false);
     }
 
-    /** Bekleyen girdiyi iptal eder; {@code runCallback} true ise iptal geri cagrisini da calistirir. */
+    /** Cancels the pending input; if {@code runCallback} is true also runs the cancel callback. */
     public void cancel(UUID playerId, boolean runCallback) {
         Pending data = pending.remove(playerId);
         if (data == null) return;

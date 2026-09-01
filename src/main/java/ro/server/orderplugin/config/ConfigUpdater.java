@@ -13,31 +13,31 @@ import org.bukkit.configuration.file.YamlConfiguration;
 import ro.server.orderplugin.OrderPlugin;
 
 /**
- * Surum yukseltmesinde {@code config.yml}'e yeni ayarlari ekler.
+ * Adds new settings to {@code config.yml} on a version upgrade.
  *
- * <p>Var olan hicbir degere dokunulmaz — yalnizca dosyada <b>hic bulunmayan</b>
- * anahtarlar jar'daki varsayilandan alinir. Amac, sunucu sahibinin eklentiyi
- * guncelledikten sonra "config'i silip bastan yapilandirin" durumuna hic
- * dusmemesi.</p>
+ * <p>No existing value is ever touched — only keys that are <b>entirely absent</b>
+ * from the file are taken from the default bundled in the jar. The goal is that
+ * a server owner should never end up having to "delete the config and set it up
+ * from scratch" after updating the plugin.</p>
  *
- * <p>Bukkit'in YamlConfiguration'i 1.18'den beri yorum satirlarini koruyarak
- * kaydettigi icin mevcut aciklamalar da kaybolmaz; yalnizca yeni eklenen
- * anahtarlar yorumsuz gelir ve hangileri oldugu konsola yazilir.</p>
+ * <p>Since Bukkit's YamlConfiguration has preserved comment lines when saving
+ * since 1.18, existing comments aren't lost either; only newly added keys come
+ * in without comments, and which ones were added is logged to the console.</p>
  *
- * <h2>Neden {@code menus/*.yml}'den farkli davraniyor</h2>
+ * <h2>Why this behaves differently from {@code menus/*.yml}</h2>
  *
- * <p>{@link ro.server.orderplugin.menu.MenuRegistry} silinmis bir <b>bolumu</b>
- * geri getirmez: orada bir butonu silmek "bu buton olmasin" demektir ve geri
- * gelmesi sunucu sahibinin kararini bozar.</p>
+ * <p>{@link ro.server.orderplugin.menu.MenuRegistry} does not bring back a
+ * deleted <b>section</b>: there, deleting a button means "this button shouldn't
+ * exist", and having it reappear would undo the server owner's decision.</p>
  *
- * <p>config.yml'de ayni kural ters teperdi. 3.0'da eklenen {@code tax},
- * {@code text}, {@code custom-items}, {@code network} bolumlerinin hicbiri eski
- * dosyada yoktur; "ust bolumu yoksa ekleme" kurali bunlarin <b>hicbirinin</b>
- * eklenmemesine yol acardi ve sunucu sahibi yeni ozellikleri ancak config'ini
- * silerek yapilandirabilirdi — tam da kacinilmasi gereken durum. Ayrica
- * config.yml'de bir ayarin yoklugu ile varsayilan degeri ayni anlama gelir,
- * bu yuzden eksik anahtari eklemek davranisi degistirmez; yalnizca ayari
- * gorunur ve duzenlenebilir yapar.</p>
+ * <p>The same rule would backfire in config.yml. None of the {@code tax},
+ * {@code text}, {@code custom-items}, or {@code network} sections added in 3.0
+ * exist in an old file; a "don't add if the parent section is missing" rule
+ * would mean <b>none</b> of them ever get added, and the server owner could
+ * only configure the new features by deleting their config — exactly the
+ * situation this is meant to avoid. Also, in config.yml the absence of a
+ * setting and its default value mean the same thing, so adding a missing key
+ * doesn't change behavior; it just makes the setting visible and editable.</p>
  */
 public final class ConfigUpdater {
 
@@ -45,7 +45,7 @@ public final class ConfigUpdater {
 
     public static void update(OrderPlugin plugin) {
         File file = new File(plugin.getDataFolder(), "config.yml");
-        if (!file.exists()) return; // saveDefaultConfig zaten tam dosyayi yazdi
+        if (!file.exists()) return; // saveDefaultConfig already wrote the complete file
 
         YamlConfiguration bundled = loadBundled(plugin);
         if (bundled == null) return;
@@ -75,28 +75,29 @@ public final class ConfigUpdater {
     }
 
     /**
-     * Yeri degisen ayarlari tasir — sunucu sahibinin degeri kaybolmasin.
+     * Moves settings whose location has changed — so the server owner's value isn't lost.
      *
-     * <p>Yalnizca <b>tasima</b> yapilir: eski anahtar silinir, degeri yeni yere
-     * yazilir. Yeni yerde zaten bir deger varsa eskisi atilir, cunku bu durumda
-     * sunucu sahibi yeni ayari bilerek doldurmustur.</p>
+     * <p>Only a <b>move</b> is performed: the old key is removed, its value is
+     * written to the new location. If the new location already has a value, the
+     * old one is discarded, because in that case the server owner has deliberately
+     * filled in the new setting.</p>
      *
-     * @return dosyaya yazilmasi gereken bir degisiklik olduysa true
+     * @return true if there's a change that needs to be written to the file
      */
     private static boolean migrate(OrderPlugin plugin, YamlConfiguration onDisk) {
         boolean changed = false;
 
-        // 2.0 -> 3.0: sounds.error / sounds.success artik sounds.events altinda.
+        // 2.0 -> 3.0: sounds.error / sounds.success now live under sounds.events.
         changed |= moveString(plugin, onDisk, "sounds.error", "sounds.events.error");
         changed |= moveString(plugin, onDisk, "sounds.success", "sounds.events.success");
 
-        // 2.0 -> 3.0: vergi orders. altindan tax. altina tasindi VE oran bicimi
-        // degisti (0.05 -> 5.0). Donusum yapilmazsa %5 isteyen sunucu %0.05
-        // vergi alirdi; sessizce yanlis calismaktansa tasiyoruz.
+        // 2.0 -> 3.0: tax moved from under orders. to tax. AND the rate format
+        // changed (0.05 -> 5.0). Without this conversion, a server wanting 5%
+        // would charge 0.05% instead; rather than fail silently, we migrate it.
         if (onDisk.isSet("orders.creation-tax-percent") && !onDisk.isSet("tax.creation-percent")) {
             double old = onDisk.getDouble("orders.creation-tax-percent", 0d);
             onDisk.set("tax.creation-percent", old * 100d);
-            // Eski dosyada oran 0 ise sunucu sahibi vergiyi istemiyordu: acmayalim.
+            // If the rate was 0 in the old file, the server owner didn't want tax: don't turn it on.
             if (!onDisk.isSet("tax.enabled")) onDisk.set("tax.enabled", old > 0d);
             onDisk.set("orders.creation-tax-percent", null);
             plugin.getLogger().info("config.yml: vergi orders.creation-tax-percent ("

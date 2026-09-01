@@ -1,23 +1,23 @@
 package ro.server.orderplugin.util;
 
 /**
- * Bir sesin tam tanimi: vanilya ses anahtari, ses seviyesi ve perde.
+ * The full definition of a sound: vanilla sound key, volume, and pitch.
  *
- * <p>Yapilandirmada tek satirda yazilir:</p>
+ * <p>Written on a single line in config:</p>
  * <pre>
- * sound: "ui.button.click"              # seviye 1.0, perde 1.0
- * sound: "ui.button.click:0.5"          # seviye 0.5
- * sound: "ui.button.click:0.5:1.4"      # seviye 0.5, perde 1.4
- * sound: "none"                         # sessiz
+ * sound: "ui.button.click"              # volume 1.0, pitch 1.0
+ * sound: "ui.button.click:0.5"          # volume 0.5
+ * sound: "ui.button.click:0.5:1.4"      # volume 0.5, pitch 1.4
+ * sound: "none"                         # silent
  * </pre>
  *
- * <p>Ses anahtari <b>vanilya adidir</b> ({@code ui.button.click}), Bukkit'in
- * {@code Sound} enum'u degil. Enum kullanilsaydi Minecraft surumleri arasinda
- * yeniden adlandirilan her ses eklentiyi bozardi.</p>
+ * <p>The sound key is the <b>vanilla name</b> ({@code ui.button.click}), not
+ * Bukkit's {@code Sound} enum. Using the enum would break the plugin every
+ * time a sound gets renamed between Minecraft versions.</p>
  */
 public record SoundSpec(String key, float volume, float pitch) {
 
-    /** Hicbir ses calmayan tanim. */
+    /** Definition that plays no sound. */
     public static final SoundSpec NONE = new SoundSpec(null, 0f, 0f);
 
     public boolean silent() {
@@ -25,10 +25,10 @@ public record SoundSpec(String key, float volume, float pitch) {
     }
 
     /**
-     * @param raw               yapilandirmadaki ham metin (null olabilir)
-     * @param fallback          {@code raw} bos/null ise donecek deger
-     * @param defaultVolume     metinde seviye yazilmamissa kullanilacak deger
-     * @param defaultPitch      metinde perde yazilmamissa kullanilacak deger
+     * @param raw               raw text from config (may be null)
+     * @param fallback          value to return if {@code raw} is empty/null
+     * @param defaultVolume     value to use if no volume is written in the text
+     * @param defaultPitch      value to use if no pitch is written in the text
      */
     public static SoundSpec parse(String raw, SoundSpec fallback, float defaultVolume, float defaultPitch) {
         if (raw == null || raw.isBlank()) return fallback;
@@ -49,8 +49,8 @@ public record SoundSpec(String key, float volume, float pitch) {
     }
 
     /**
-     * Gecersiz sayi menuyu bozmamali: yazim hatasi olan bir seviye/perde
-     * degeri sessizce varsayilana duser (ses tamamen kaybolmaz).
+     * An invalid number shouldn't break the menu: a typo'd volume/pitch
+     * value silently falls back to the default (the sound isn't lost entirely).
      */
     private static float parseFloat(String raw, float fallback) {
         try {

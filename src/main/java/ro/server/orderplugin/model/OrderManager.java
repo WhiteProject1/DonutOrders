@@ -62,9 +62,9 @@ public class OrderManager {
     private SQLiteStorage sqliteStorage;
     private boolean useSQL = false;
 
-    /** Yazilmayi bekleyen degisiklik var mi (YAML modu). */
+    /** Is there a change waiting to be written (YAML mode)? */
     private volatile boolean saveRequested = false;
-    /** Gecikmeli yazma gorevi zaten kuyruklandi mi — ayni anda birden fazla olmasin. */
+    /** Is a delayed save task already queued — prevents more than one at a time. */
     private volatile boolean saveScheduled = false;
 
     public OrderManager(OrderPlugin plugin) {
@@ -159,13 +159,13 @@ public class OrderManager {
     }
 
     /**
-     * Siparisleri depolamadan yeniden okur (cross-server tazeleme).
+     * Re-reads orders from storage (cross-server refresh).
      *
-     * <p>Yalnizca SQL modunda anlamlidir: baska bir sunucu veritabanini
-     * degistirdiginde bu sunucunun bellegi eskir. MEMORY/SQLITE modunda ag
-     * zaten kapali oldugu icin hicbir sey yapilmaz.</p>
+     * <p>Only meaningful in SQL mode: this server's memory goes stale when
+     * another server modifies the database. In MEMORY/SQLITE mode networking
+     * is already off, so this does nothing.</p>
      */
-    /** Cross-server yalnizca MySQL/MariaDB ile calisir; degilse null. */
+    /** Cross-server only works with MySQL/MariaDB; null otherwise. */
     public MySQLStorage mysqlStorage() {
         return this.mysqlStorage;
     }
@@ -226,8 +226,8 @@ public class OrderManager {
                 if (orderSection.contains("enchantmentType")) {
                     order.setEnchantmentType(orderSection.getString("enchantmentType"));
                 }
-                // 2.0'da bu alan yoktu; eksikse null kalir ve siparis eskisi gibi
-                // materyal esitligine gore calisir.
+                // This field didn't exist in 2.0; if missing it stays null and the
+                // order keeps working based on material equality like before.
                 if (orderSection.contains("customId")) {
                     order.setCustomId(orderSection.getString("customId"));
                 }
@@ -249,17 +249,17 @@ public class OrderManager {
     }
 
     /**
-     * Kaydi <b>talep eder</b>; hemen diske yazmaz.
+     * <b>Requests</b> a save; does not write to disk immediately.
      *
-     * <p>Eskiden her siparis olusturma/iptal/teslim isleminde tum siparisler
-     * (icindeki her esya dahil) ana is parcaciginda bastan YAML'a serilestirilip
-     * dosyaya yaziliyordu. 500 siparislik bir sunucuda tek bir teslim tiklamasi
-     * yuzlerce milisaniye surebiliyordu; ayni saniyede 10 oyuncu teslim ederse bu
-     * 10 kez tekrarlaniyordu.</p>
+     * <p>Previously, every order creation/cancellation/delivery would
+     * re-serialize ALL orders (including every item inside them) to YAML on
+     * the main thread from scratch and write them to disk. On a server with
+     * 500 orders a single delivery click could take hundreds of milliseconds;
+     * if 10 players delivered in the same second, that happened 10 times.</p>
      *
-     * <p>Artik degisiklik isaretlenir ve kisa bir gecikmeyle <b>tek</b> yazma
-     * yapilir. Yogun anlarda arka arkaya gelen 10 istek tek dosya yazmasina
-     * doner.</p>
+     * <p>Now the change is just flagged and a <b>single</b> write happens
+     * after a short delay. During busy periods, 10 back-to-back requests
+     * collapse into one file write.</p>
      */
     public void saveOrders() {
         if (this.useSQL) {
@@ -275,7 +275,7 @@ public class OrderManager {
         saveScheduled = true;
 
         long delay = plugin.settings() == null ? 40L : plugin.settings().saveDelayTicks();
-        if (delay <= 0L) {                       // gecikme kapali: eski davranis
+        if (delay <= 0L) {                       // delay disabled: old behavior
             saveScheduled = false;
             saveRequested = false;
             writeYamlNow();
@@ -290,11 +290,12 @@ public class OrderManager {
     }
 
     /**
-     * Anlik goruntuyu ana is parcaciginda alir, diske yazmayi arka plana atar.
+     * Takes the snapshot on the main thread, offloads the disk write to the
+     * background.
      *
-     * <p>Esyalar <b>klonlanarak</b> alinir: serilestirme arka planda calisirken
-     * bir oyuncu ayni siparise teslim yapabilir ve canli liste degisirse yazma
-     * yarida bozulurdu.</p>
+     * <p>Items are taken <b>cloned</b>: while serialization runs in the
+     * background, a player could deliver to the same order, and if the live
+     * list changed mid-write, the write would end up corrupted.</p>
      */
     private void writeYamlNow() {
         YamlConfiguration snapshot = new YamlConfiguration();
@@ -328,11 +329,11 @@ public class OrderManager {
     }
 
     /**
-     * Dosyayi once gecici bir esine yazip sonra yerine tasir.
+     * Writes the file to a temporary copy first, then moves it into place.
      *
-     * <p>Dogrudan {@code data.yml} uzerine yazarken sunucu cokerse dosya yarim
-     * kalir ve <b>tum siparisler</b> kaybolur. Gecici dosya + tasima ile en kotu
-     * ihtimalde bir onceki kayit hayatta kalir.</p>
+     * <p>If the server crashes while writing directly to {@code data.yml},
+     * the file is left half-written and <b>all orders</b> are lost. With a
+     * temp file + move, the previous save survives in the worst case.</p>
      */
     private synchronized void writeSnapshot(YamlConfiguration snapshot) {
         File temp = new File(this.dataFile.getParentFile(), this.dataFile.getName() + ".tmp");
@@ -348,7 +349,7 @@ public class OrderManager {
         }
     }
 
-    /** Bekleyen kaydi hemen ve bu is parcaciginda yazar (kapanista). */
+    /** Writes a pending save immediately, on this thread (on shutdown). */
     public void flushPendingSave() {
         if (this.useSQL || !saveRequested) return;
         saveRequested = false;
@@ -375,8 +376,8 @@ public class OrderManager {
     }
 
     public void shutdown() {
-        // Kapanista gecikmeli yazma calisamaz (scheduler duruyor); bekleyen
-        // degisiklik varsa burada, bu is parcaciginda yazilir.
+        // The delayed write can't run on shutdown (the scheduler is stopping);
+        // if a change is pending, it's written here, on this thread.
         flushPendingSave();
         if (this.useSQL) {
             this.dbDisconnect();
@@ -392,11 +393,12 @@ public class OrderManager {
     }
 
     /**
-     * Siparis olusturur; tum kurallar (kara liste, miktar/fiyat sinirlari, rutbe
-     * bazli aktif siparis limiti ve olusturma vergisi) burada uygulanir.
+     * Creates an order; all rules (blacklist, amount/price limits,
+     * rank-based active-order limit, and creation tax) are enforced here.
      *
-     * <p>Kurallar GUI'de degil burada zorlanir: komutla ya da baska bir yoldan
-     * gelen her siparis ayni suzgecten gecsin diye.</p>
+     * <p>Rules are enforced here, not in the GUI, so that every order —
+     * whether it comes from a command or any other path — goes through the
+     * same filter.</p>
      */
     public boolean createOrder(Player player, Material material, int amount, double pricePerItem, String potionType, String enchantmentType) {
         Settings settings = plugin.settings();
@@ -410,8 +412,8 @@ public class OrderManager {
             player.sendMessage(plugin.msg(player, "errors.min-amount-not-met", "%amount%", String.valueOf(minAmount)));
             return false;
         }
-        // Seviye bonusu limite EKLENIR. Limit -1 (sinirsiz) ise bonus anlamsizdir
-        // ve sinirsizlik bozulmamalidir.
+        // The level bonus is ADDED to the limit. If the limit is -1 (unlimited)
+        // the bonus is meaningless and unlimited must stay unlimited.
         int maxAmount = settings.maxAmount();
         if (maxAmount > 0) maxAmount += plugin.levels().maxItemsBonus(player);
         if (maxAmount > 0 && amount > maxAmount) {
@@ -450,13 +452,14 @@ public class OrderManager {
             plugin.playEventSound(player, "no-money");
             return false;
         }
-        // Para cekildikten SONRA yatirilir: cekme basarisiz olsaydi vergi hesabina
-        // karsiligi olmayan para gecerdi.
+        // Deposited AFTER the withdrawal succeeds: if the withdrawal had failed,
+        // the tax account would receive money with nothing backing it.
         plugin.tax().deposit(tax.amount());
 
-        // Izin OLUSTURMA aninda kontrol edilip siparise islenir: sonradan rutbe
-        // kaybi siparisi geriye donuk etkilemez, oyuncunun cevrimici olmasi da
-        // gerekmez (bkz. Order#expiry, orders.expire-bypass-permission).
+        // The permission is checked at CREATION time and baked into the order:
+        // losing the rank later doesn't retroactively affect the order, and the
+        // player doesn't need to be online either (see Order#expiry,
+        // orders.expire-bypass-permission).
         boolean neverExpires = player.hasPermission(settings.orderExpireBypassPermission());
         Order order = new Order(player.getUniqueId(), material, amount, pricePerItem, potionType, enchantmentType, neverExpires);
         addToIndex(order);
@@ -482,16 +485,18 @@ public class OrderManager {
         plugin.sync().publish(SyncMessage.of(SyncService.ORDER_CREATED,
                 plugin.sync().serverId(), order.getId().toString()));
 
-        // Siparis TAMAMEN olusup para cekildikten SONRA duyurulur: yukaridaki
-        // kontrollerden biri false donseydi hicbir duyuru yapilmayacakti, boylece
-        // hayali (basarisiz) bir siparis asla sunucuya duyurulamaz.
+        // Announced only AFTER the order is FULLY created and the money is
+        // withdrawn: if any of the checks above had returned false, no
+        // announcement would happen, so a phantom (failed) order can never be
+        // announced to the server.
         announceOrderCreated(player, itemName, amount, pricePerItem, subtotal);
 
-        // Seviye sistemi kapaliysa bu cagrilarin hicbiri bir sey yapmaz.
+        // If the level system is disabled, none of these calls do anything.
         //
-        // Varsayilan olarak siparis XP'si BURADA VERILMEZ: acip hemen iptal
-        // ederek bedava XP toplamak mumkun olurdu (para tam iade edilir).
-        // XP siparis gercekten dolunca odenir — bkz. AntiAbuse.
+        // By default, order XP is NOT awarded HERE: opening and immediately
+        // cancelling would let players farm free XP (the money is fully
+        // refunded). XP is paid only when the order actually gets filled —
+        // see AntiAbuse.
         if (plugin.levels().antiAbuse().awardCreationImmediately()
                 && plugin.levels().antiAbuse().orderQualifies(amount, pricePerItem)) {
             plugin.levels().award(player, "create", 1d);
@@ -501,12 +506,13 @@ public class OrderManager {
     }
 
     /**
-     * Yeni acilan siparisi tum sunucuya duyurur — orders.broadcast.enabled
-     * kapaliysa (varsayilan) hicbir sey yapmaz. orders.broadcast.min-total
-     * altindaki siparisler de duyurulmaz; 0 = hepsi.
+     * Announces a newly opened order to the whole server — does nothing if
+     * orders.broadcast.enabled is off (default). Orders below
+     * orders.broadcast.min-total are also not announced; 0 = announce all.
      *
-     * <p>LevelManager#announceLevelUp ile ayni sekilde: cevrimici oyuncular
-     * tek tek gezilip her birine kendi dilinde plugin.msg ile mesaj gonderilir.</p>
+     * <p>Same approach as LevelManager#announceLevelUp: online players are
+     * iterated one by one and each is sent the message via plugin.msg in
+     * their own language.</p>
      */
     private void announceOrderCreated(Player owner, String itemName, int amount, double pricePerItem, double total) {
         Settings settings = plugin.settings();
@@ -540,9 +546,10 @@ public class OrderManager {
         // Remove from secondary indexes
         removeFromSecondaryIndexes(order);
 
-        // Kapatma ile doldurmayi ayni Order monitorunde dislar: eszamanli bir
-        // fulfillOrder artik ya bu kapanistan once biter ya da hic biter. Iade,
-        // kapanis anindaki anlik goruntuden hesaplanir — sonradan okumak yarisa acikti.
+        // Closing excludes filling within the same Order monitor: a concurrent
+        // fulfillOrder now either finishes before this close or never finishes
+        // at all. The refund is computed from the snapshot at close time —
+        // reading it afterward would be a race.
         int filledAtClose = order.closeAndGetFilled();
         if (filledAtClose < 0) {
             player.sendMessage(this.plugin.msg(player, "errors.order-unavailable"));
@@ -593,7 +600,7 @@ public class OrderManager {
         }
 
         // Use tryFillIfOpen return value to prevent overpay exploit; unlike tryFill
-        // this also refuses a concurrently-cancelled/closed order (bkz. Order.closed).
+        // this also refuses a concurrently-cancelled/closed order (see Order.closed).
         int actuallyFilled = order.tryFillIfOpen(amount);
         if (actuallyFilled <= 0) {
             returnItemsToPlayer(player, deliveredItems);
@@ -601,13 +608,14 @@ public class OrderManager {
             return;
         }
 
-        // CROSS-SERVER: bellekteki tryFill yalnizca BU sunucuyu baglar. Ag acikken
-        // ayni anda baska bir sunucudaki oyuncu da son slotu doldurabilir ve ikisi
-        // de odeme alirdi. Kosullu tek UPDATE ile kazanan veritabaninda belirlenir.
+        // CROSS-SERVER: the in-memory tryFill only binds THIS server. With
+        // networking on, a player on another server could fill the last slot
+        // at the same time, and both would get paid. A single conditional
+        // UPDATE decides the winner in the database.
         if (plugin.sync().enabled() && mysqlStorage != null) {
             int confirmed = mysqlStorage.tryFillAtomic(order.getId(), actuallyFilled);
             if (confirmed <= 0) {
-                // Kaybettik: bellekteki artis geri alinir, esyalar iade edilir.
+                // We lost: the in-memory increment is rolled back and items are refunded.
                 order.setFilled(Math.max(0, order.getFilled() - actuallyFilled));
                 returnItemsToPlayer(player, deliveredItems);
                 player.sendMessage(this.plugin.msg(player, "errors.order-filled-elsewhere"));
@@ -619,8 +627,9 @@ public class OrderManager {
 
         // Pay only for actually filled amount
         double gross = (double) actuallyFilled * order.getPricePerItem();
-        // Teslim vergisi KAZANCTAN kesilir (olusturma vergisi gibi ustune eklenmez):
-        // teslim eden oyuncudan ekstra para istenemez, elinde para olmayabilir.
+        // Delivery tax is deducted FROM the earnings (unlike creation tax, it's
+        // not added on top): the delivering player can't be charged extra —
+        // they may not have the money on hand.
         TaxService.TaxResult deliveryTax = plugin.tax().calculate(player, gross, "delivery");
         double actualPayment = Math.max(0d, gross - deliveryTax.amount());
         OrderPlugin.getEconomy().depositPlayer((OfflinePlayer) player, actualPayment);
@@ -630,8 +639,9 @@ public class OrderManager {
                 "%tax%", GuiManager.formatPercent(deliveryTax.rate()),
                 "%amount%", TextUtil.formatNumber(deliveryTax.amount())));
         }
-        // Teslim XP'si partner gecmisinden gecer: ayni kisiyle sonsuz tekrar
-        // eden ticaret kademeli olarak degersizlesir, alt hesap hic XP vermez.
+        // Delivery XP goes through the partner-history filter: endlessly
+        // repeated trading with the same person gets progressively devalued,
+        // and an alt account gives no XP at all.
         if (plugin.levels().antiAbuse().orderQualifies(order.getNeeded(), order.getPricePerItem())) {
             plugin.levels().awardDelivery(player, order.getOwner(), actuallyFilled);
         }
@@ -732,8 +742,9 @@ public class OrderManager {
             this.saveOrders();
         }
 
-        // Her mesaj alicisinin kendi dilinde: satici kendi dilinde, siparis sahibi
-        // kendi dilinde okur; esya adi da her biri icin ayri cevrilir.
+        // Each recipient gets their own language: the seller reads it in their
+        // own language, the order owner in theirs; the item name is also
+        // translated separately for each.
         String amountText = TextUtil.formatNumber((double) actuallyFilled);
         String sellerItemName = plugin.getGuiManager().getOrderDisplayName(player, order);
         String fulfilled = plugin.msg(player, "success.order-fulfilled",
@@ -760,23 +771,25 @@ public class OrderManager {
     }
 
     /**
-     * Siparis sahibine tamamlanma XP'si verir.
+     * Awards completion XP to the order owner.
      *
-     * <p>Varsayilan ayarda <b>acilis XP'si de burada</b> odenir: siparis acmak
-     * tek basina bedava XP olmamali, cunku acilan siparis hemen iptal edilip
-     * parasi geri alinabilir. Sonucu odullendirmek niyeti odullendirmekten
-     * guvenlidir ve hicbir kayit tutmayi gerektirmez — sunucu yeniden baslasa
-     * bile acik geri gelmez.</p>
+     * <p>Under the default setting, <b>the creation XP is also paid here</b>:
+     * opening an order shouldn't be free XP by itself, because an open order
+     * can be cancelled immediately and the money refunded. Rewarding the
+     * outcome is safer than rewarding the intent, and it requires no
+     * bookkeeping — an open order doesn't come back even if the server
+     * restarts.</p>
      *
-     * <p>Ayrica dolduran kisi partner suzgecinden gecirilir: kendi siparisini
-     * alt hesabiyla dolduran biri tamamlanma XP'si de alamaz.</p>
+     * <p>The person who filled it is also run through the partner filter:
+     * someone who fills their own order with an alt account doesn't get
+     * completion XP either.</p>
      */
     private void awardCompletion(Player owner, Order order, UUID filledBy) {
         var levels = plugin.levels();
         var guard = levels.antiAbuse();
         if (!levels.enabled()) return;
         if (!guard.orderQualifies(order.getNeeded(), order.getPricePerItem())) return;
-        // Siparisi kim doldurduysa ona karsi partner/IP kontrolu uygulanir.
+        // The partner/IP check is applied against whoever filled the order.
         if (guard.deliveryMultiplier(owner, filledBy) <= 0d) return;
 
         levels.award(owner, "complete", 1d);
@@ -787,26 +800,27 @@ public class OrderManager {
     }
 
     /**
-     * Yoneticinin bir siparisi kaldirmasi: kalan tutar sahibine iade edilir.
+     * An admin removing an order: the remaining amount is refunded to the owner.
      *
-     * <p>Hem {@code /donutordersadmin removeorder} hem de yonetici paneli bunu
-     * cagirir; iki yerde ayri mantik olsaydi biri duzeltilip digeri unutulurdu.</p>
+     * <p>Called by both {@code /donutordersadmin removeorder} and the admin
+     * panel; if the two had separate logic, one would get fixed and the other
+     * would be forgotten.</p>
      *
-     * <p>Siparise teslim edilmis esya varsa kayit <b>silinmez</b>, tamamlanmis
-     * isaretlenir: sahibi esyalarini yine de toplayabilmeli. Temizlik gorevi
-     * tamamlanmis siparisi tekrar iade etmez.</p>
+     * <p>If the order has delivered items, the record is <b>not deleted</b> —
+     * it's marked complete instead: the owner should still be able to collect
+     * their items. The cleanup task never refunds a completed order again.</p>
      *
-     * @param admin komutu/paneli kullanan kisi (mesajlar onun dilinde)
-     * @return iade edilen tutar
+     * @param admin the person using the command/panel (messages are in their language)
+     * @return the refunded amount
      */
     public double adminRemoveOrder(CommandSender admin, Order order) {
-        // Kapatma ile doldurmayi ayni Order monitorunde dislar: eszamanli bir
-        // cancelOrder/fulfillOrder ile cift odeme olusamaz. Iade, kapanis
-        // anindaki anlik goruntuden hesaplanir.
+        // Closing excludes filling within the same Order monitor: a concurrent
+        // cancelOrder/fulfillOrder can't produce a double payout. The refund
+        // is computed from the snapshot at close time.
         int filledAtClose = order.closeAndGetFilled();
         if (filledAtClose < 0) {
-            // Baska bir yol (ör. oyuncunun kendi iptali) siparisi ayni anda
-            // zaten kapatti; tekrar iade edilmez.
+            // Some other path (e.g. the player's own cancellation) has already
+            // closed the order in the meantime; it isn't refunded again.
             admin.sendMessage(plugin.msg(admin, "errors.order-unavailable"));
             return 0d;
         }
@@ -833,7 +847,8 @@ public class OrderManager {
                 : plugin.msg(admin, "admin.order-removed", "%amount%", amountText,
                     "%item%", adminItemName, "%price%", refundText));
 
-        // Bildirim siparis sahibinin dilinde; cevrimdisiysa girise kadar bekletilir.
+        // The notification is in the order owner's language; if offline, it's
+        // held until they log in.
         Player online = owner.getPlayer();
         String ownerItemName = online != null
                 ? plugin.getGuiManager().getOrderDisplayName(online, order) : adminItemName;
@@ -876,10 +891,10 @@ public class OrderManager {
 
     public int purgeAllOrders() {
         int count = this.ordersById.size();
-        // Refund all active orders before purging. closeAndGetFilled() kapatma
-        // ile doldurmayi dislar; eszamanli bir cancelOrder/fulfillOrder ile
-        // cift odeme olusamaz. -1 donerse siparis baska bir yolla zaten
-        // kapatilmis demektir, tekrar iade edilmez.
+        // Refund all active orders before purging. closeAndGetFilled() excludes
+        // filling from closing; a concurrent cancelOrder/fulfillOrder can't
+        // produce a double payout. A -1 return means the order was already
+        // closed through some other path, so it isn't refunded again.
         for (Order order : new ArrayList<>(this.ordersById.values())) {
             int filledAtClose = order.closeAndGetFilled();
             if (filledAtClose < 0) continue;
@@ -896,7 +911,7 @@ public class OrderManager {
         if (this.useSQL) {
             this.dbDeleteAll();
         }
-        // Bekleyen yazma iptal edilmezse silinen dosya saniyeler icinde geri gelirdi.
+        // If the pending write isn't cancelled, the deleted file would come back within seconds.
         this.saveRequested = false;
         if (this.dataFile.exists() && !this.dataFile.delete()) {
             this.plugin.getLogger().warning("data.yml silinemedi.");
@@ -913,10 +928,11 @@ public class OrderManager {
         List<UUID> deletedIds = new ArrayList<>();
         List<Order> keptOrders = new ArrayList<>();
         for (Order order : expired) {
-            // Kapatma ile doldurmayi ayni Order monitorunde dislar: eszamanli
-            // bir cancelOrder/adminRemoveOrder/fulfillOrder ile cift odeme
-            // olusamaz. -1 donerse siparis baska bir yolla zaten kapatilmis
-            // demektir, bu turda hic islenmez.
+            // Closing excludes filling within the same Order monitor: a
+            // concurrent cancelOrder/adminRemoveOrder/fulfillOrder can't
+            // produce a double payout. A -1 return means the order was
+            // already closed through some other path, so it's skipped
+            // entirely this round.
             int filledAtClose = order.closeAndGetFilled();
             if (filledAtClose < 0) continue;
             double refund = (double) (order.getNeeded() - filledAtClose) * order.getPricePerItem();
@@ -925,8 +941,9 @@ public class OrderManager {
                 OrderPlugin.getEconomy().depositPlayer(owner, refund);
             }
 
-            // Alici cevrimdisi oldugu icin metin sunucunun varsayilan dilinde hazirlanir;
-            // oyuncu-bazli dil yalnizca canli bir alici varken cozulebilir.
+            // The recipient is offline, so the text is prepared in the server's
+            // default language; a per-player language can only be resolved
+            // when there's a live recipient.
             String lang = plugin.getLanguage().serverDefault();
             String itemName = plugin.getGuiManager().getOrderDisplayName(lang, order);
 
@@ -950,13 +967,13 @@ public class OrderManager {
             }
         }
 
-        // Tamamlanmis ve icinde esya kalmamis siparisler sonsuza dek durmasin:
-        // orders.completed-retention-hours kadar bekleyip silinirler.
+        // Completed orders with no items left shouldn't stick around forever:
+        // they wait orders.completed-retention-hours and then get deleted.
         long retention = plugin.settings().completedRetentionMillis();
         for (Order order : ordersById.values()) {
             if (!order.isComplete() || order.hasItems()) continue;
-            // orders.bypass.expire ile acilmis siparislerde expiry Long.MAX_VALUE'dir;
-            // dogrudan toplarsak tasip negatife donerdi ve siparis erkenden silinirdi.
+            // Orders opened via orders.bypass.expire have expiry = Long.MAX_VALUE;
+            // adding directly would overflow into negative and delete the order early.
             long retentionDeadline = order.getExpiry() > Long.MAX_VALUE - retention
                     ? Long.MAX_VALUE : order.getExpiry() + retention;
             if (now < retentionDeadline) continue;

@@ -17,10 +17,10 @@ public enum SortType {
     }
 
     /**
-     * Dil dosyasindaki {@code gui.lore.<anahtar>} adi.
+     * The {@code gui.lore.<key>} name in the language file.
      *
-     * <p>Enum adindan uretilir ki yeni bir siralama turu eklendiginde burada
-     * ayrica bir esleme guncellemek gerekmesin.</p>
+     * <p>Derived from the enum name so that adding a new sort type doesn't
+     * require updating a separate mapping here.</p>
      */
     public String messageKey() {
         return name().toLowerCase(java.util.Locale.ROOT).replace('_', '-');

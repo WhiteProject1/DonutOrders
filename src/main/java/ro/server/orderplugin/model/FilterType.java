@@ -26,7 +26,7 @@ public enum FilterType {
         return this.displayName;
     }
 
-    /** Dil dosyasindaki {@code gui.lore.filter-<anahtar>} adi. */
+    /** The {@code gui.lore.filter-<key>} name in the language file. */
     public String messageKey() {
         return "filter-" + name().toLowerCase(java.util.Locale.ROOT).replace('_', '-');
     }

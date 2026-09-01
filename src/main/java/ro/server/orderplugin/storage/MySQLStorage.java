@@ -87,12 +87,12 @@ public class MySQLStorage {
         }
     }
 
-    /** Havuzdan bir baglanti. Cagiran kapatmakla yukumludur (try-with-resources). */
+    /** A connection from the pool. The caller is responsible for closing it (try-with-resources). */
     public Connection connection() throws SQLException {
         return dataSource.getConnection();
     }
 
-    /** Tablo oneki — sync sorgulari da ayni oneki kullanir. */
+    /** Table prefix — sync queries use the same prefix too. */
     public String prefix() {
         return tablePrefix;
     }
@@ -120,9 +120,9 @@ public class MySQLStorage {
                 + "inventory LONGBLOB DEFAULT NULL"
                 + ") ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci";
 
-        // Sunucular arasi olay kuyrugu. Yalnizca network.enabled ise kullanilir
-        // ama tablo her zaman olusturulur: sunucu sahibi ozelligi actiginda
-        // yeniden baslatmadan calissin.
+        // Cross-server event queue. Only used when network.enabled is on, but
+        // the table is always created: so it works without a restart when the
+        // server owner turns the feature on.
         String syncTable = "CREATE TABLE IF NOT EXISTS " + tablePrefix + "sync_events ("
                 + "id BIGINT AUTO_INCREMENT PRIMARY KEY,"
                 + "type VARCHAR(32) NOT NULL,"
@@ -153,11 +153,11 @@ public class MySQLStorage {
     }
 
     /**
-     * Var olan {@code orders} tablosuna eksik kolonu ekler.
+     * Adds a missing column to the existing {@code orders} table.
      *
-     * <p>{@code ALTER TABLE} kosulsuz calistirilamaz: kolon zaten varsa hata
-     * verir ve baslangici bozar. Bu yuzden once metaveriden sorulur. Eski
-     * kayitlardaki degerler NULL kalir ve eskisi gibi calisir.</p>
+     * <p>{@code ALTER TABLE} can't be run unconditionally: it errors if the
+     * column already exists and breaks startup. So metadata is queried first.
+     * Values on old records stay NULL and keep working like before.</p>
      */
     private void addColumnIfMissing(String column, String definition) {
         try (Connection conn = dataSource.getConnection()) {
@@ -176,14 +176,15 @@ public class MySQLStorage {
     }
 
     /**
-     * Siparisi ATOMIK olarak doldurur.
+     * Fills the order ATOMICALLY.
      *
-     * <p>Cross-server'in en kritik noktasi. Doldurma yalnizca bellekte
-     * yapilsaydi iki sunucudaki iki oyuncu ayni anda son slotu doldurup
-     * <b>ikisi de odeme alirdi</b>. Tek bir kosullu UPDATE bunu engeller:
-     * kosul veritabaninda degerlendirilir, kazanan tektir.</p>
+     * <p>The most critical point of cross-server. If filling happened only in
+     * memory, two players on two different servers could fill the last slot
+     * at the same time and <b>both would get paid</b>. A single conditional
+     * UPDATE prevents this: the condition is evaluated in the database, so
+     * there's exactly one winner.</p>
      *
-     * @return gercekten doldurulan miktar; 0 ise siparis bu arada dolmustur
+     * @return the amount actually filled; 0 means the order was already filled in the meantime
      */
     public int tryFillAtomic(UUID orderId, int amount) {
         String sql = "UPDATE " + tablePrefix + "orders SET filled = filled + ? "
@@ -196,8 +197,8 @@ public class MySQLStorage {
             return ps.executeUpdate() > 0 ? amount : 0;
         } catch (SQLException e) {
             logger.log(Level.SEVERE, "[Database] Atomik doldurma basarisiz: " + orderId, e);
-            // Veritabani erisilemiyorsa doldurma YAPILMAZ. Hata durumunda
-            // "olmus say" demek cift odemeye kapi acardi.
+            // If the database is unreachable, the fill DOES NOT happen. Treating
+            // an error as "assume it succeeded" would open the door to double payment.
             return 0;
         }
     }

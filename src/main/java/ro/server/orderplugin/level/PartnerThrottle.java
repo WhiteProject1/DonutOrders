@@ -7,30 +7,31 @@ import java.util.Map;
 import java.util.UUID;
 
 /**
- * "Ayni kisiyle tekrar eden ticaret" kisitlamasinin saf matematigi.
+ * The pure math of the "repeated trade with the same person" restriction.
  *
- * <p>Bukkit'e hicbir bagi yoktur ve zamani disaridan alir. Bunun sebebi
- * dogrudan test edilebilmesi: bir XP ciftciligi korumasinin "herhalde
- * calisiyordur" ile gecistirilmesi, korumanin hic olmamasindan farksizdir —
- * sessizce yanlis calisan bir koruma yanlis bir guven verir.</p>
+ * <p>Has no dependency on Bukkit and takes time as a parameter. The reason is
+ * direct testability: shrugging off an XP-farming protection with "it probably
+ * works" is no different from not having the protection at all — a check that
+ * silently misbehaves gives false confidence.</p>
  *
- * <p>Uc kural birlikte calisir:</p>
+ * <p>Three rules work together:</p>
  * <ol>
- *   <li><b>Bekleme:</b> ayni kisiyle iki XP'li ticaret arasinda en az
- *       {@code cooldownMs} gecmeli.</li>
- *   <li><b>Azalma:</b> ilk {@code fullRewardCount} ticaret tam odul verir;
- *       sonrakiler her seferinde {@code decay} kati kadar deger tasir.</li>
- *   <li><b>Gunluk tavan:</b> tek bir partnerden 24 saatte en fazla
- *       {@code dailyXpCap} xp alinabilir.</li>
+ *   <li><b>Cooldown:</b> at least {@code cooldownMs} must pass between two
+ *       XP-granting trades with the same person.</li>
+ *   <li><b>Decay:</b> the first {@code fullRewardCount} trades pay full reward;
+ *       each one after that is worth {@code decay} times as much.</li>
+ *   <li><b>Daily cap:</b> at most {@code dailyXpCap} xp can be earned from a
+ *       single partner in 24 hours.</li>
  * </ol>
  *
- * <p>Engellenen ticaretler de <b>kaydedilir</b>. Aksi halde oyuncu tavana
- * ulastiktan sonra beklemeden devam edip sayacin dolmasini engelleyebilirdi:
- * yalnizca odullendirilen ticaretleri saymak, istismari saymamak demek olurdu.</p>
+ * <p>Blocked trades are <b>recorded too</b>. Otherwise a player could keep
+ * trading without waiting once they hit the cap and prevent the counter from
+ * filling up: counting only the rewarded trades and not the abuse would defeat
+ * the purpose.</p>
  */
 public final class PartnerThrottle {
 
-    /** Gunluk tavanin sifirlanma araligi. */
+    /** Interval at which the daily cap resets. */
     public static final long DAY_MS = 86_400_000L;
 
     private static final class Log {
@@ -61,10 +62,10 @@ public final class PartnerThrottle {
         this.windowMs = Math.max(1000L, windowMs);
     }
 
-    /** Neden odul verilmedigini soyler — gunluge yazmak ve mesaj secmek icin. */
+    /** Tells why the reward wasn't granted — for logging and picking a message. */
     public enum Reason { FULL, DECAYED, COOLDOWN, DAILY_CAP }
 
-    /** Karar: katsayi + gerekce. */
+    /** Decision: coefficient + reason. */
     public record Decision(double multiplier, Reason reason) {
         public boolean rewarded() {
             return multiplier > 0d;
@@ -72,9 +73,9 @@ public final class PartnerThrottle {
     }
 
     /**
-     * Bu ticaretin XP katsayisini hesaplar ve ticareti kaydeder.
+     * Computes the XP coefficient for this trade and records the trade.
      *
-     * @param now cagiranin sagladigi zaman (test edilebilirlik icin)
+     * @param now time supplied by the caller (for testability)
      */
     public synchronized Decision evaluate(UUID self, UUID partner, long now) {
         Log log = logs.computeIfAbsent(self, k -> new HashMap<>())
@@ -84,7 +85,7 @@ public final class PartnerThrottle {
                     return fresh;
                 });
 
-        // Pencere disina cikan ticaretler unutulur.
+        // Trades that fall outside the window are forgotten.
         while (!log.times.isEmpty() && now - log.times.peekFirst() > windowMs) {
             log.times.pollFirst();
         }
@@ -107,14 +108,14 @@ public final class PartnerThrottle {
             return new Decision(1d, Reason.FULL);
         }
         double multiplier = Math.pow(decay, count - fullRewardCount + 1d);
-        // %1'in altina inen odul pratikte sifirdir; sayiyi surunduren bir kuyruk
-        // birakmak yerine acikca bitirilir.
+        // A reward that decays below 1% is practically zero; cut it off
+        // explicitly instead of leaving a queue that drags the count out forever.
         return multiplier < 0.01d
                 ? new Decision(0d, Reason.DECAYED)
                 : new Decision(multiplier, Reason.DECAYED);
     }
 
-    /** Verilen xp'yi gunluk tavana isler. */
+    /** Records the granted xp against the daily cap. */
     public synchronized void record(UUID self, UUID partner, double xp) {
         if (xp <= 0d) return;
         Map<UUID, Log> mine = logs.get(self);

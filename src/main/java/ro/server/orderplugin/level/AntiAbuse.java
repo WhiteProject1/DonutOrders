@@ -11,49 +11,49 @@ import org.bukkit.entity.Player;
 import ro.server.orderplugin.OrderPlugin;
 
 /**
- * Seviye sistemi istismar korumasi.
+ * Level system abuse protection.
  *
- * <h2>Kapatilan acik</h2>
- * <p>Seviye sistemi "ekonomik hareket" oduldur. Ama iki arkadas hicbir ekonomik
- * hareket uretmeden birbirini seviye atlatabilir:</p>
+ * <h2>The exploit being closed</h2>
+ * <p>The level system rewards "economic activity". But two friends can level
+ * each other up without producing any real economic activity:</p>
  * <ol>
- *   <li><b>Yikama ticareti:</b> A 1 adet toprak icin siparis acar, B doldurur,
- *       sonra roller degisir. Para iki kisi arasinda gidip gelir, ikisi de XP
- *       kazanir. Makroyla dakikada yuzlerce kez tekrarlanabilir.</li>
- *   <li><b>Alt hesap:</b> Ayni kisi ikinci hesabiyla ayni donguyu kurar; para
- *       hic kaybolmaz.</li>
- *   <li><b>Ac-iptal et:</b> Siparis acmak XP verir, iptal etmek parayi geri
- *       verir. Vergi 0 ise bedava sonsuz XP demektir.</li>
- *   <li><b>Dev siparis + iptal:</b> XP para ile olcekli oldugu icin 10 milyonluk
- *       bir siparis acip hemen iptal etmek tek hamlede seviye atlatir.</li>
- *   <li><b>Bolme:</b> 64 esyalik tek siparis yerine 1 esyalik 64 siparis acarak
- *       sabit "siparis acma" XP'sini katlamak.</li>
+ *   <li><b>Wash trading:</b> A opens an order for 1 dirt, B fills it, then
+ *       they swap roles. Money goes back and forth between the two of them,
+ *       both get XP. Can be repeated hundreds of times a minute with a macro.</li>
+ *   <li><b>Alt account:</b> The same person sets up the same loop with a second
+ *       account; the money never actually gets lost.</li>
+ *   <li><b>Open-and-cancel:</b> Opening an order grants XP, canceling it refunds
+ *       the money. If tax is 0, that's free infinite XP.</li>
+ *   <li><b>Huge order + cancel:</b> Since XP scales with money, opening a
+ *       10-million order and canceling it immediately levels up in one move.</li>
+ *   <li><b>Splitting:</b> Opening 64 one-item orders instead of a single
+ *       64-item order to multiply the flat "order created" XP.</li>
  * </ol>
  *
- * <h2>Nasil kapatiliyor</h2>
+ * <h2>How it's closed</h2>
  * <ul>
- *   <li>{@code creation-xp-mode: ON_COMPLETE} — siparis XP'si acilista degil,
- *       siparis <b>gercekten dolunca</b> verilir. 3. ve 4. maddeyi kokten bitirir
- *       ve hicbir kayit tutmayi gerektirmez: sunucu yeniden baslasa bile acik
- *       geri gelmez.</li>
- *   <li>Partner limiti — ayni kisiyle yapilan ticaretlerden alinan XP her
- *       tekrarda azalir, gunluk bir tavana takilir ve iki ticaret arasinda en az
- *       bir bekleme suresi aranir.</li>
- *   <li>Ayni IP — teslim eden ile siparis sahibi ayni adresteyse XP verilmez.</li>
- *   <li>Asgari deger — kurusluk siparisler hic XP uretmez.</li>
+ *   <li>{@code creation-xp-mode: ON_COMPLETE} — order-creation XP isn't granted
+ *       on open, it's granted when the order is <b>actually filled</b>. This
+ *       kills items 3 and 4 outright and needs no bookkeeping at all: the
+ *       exploit doesn't come back even after a server restart.</li>
+ *   <li>Partner limit — XP earned from repeated trades with the same person
+ *       decays with each repetition, hits a daily cap, and a minimum cooldown
+ *       is enforced between two trades.</li>
+ *   <li>Same IP — no XP if the deliverer and the order owner are on the same address.</li>
+ *   <li>Minimum value — trivially small orders produce no XP at all.</li>
  * </ul>
  *
- * <p><b>Hicbiri zorunlu degildir.</b> {@code anti-abuse.enabled: false} tum
- * kontrolleri kapatir; her madde ayrica tek tek kapatilabilir. Kapali bir
- * kontrolun maliyeti yoktur.</p>
+ * <p><b>None of this is mandatory.</b> {@code anti-abuse.enabled: false} turns
+ * off all checks; each item can also be disabled individually. A disabled
+ * check has no cost.</p>
  */
 public final class AntiAbuse {
 
-    /** Siparis olusturma XP'si ne zaman verilir. */
+    /** When order-creation XP is granted. */
     public enum CreationMode {
-        /** Siparis tamamen dolunca (guvenli, varsayilan). */
+        /** When the order is completely filled (safe, default). */
         ON_COMPLETE,
-        /** Siparis acilir acilmaz (eski davranis; iptal istismarina aciktir). */
+        /** As soon as the order is opened (old behavior; open to cancel-abuse). */
         IMMEDIATE
     }
 
@@ -72,7 +72,7 @@ public final class AntiAbuse {
 
     private boolean logSuspicious = true;
 
-    /** Tekrar eden ticaret matematigi — saf, test edilebilir. */
+    /** Repeated-trade math — pure, testable. */
     private final PartnerThrottle throttle =
             new PartnerThrottle(60_000L, 3, 0.5d, 100d, 86_400_000L);
 
@@ -80,13 +80,13 @@ public final class AntiAbuse {
         this.plugin = plugin;
     }
 
-    // ------------------------------------------------------------------ yukleme
+    // ------------------------------------------------------------------ loading
 
     public void load(ConfigurationSection section) {
         throttle.clear();
         if (section == null) {
-            // Bolum hic yoksa guvenli varsayilanlarla calisilir; sessizce
-            // korumasiz kalmak yanlis olurdu.
+            // If the section is entirely absent, run with safe defaults; silently
+            // ending up unprotected would be wrong.
             enabled = true;
             return;
         }
@@ -126,32 +126,32 @@ public final class AntiAbuse {
                 + ", partner limiti: " + (partnerLimitEnabled ? "acik" : "kapali") + ").");
     }
 
-    // ------------------------------------------------------------------ sorgular
+    // ------------------------------------------------------------------ queries
 
     public boolean enabled() {
         return enabled;
     }
 
     /**
-     * Siparis olusturma XP'si acilista mi verilecek?
+     * Should order-creation XP be granted on open?
      *
-     * <p>Koruma kapaliysa eski davranis (acilista) gecerlidir: kapatan sunucu
-     * sahibi "hicbir kontrol istemiyorum" demistir.</p>
+     * <p>If protection is disabled, the old behavior (on open) applies: a
+     * server owner who turned it off has said "I don't want any checks."</p>
      */
     public boolean awardCreationImmediately() {
         return !enabled || creationMode == CreationMode.IMMEDIATE;
     }
 
-    /** Siparis dolunca acilis XP'si de odenecek mi? */
+    /** Should creation XP also be paid out when the order fills? */
     public boolean awardCreationOnComplete() {
         return enabled && creationMode == CreationMode.ON_COMPLETE;
     }
 
     /**
-     * Bu siparis XP uretmeye deger mi (asgari buyukluk kontrolu)?
+     * Is this order worth producing XP for (minimum-size check)?
      *
-     * <p>Kurusluk ve tek esyalik siparisler hicbir ekonomik hareket uretmez ama
-     * sabit XP kalemlerini (acma/tamamlama) sonsuz kez tetikleyebilir.</p>
+     * <p>Trivial and single-item orders produce no real economic activity but
+     * can trigger the flat XP entries (open/complete) endlessly.</p>
      */
     public boolean orderQualifies(int amount, double pricePerItem) {
         if (!enabled) return true;
@@ -160,22 +160,22 @@ public final class AntiAbuse {
     }
 
     /**
-     * Teslim XP'sinin katsayisi: 1.0 tam odul, 0.0 hic XP yok.
+     * The coefficient for delivery XP: 1.0 full reward, 0.0 no XP at all.
      *
-     * <p>Ayni kisiyle tekrar tekrar ticaret yapmak kademeli olarak degersizlesir.
-     * Tamamen yasaklamak yerine azaltmak bilincli bir tercih: iki arkadasin
-     * <b>gercekten</b> birbirinden alisveris yapmasi mesru, sadece bunu sonsuz
-     * kez tekrarlamak degil.</p>
+     * <p>Trading with the same person over and over becomes progressively
+     * worthless. Decaying it instead of banning it outright is a deliberate
+     * choice: two friends <b>genuinely</b> trading with each other is
+     * legitimate, it's only endlessly repeating it that isn't.</p>
      *
-     * @param deliverer teslim eden oyuncu
-     * @param owner     siparis sahibi
+     * @param deliverer the delivering player
+     * @param owner     order owner
      */
     public double deliveryMultiplier(Player deliverer, UUID owner) {
         if (!enabled || deliverer == null || owner == null) return 1d;
 
         UUID self = deliverer.getUniqueId();
         if (self.equals(owner)) {
-            // Normalde ust katman engelliyor; yine de XP verilmemeli.
+            // Normally the layer above blocks this; XP still shouldn't be granted either way.
             return blockSelfDelivery ? 0d : 1d;
         }
 
@@ -197,25 +197,25 @@ public final class AntiAbuse {
         return decision.multiplier();
     }
 
-    /** Verilen XP'yi partner hesabina isler (gunluk tavan icin). */
+    /** Records the granted XP against the partner's account (for the daily cap). */
     public void recordPartnerXp(UUID self, UUID partner, double xp) {
         if (!enabled || !partnerLimitEnabled) return;
         throttle.record(self, partner, xp);
     }
 
-    /** Oyuncu cikisinda kaydini birakma — pencere zaten zaman tabanli. */
+    /** No need to drop the record on player quit — the window is time-based anyway. */
     public void forget(UUID playerId) {
         throttle.forget(playerId);
     }
 
-    // ------------------------------------------------------------------ yardimcilar
+    // ------------------------------------------------------------------ helpers
 
     /**
-     * Iki oyuncunun ayni adresten baglanip baglanmadigi.
+     * Whether two players are connected from the same address.
      *
-     * <p>Siparis sahibi cevrimdisiysa adresi bilinemez ve kontrol <b>gecer</b>:
-     * bilinmeyeni sucluyor duruma dusmemek gerekir, aksi halde cevrimdisi birine
-     * teslim eden herkes XP kaybederdi.</p>
+     * <p>If the order owner is offline, their address can't be known and the
+     * check <b>passes</b>: an unknown must not be treated as guilty, otherwise
+     * anyone delivering to an offline player would lose their XP.</p>
      */
     private boolean sameAddress(Player deliverer, UUID owner) {
         Player other = deliverer.getServer().getPlayer(owner);
@@ -240,7 +240,7 @@ public final class AntiAbuse {
         plugin.getLogger().info("[Seviye] " + player.getName() + " XP alamadi: " + reason + ".");
     }
 
-    /** Yonetici paneli icin ozet. */
+    /** Summary for the admin panel. */
     public List<String> describe() {
         List<String> out = new ArrayList<>();
         out.add("enabled=" + enabled);

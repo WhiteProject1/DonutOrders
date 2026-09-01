@@ -50,12 +50,12 @@ import ro.server.orderplugin.util.SoundSpec;
 import ro.server.orderplugin.util.TextUtil;
 
 /**
- * Tum menuleri kurar.
+ * Builds all the menus.
  *
- * <p>Yerlesim {@code menus/*.yml}'den, metin {@code lang/*.yml}'den gelir; bu
- * sinifta ne sabit slot ne de sabit metin vardir. Acilan her envanter bir
- * {@link OrderMenuHolder} tasir, boylece tiklama isleyicisi menuyu basliktan
- * tahmin etmek zorunda kalmaz.</p>
+ * <p>Layout comes from {@code menus/*.yml}, text from {@code lang/*.yml}; this
+ * class has neither hardcoded slots nor hardcoded text. Every opened inventory
+ * carries an {@link OrderMenuHolder}, so the click handler never has to guess
+ * the menu from its title.</p>
  */
 public class GuiManager {
 
@@ -75,7 +75,7 @@ public class GuiManager {
 
     public List<ItemStack> allItems = new ArrayList<>();
 
-    /** dil kodu -> allItems ile ayni sirali, kucuk harfli arama dizisi. */
+    /** language code -> lowercase search array in the same order as allItems. */
     private final ConcurrentHashMap<String, String[]> searchIndexCache = new ConcurrentHashMap<>();
 
     private final Cache<UUID, ItemStack> orderItemCache = Caffeine.newBuilder()
@@ -83,8 +83,8 @@ public class GuiManager {
             .maximumSize(500)
             .build();
 
-    // Bukkit.getOfflinePlayer() her cagrida diskten NBT okuyabilir; menu her
-    // acilisinda 45 siparis icin bunu yapmak gorunur bir takilma yaratir.
+    // Bukkit.getOfflinePlayer() can hit the disk for NBT on every call; doing
+    // that for 45 orders each time the menu opens causes a visible stall.
     private final Cache<UUID, String> playerNameCache = Caffeine.newBuilder()
             .expireAfterWrite(5, TimeUnit.MINUTES)
             .maximumSize(200)
@@ -95,26 +95,26 @@ public class GuiManager {
         rebuildItemList();
     }
 
-    // =========================================================== ortak yardimcilar
+    // =========================================================== shared helpers
 
     private String lang(Player player) {
         return plugin.getLanguage().resolve(player);
     }
 
     /**
-     * Menu basligi. Oncelik sirasi:
+     * Menu title. Priority order:
      * <ol>
-     *   <li>eski kurulumlardan kalan {@code config.yml -> gui-titles.<id>} (geriye donuk uyum)</li>
-     *   <li>{@code menus/<id>.yml -> title} ezmesi</li>
-     *   <li>dil dosyasindaki {@code menus.<id>}</li>
+     *   <li>{@code config.yml -> gui-titles.<id>} left over from old installs (backward compatibility)</li>
+     *   <li>the {@code menus/<id>.yml -> title} override</li>
+     *   <li>{@code menus.<id>} in the language file</li>
      * </ol>
      */
     String menuTitle(Player player, MenuConfig menu, String langKey, String... replacements) {
         String legacy = plugin.getConfig().getString("gui-titles." + menu.id());
         String raw = legacy != null && !legacy.isBlank() ? legacy : menu.titleOverride();
         if (raw != null && !raw.isBlank()) {
-            // Menu dosyasindaki baslik ezmesi dil dosyasindan gecmedigi icin
-            // minifont donusumu burada ayrica uygulanir.
+            // The title override in the menu file doesn't pass through the
+            // language file, so the minifont conversion is applied separately here.
             if (plugin.settings().miniFontTitles()) {
                 raw = MiniFont.apply(raw, plugin.settings().miniFontMap());
             }
@@ -133,9 +133,9 @@ public class GuiManager {
     }
 
     /**
-     * Dolgu panellerini yerlestirir. Dolgunun slotu belirtilmisse yalnizca oraya,
-     * belirtilmemisse bos kalan tum slotlara konur — sonuncusu, buton slotlarini
-     * degistiren sunucu sahibinin ekranda delik birakmamasi icin.
+     * Places the filler panels. If the filler has a slot specified, it only goes
+     * there; if not, it fills every slot still empty — the latter so a server
+     * owner who moves button slots around doesn't end up with holes on screen.
      */
     void applyFiller(Player player, Inventory inventory, MenuConfig menu) {
         MenuItem filler = menu.filler();
@@ -144,10 +144,11 @@ public class GuiManager {
         if (filler.hasSlots()) {
             for (int slot : filler.slots()) {
                 if (slot < 0 || slot >= menu.size()) continue;
-                // Dolgu SUSLEMEDIR, icerik degildir: dolu bir slotu ezmez.
-                // Eskiden kosulsuz ezerdi; "slots: 45-53" yazan her menude alt
-                // siradaki sayfa/geri/arama butonlari gorunmez oluyordu.
-                // Bilerek ezmek isteyen "overwrite: true" yazar.
+                // Filler is DECORATION, not content: it doesn't overwrite an
+                // occupied slot. It used to overwrite unconditionally; every menu
+                // that wrote "slots: 45-53" ended up with its page/back/search
+                // buttons on the bottom row disappearing. Anyone who wants to
+                // overwrite deliberately writes "overwrite: true".
                 if (!filler.overwrite() && inventory.getItem(slot) != null) continue;
                 inventory.setItem(slot, stack.clone());
             }
@@ -159,10 +160,10 @@ public class GuiManager {
     }
 
     /**
-     * Bir butonu olusturur.
+     * Builds a button.
      *
-     * @param nameKey isim icin dil anahtari; menu dosyasinda {@code name} yazilmissa o kazanir
-     * @param lore    kodun urettigi aciklama; menu dosyasinda {@code lore} yazilmissa o kazanir
+     * @param nameKey the language key for the name; if {@code name} is set in the menu file, that wins
+     * @param lore    the description generated by code; if {@code lore} is set in the menu file, that wins
      */
     ItemStack buildButton(Player player, MenuItem item, String nameKey, List<String> lore,
                                   String... replacements) {
@@ -171,7 +172,7 @@ public class GuiManager {
         return finish(builder, item);
     }
 
-    /** Materyali koddan gelen (siparis onizlemesi gibi) butonlar icin. */
+    /** For buttons whose material comes from code (like an order preview). */
     ItemStack buildButton(Player player, MenuItem item, ItemStack base, String nameKey, List<String> lore,
                                   String... replacements) {
         ItemBuilder builder = new ItemBuilder(base);
@@ -183,7 +184,7 @@ public class GuiManager {
                            String... replacements) {
         String name = item.nameOverride();
         if (name != null) {
-            // Menu dosyasindaki isim ezmesi de dil dosyasindan gecmez.
+            // The name override in the menu file doesn't pass through the language file either.
             if (plugin.settings().miniFontButtons()) {
                 name = MiniFont.apply(name, plugin.settings().miniFontMap());
             }
@@ -217,7 +218,7 @@ public class GuiManager {
         return text;
     }
 
-    /** Butonu tanimli tum slotlarina koyar. */
+    /** Places the button into all of its defined slots. */
     void place(Inventory inventory, MenuItem item, ItemStack stack) {
         if (!item.enabled() || stack == null) return;
         for (int slot : item.slots()) {
@@ -227,11 +228,11 @@ public class GuiManager {
     }
 
     /**
-     * Menu acilis sesi.
+     * Menu open sound.
      *
-     * <p>Menu dosyasinda {@code open-sound} yazilmissa o calar; yazilmamissa
-     * genel {@code sounds.events.menu-open} devreye girer. Boylece tek bir yerden
-     * tum menulere ses verilebilir, istenirse menu bazinda ezilir.</p>
+     * <p>If {@code open-sound} is set in the menu file, that plays; if not, the
+     * generic {@code sounds.events.menu-open} kicks in. This way a sound can be
+     * given to all menus from a single place, and overridden per menu if wanted.</p>
      */
     void playOpen(Player player, MenuConfig menu) {
         SoundSpec sound = menu.openSound();
@@ -242,7 +243,7 @@ public class GuiManager {
         plugin.playSound(player, sound);
     }
 
-    /** Menu kapanis sesi; {@code close-sound} yoksa {@code sounds.events.menu-close}. */
+    /** Menu close sound; falls back to {@code sounds.events.menu-close} if {@code close-sound} isn't set. */
     public void playClose(Player player, MenuConfig menu) {
         SoundSpec sound = menu.closeSound();
         if (sound.silent()) {
@@ -252,7 +253,7 @@ public class GuiManager {
         plugin.playSound(player, sound);
     }
 
-    /** Siparis sahibinin adi (onbellekli). Yonetici paneli de bunu kullanir. */
+    /** The order owner's name (cached). Also used by the admin panel. */
     public String ownerName(UUID uuid) {
         return getPlayerName(uuid);
     }
@@ -271,10 +272,11 @@ public class GuiManager {
         return name;
     }
 
-    /** Kalan sureyi alicinin dilinde biciminde ("2g 4s 10dk"). */
+    /** Remaining time formatted in the viewer's language ("2d 4h 10m"). */
     private String timeRemaining(Player player, long expiryTimestamp) {
-        // orders.bypass.expire ile acilmis siparislerde expiry Long.MAX_VALUE'dir;
-        // gunlere cevirip anlamsiz devasa bir sayi gostermek yerine "hicbir zaman" denir.
+        // Orders opened with orders.bypass.expire have expiry set to Long.MAX_VALUE;
+        // instead of converting that to days and showing a nonsensically huge
+        // number, we say "never".
         if (expiryTimestamp == Long.MAX_VALUE) return plugin.rawMsg(player, "time.never");
         long remaining = expiryTimestamp - System.currentTimeMillis();
         if (remaining <= 0L) return plugin.rawMsg(player, "time.expired");
@@ -291,12 +293,13 @@ public class GuiManager {
     }
 
     /**
-     * Bir tutari para birimi simgesiyle bicimlendirir.
+     * Formats an amount with the currency symbol.
      *
-     * <p>Simge eskiden yedi ayri yerde {@code "$"} olarak koda gomuluydu; dolar
-     * kullanmayan bir sunucunun bunlari degistirmesi imkansizdi cunku metin dil
-     * dosyasinda degil Java'daydi. Artik {@code config.yml -> text.currency}
-     * belirler ve simge tutarin oncesine ya da sonrasina konabilir.</p>
+     * <p>The symbol used to be hardcoded as {@code "$"} in seven separate
+     * places; a server that didn't use dollars had no way to change them
+     * because the text lived in Java, not the language file. Now
+     * {@code config.yml -> text.currency} decides it, and the symbol can go
+     * before or after the amount.</p>
      */
     String money(double amount) {
         return money(TextUtil.formatNumber(amount));
@@ -313,9 +316,9 @@ public class GuiManager {
         return Math.max(1, (int) Math.ceil((double) itemCount / (double) pageSize));
     }
 
-    // =========================================================== eshya listesi
+    // =========================================================== item list
 
-    /** Eshya secme menusundeki liste; ozellik anahtarlari ve kara liste burada uygulanir. */
+    /** The list in the item selector menu; feature toggles and the blacklist are applied here. */
     public void rebuildItemList() {
         List<ItemStack> items = new ArrayList<>();
         Arrays.stream(Material.values())
@@ -332,7 +335,7 @@ public class GuiManager {
         if (plugin.settings().potions()) addPotionItems(items);
         if (plugin.settings().enchantedBooks()) addEnchantedBookItems(items);
         this.allItems = items;
-        // Liste degisti: arama indeksi artik eski siraya ait.
+        // The list changed: the search index now belongs to the old ordering.
         this.searchIndexCache.clear();
     }
 
@@ -347,7 +350,7 @@ public class GuiManager {
                     potionItem.setItemMeta(meta);
                     items.add(potionItem);
                 } catch (Exception ignored) {
-                    // Sunucu surumunun tanimadigi iksir turu: listeye alinmaz.
+                    // A potion type the server version doesn't recognize: not added to the list.
                 }
             }
         }
@@ -364,7 +367,7 @@ public class GuiManager {
                     bookItem.setItemMeta(meta);
                     items.add(bookItem);
                 } catch (Exception ignored) {
-                    // Uyumsuz buyu/seviye: atlanir.
+                    // Incompatible enchantment/level: skipped.
                 }
             }
         }
@@ -407,9 +410,9 @@ public class GuiManager {
         return applicable;
     }
 
-    // =========================================================== isim cozumleme
+    // =========================================================== name resolution
 
-    /** Bir siparisin alicinin dilindeki adi (iksir/buyu ekleri dahil). */
+    /** An order's name in the viewer's language (including potion/enchantment suffixes). */
     public String getOrderDisplayName(Player viewer, Order order) {
         return getOrderDisplayName(lang(viewer), order);
     }
@@ -435,7 +438,7 @@ public class GuiManager {
         return base;
     }
 
-    /** "SHARPNESS_5" -> ["sharpness", "5"]; bicim bozuksa null. */
+    /** "SHARPNESS_5" -> ["sharpness", "5"]; null if the format is malformed. */
     private static String[] splitEnchant(String raw) {
         int last = raw.lastIndexOf('_');
         if (last <= 0 || last == raw.length() - 1) return null;
@@ -447,7 +450,7 @@ public class GuiManager {
         return new String[]{raw.substring(0, last).toLowerCase(Locale.ROOT), raw.substring(last + 1)};
     }
 
-    /** Bir siparisin buyulerini "Keskinlik V" satirlari olarak dondurur. */
+    /** Returns an order's enchantments as lines like "Sharpness V". */
     private List<String> enchantmentLore(Player viewer, Order order) {
         List<String> lines = new ArrayList<>();
         String enchantments = order.getEnchantmentType();
@@ -461,7 +464,7 @@ public class GuiManager {
         return lines;
     }
 
-    // =========================================================== siparis eshyasi
+    // =========================================================== order item
 
     public ItemStack createOrderItemStack(Order order) {
         ItemStack cached = orderItemCache.getIfPresent(order.getId());
@@ -474,7 +477,7 @@ public class GuiManager {
                 meta.setBasePotionType(PotionType.valueOf(order.getPotionType()));
                 orderItem.setItemMeta(meta);
             } catch (Exception ignored) {
-                // Tanimsiz iksir turu: sade sise gosterilir.
+                // Undefined potion type: a plain bottle is shown.
             }
         }
 
@@ -488,7 +491,7 @@ public class GuiManager {
                 }
                 orderItem.setItemMeta(meta);
             } catch (Exception ignored) {
-                // Bilinmeyen buyu: kitap sade gosterilir.
+                // Unknown enchantment: the book is shown plain.
             }
         } else if (order.getEnchantmentType() != null && !order.getEnchantmentType().isEmpty()) {
             try {
@@ -502,7 +505,7 @@ public class GuiManager {
                 }
                 orderItem.setItemMeta(meta);
             } catch (Exception ignored) {
-                // Bilinmeyen buyu: eshya buyusuz gosterilir.
+                // Unknown enchantment: the item is shown without it.
             }
         }
 
@@ -517,11 +520,11 @@ public class GuiManager {
     public void invalidateAllOrderCaches() {
         orderItemCache.invalidateAll();
         playerNameCache.invalidateAll();
-        // Ceviriler degismis olabilir; arama cevrilmis ada da bakiyor.
+        // Translations may have changed; search also looks at the translated name.
         searchIndexCache.clear();
     }
 
-    // =========================================================== ana menu
+    // =========================================================== main menu
 
     public void openMainMenu(Player player) {
         openMainMenuPaged(player, 1, null);
@@ -563,7 +566,7 @@ public class GuiManager {
             inventory.setItem(contentSlots[i], buildOrderEntry(player, orders.get(startIndex + i)));
         }
 
-        // --- gezinme
+        // --- navigation
         MenuItem prev = menu.item("previous-page");
         if (prev.enabled() && prev.hasSlots()) {
             boolean canGoBack = page > 1;
@@ -577,7 +580,7 @@ public class GuiManager {
                     canGoForward ? "gui.buttons.next-page" : "gui.buttons.no-next-page", null));
         }
 
-        // --- siralama
+        // --- sort
         MenuItem sortButton = menu.item("sort");
         if (plugin.settings().sort() && sortButton.enabled() && sortButton.hasSlots()) {
             List<String> lore = new ArrayList<>();
@@ -588,7 +591,7 @@ public class GuiManager {
             place(inventory, sortButton, buildButton(player, sortButton, "gui.buttons.sort", lore));
         }
 
-        // --- filtre
+        // --- filter
         MenuItem filterButton = menu.item("filter");
         if (plugin.settings().filter() && filterButton.enabled() && filterButton.hasSlots()) {
             List<String> lore = new ArrayList<>();
@@ -599,14 +602,14 @@ public class GuiManager {
             place(inventory, filterButton, buildButton(player, filterButton, "gui.buttons.filter", lore));
         }
 
-        // --- yenile
+        // --- refresh
         MenuItem refresh = menu.item("refresh");
         if (refresh.enabled() && refresh.hasSlots()) {
             place(inventory, refresh, buildButton(player, refresh, "gui.buttons.orders",
                     List.of(plugin.msg(player, "gui.lore.click-to-refresh"))));
         }
 
-        // --- arama
+        // --- search
         MenuItem search = menu.item("search");
         if (plugin.settings().search() && search.enabled() && search.hasSlots()) {
             String current = searchQuery == null ? plugin.msg(player, "gui.lore.none") : searchQuery;
@@ -618,14 +621,14 @@ public class GuiManager {
             place(inventory, search, buildButton(player, search, "gui.buttons.search", lore, "%search%", current));
         }
 
-        // --- siparislerim
+        // --- your orders
         MenuItem yourOrders = menu.item("your-orders");
         if (yourOrders.enabled() && yourOrders.hasSlots()) {
             place(inventory, yourOrders, buildButton(player, yourOrders, "gui.buttons.your-orders",
                     List.of(plugin.msg(player, "gui.lore.manage-listings"))));
         }
 
-        // --- dil
+        // --- language
         MenuItem languageButton = menu.item("language");
         if (plugin.settings().languageMenu() && languageButton.enabled() && languageButton.hasSlots()) {
             place(inventory, languageButton, buildButton(player, languageButton, "gui.buttons.language",
@@ -635,9 +638,9 @@ public class GuiManager {
                     "%language%", plugin.getLanguage().displayName(lang(player))));
         }
 
-        // --- siparis seviyesi
-        // levels.yml -> enabled: false ise buton HIC konmaz; slot bos kalir ve
-        // (dolgu aciksa) cam panelle dolar.
+        // --- order level
+        // If levels.yml -> enabled: false, the button is NOT placed at all; the
+        // slot stays empty and (if filler is on) gets filled with glass panes.
         MenuItem levelButton = menu.item("level");
         if (plugin.levels().enabled() && levelButton.enabled() && levelButton.hasSlots()) {
             place(inventory, levelButton, buildButton(player, levelButton, "gui.buttons.level",
@@ -650,7 +653,7 @@ public class GuiManager {
         playOpen(player, menu);
     }
 
-    /** Seviye butonunun aciklamasi; {@code /order level} ciktisi da bunu kullanir. */
+    /** The level button's description; the {@code /order level} output also uses this. */
     public List<String> levelLore(Player player) {
         PlayerLevel state = plugin.levels().get(player.getUniqueId());
         List<String> lore = new ArrayList<>();
@@ -673,7 +676,7 @@ public class GuiManager {
         return lore;
     }
 
-    /** Ana menudeki siralama+filtre+arama sonucu — tiklama isleyicisi de ayni listeyi kullanir. */
+    /** The sort+filter+search result on the main menu — the click handler uses the same list. */
     public List<Order> sortedOrders(UUID playerId, String searchQuery) {
         SortType sortType = playerSortType.getOrDefault(playerId, SortType.RECENTLY_LISTED);
         FilterType filterType = playerFilterType.getOrDefault(playerId, FilterType.ALL);
@@ -700,8 +703,9 @@ public class GuiManager {
     }
 
     /**
-     * Arama hem ham materyal adinda hem de sunucu dilindeki cevrilmis adda yapilir;
-     * Turkce oynayan biri "mese" yazdiginda OAK_LOG'u bulabilsin diye.
+     * Search runs against both the raw material name and the name translated
+     * into the server's language, so that a Turkish-speaking player typing
+     * "mese" can find OAK_LOG.
      */
     private boolean matchesSearch(Order order, String needle) {
         if (order.getMaterial().name().toLowerCase(Locale.ROOT).contains(needle)) return true;
@@ -710,14 +714,14 @@ public class GuiManager {
     }
 
     /**
-     * Sipariş panosundaki eshya aciklamasi (lore).
+     * The item description (lore) on the order board.
      *
-     * <p>{@code gui.order-lore.template} (lang dosyasi) varsa {@link LoreTemplate}
-     * ile bu sablondan uretilir — sunucu sahibi renkleri, sirayla, ilerleme
-     * cubugunu kendi yazdigi metinle tamamen degistirebilir. Sablon anahtari
-     * silinmis ya da bossa {@link #buildOrderEntryLegacy} eski, sabit-kodlu
-     * gorunumu uretir; boylece anahtarini silen bir sunucu sahibi bos ya da
-     * bozuk bir esya gormez.</p>
+     * <p>If {@code gui.order-lore.template} (in the lang file) exists, it's
+     * generated from that template via {@link LoreTemplate} — the server owner
+     * can completely replace the colors, order and progress bar with their own
+     * text. If the template key is deleted or empty, {@link #buildOrderEntryLegacy}
+     * produces the old, hardcoded look; this way a server owner who deletes the
+     * key doesn't end up seeing an empty or broken item.</p>
      */
     private ItemStack buildOrderEntry(Player player, Order order) {
         List<String> template = orderLoreTemplate(player);
@@ -741,7 +745,7 @@ public class GuiManager {
                 .build();
     }
 
-    /** {@code gui.order-lore.template}; oyuncunun dili -> en -> tr sirasiyla aranir. */
+    /** {@code gui.order-lore.template}; looked up in the player's language -> en -> tr. */
     private List<String> orderLoreTemplate(Player player) {
         String code = lang(player);
         List<String> list = plugin.getLanguage().rawList(code, "gui.order-lore.template");
@@ -750,7 +754,7 @@ public class GuiManager {
         return list;
     }
 
-    /** Sipariş sablonundaki skaler yer tutucularin degerleri; hepsi ham (renklendirilmemis) metindir. */
+    /** Values for the scalar placeholders in the order template; all are raw (uncolored) text. */
     private Map<String, String> orderLoreValues(Player player, Order order, String ownerName, String itemName) {
         double filled = order.getFilled();
         double needed = order.getNeeded();
@@ -775,7 +779,7 @@ public class GuiManager {
         return values;
     }
 
-    /** {@code text.number-format} ayarina gore ("full" ya da "compact") sayi bicimi. */
+    /** Number format per the {@code text.number-format} setting ("full" or "compact"). */
     private String formatQuantity(double value) {
         Settings settings = plugin.settings();
         if ("compact".equalsIgnoreCase(settings.numberFormatStyle())) {
@@ -785,21 +789,22 @@ public class GuiManager {
     }
 
     /**
-     * {@link #formatQuantity} ile ayni bicim; siparis panosundaki lore hangi
-     * sayi bicimini kullaniyorsa disaridan (orn. yeni siparis duyurusu) da
-     * onunla ayni gorunsun diye public.
+     * Same formatting as {@link #formatQuantity}; public so that whatever
+     * number format the order board's lore uses, external code (e.g. the new
+     * order announcement) looks the same.
      */
     public String formatOrderNumber(double value) {
         return formatQuantity(value);
     }
 
     /**
-     * {@code text.number-format.percent-format} ile bicimlendirilmis yuzde.
+     * Percentage formatted per {@code text.number-format.percent-format}.
      *
-     * <p>Sablon {@code %percent%} yaninda ayrica {@code %} yazmaz — dil dosyasindaki
-     * bicim (orn. {@code "%%%s"} -> {@code "%0"}, {@code "%s%%"} -> {@code "0%"})
-     * isareti zaten icerir. Boylece {@code %%percent%} gibi belirsiz bir yazim
-     * hic gerekmez ve her dil kendi yuzde geleneginde yazabilir.</p>
+     * <p>The template doesn't write a separate {@code %} next to {@code %percent%}
+     * — the format in the language file (e.g. {@code "%%%s"} -> {@code "%0"},
+     * {@code "%s%%"} -> {@code "0%"}) already includes the sign. This way an
+     * ambiguous writing like {@code %%percent%} is never needed, and each
+     * language can write it in its own percentage convention.</p>
      */
     private String formatConfiguredPercent(double percent) {
         long rounded = Math.round(percent);
@@ -810,7 +815,7 @@ public class GuiManager {
         }
     }
 
-    /** {@code text.progress-bar} ayarlarina gore ham (renklendirilmemis degil, &# iceren) ilerleme cubugu. */
+    /** Raw progress bar (not colorized, contains &#) built from the {@code text.progress-bar} settings. */
     private String buildProgressBar(double filled, double needed) {
         Settings settings = plugin.settings();
         return TextUtil.progressBar(filled, needed, settings.progressBarLength(),
@@ -818,7 +823,7 @@ public class GuiManager {
                 settings.progressBarFilledColor(), settings.progressBarEmptyColor());
     }
 
-    /** 3.0 oncesi sabit-kodlu gorunum; {@code gui.order-lore.template} silinirse/bossa buraya duser. */
+    /** The pre-3.0 hardcoded look; falls back here if {@code gui.order-lore.template} is deleted/empty. */
     private ItemStack buildOrderEntryLegacy(Player player, Order order) {
         String ownerName = getPlayerName(order.getOwner());
         String itemName = getOrderDisplayName(player, order);
@@ -849,7 +854,7 @@ public class GuiManager {
                 .build();
     }
 
-    // =========================================================== siparislerim
+    // =========================================================== your orders
 
     public void openYourOrders(Player player) {
         openYourOrders(player, 1);
@@ -864,7 +869,7 @@ public class GuiManager {
         }
     }
 
-    /** Menude gorunen siparisler — tiklama isleyicisi ayni siralamayi kullanir. */
+    /** Orders shown in the menu — the click handler uses the same ordering. */
     public List<Order> visibleOrders(UUID playerId) {
         return plugin.getOrderManager().getOrdersByPlayer(playerId).stream()
                 .filter(order -> !order.isRemovedByAdmin() || order.hasItems())
@@ -899,7 +904,7 @@ public class GuiManager {
             if (newOrder.slot() >= 0) {
                 place(inventory, newOrder, stack);
             } else if (used < contentSlots.length) {
-                // slot: -1 -> son siparisin hemen ardina
+                // slot: -1 -> right after the last order
                 inventory.setItem(contentSlots[used], stack);
             }
         }
@@ -954,7 +959,7 @@ public class GuiManager {
                 .setAmount(1).setLore(lore).hideFlags().build();
     }
 
-    // =========================================================== yeni siparis
+    // =========================================================== new order
 
     public void openNewOrder(Player player) {
         UUID playerId = player.getUniqueId();
@@ -1005,8 +1010,8 @@ public class GuiManager {
         MenuItem confirm = menu.item("confirm");
         if (confirm.enabled() && confirm.hasSlots()) {
             List<String> lore = new ArrayList<>();
-            // Vergi acikken toplam, vergi DAHIL gosterilir: oyuncu onaylamadan
-            // once cebinden ne cikacagini gormeli.
+            // When tax is on, the total shown INCLUDES tax: the player must see
+            // exactly what will leave their pocket before confirming.
             lore.add(plugin.msg(player, "gui.lore.total-cost",
                     "%total%", TextUtil.formatNumber(tax.total())));
             if (tax.charged()) {
@@ -1025,11 +1030,11 @@ public class GuiManager {
     }
 
     /**
-     * 5.0 -&gt; "%5" (bicim dile bagli degil, sayidir).
+     * 5.0 -&gt; "%5" (the format isn't language-dependent, it's the number itself).
      *
-     * <p>Girdi 3.0'dan beri <b>yuzdenin kendisidir</b>, 0-1 arasi oran degil.
-     * Vergi ayarlari da yuzde yazildigi icin ikisi ayni birimde kalir ve
-     * "0.05 mi 5 mi" karisikligi olusmaz.</p>
+     * <p>Since 3.0, the input <b>is the percentage itself</b>, not a 0-1 ratio.
+     * Tax settings are also written as percentages, so both stay in the same
+     * unit and there's no "is it 0.05 or 5" confusion.</p>
      */
     public static String formatPercent(double percent) {
         return percent == Math.floor(percent)
@@ -1050,7 +1055,7 @@ public class GuiManager {
                 meta.setBasePotionType(PotionType.valueOf(potionType));
                 preview.setItemMeta(meta);
             } catch (Exception ignored) {
-                // Tanimsiz tur: sade sise.
+                // Undefined type: plain bottle.
             }
         } else if (material == Material.ENCHANTED_BOOK && enchantmentType != null) {
             try {
@@ -1062,7 +1067,7 @@ public class GuiManager {
                 }
                 preview.setItemMeta(meta);
             } catch (Exception ignored) {
-                // Bilinmeyen buyu: sade kitap.
+                // Unknown enchantment: plain book.
             }
         } else if (enchantmentType != null && !enchantmentType.isEmpty()) {
             try {
@@ -1076,7 +1081,7 @@ public class GuiManager {
                 }
                 preview.setItemMeta(meta);
             } catch (Exception ignored) {
-                // Bilinmeyen buyu: eshya buyusuz.
+                // Unknown enchantment: item without it.
             }
         }
         return preview;
@@ -1103,7 +1108,7 @@ public class GuiManager {
         return plugin.names().material(code, material == null ? "STONE" : material.name());
     }
 
-    // =========================================================== eshya secme
+    // =========================================================== item selection
 
     public void openItemSelector(Player player, int page) {
         openItemSelector(player, page, null);
@@ -1119,8 +1124,9 @@ public class GuiManager {
         if (page < 1) page = 1;
         if (page > pages) page = pages;
 
-        // %page% eskiden hic degistirilmiyordu; baslikta ham "%page%" yaziyordu ve
-        // sayfa bilgisi ayrica sona ekleniyordu. Artik tek kaynak dil dosyasi.
+        // %page% used to never get substituted; the title showed the raw
+        // "%page%" and the page info was appended separately. Now the language
+        // file is the single source.
         String title = filter == null || filter.isBlank()
                 ? menuTitle(player, menu, "item-selector",
                         "%page%", String.valueOf(page), "%pages%", String.valueOf(pages))
@@ -1166,12 +1172,13 @@ public class GuiManager {
     }
 
     /**
-     * Eshya secme listesi — filtre hem ingilizce enum adinda hem cevrilmis adda calisir.
+     * The item selector list — the filter matches both the English enum name
+     * and the translated name.
      *
-     * <p>Aranan metin, onceden hesaplanmis kucuk harfli ad dizisi uzerinde
-     * taranir. Eskiden her arama icin ~1300 esyanin {@code getItemMeta()}'si
-     * okunuyordu; bu cagri her seferinde yeni bir meta nesnesi uretir ve oyuncu
-     * arama kutusuna her harf yazdiginda bastan calisiyordu.</p>
+     * <p>The search text is matched against a precomputed lowercase name array.
+     * It used to read {@code getItemMeta()} for ~1300 items on every search;
+     * that call produces a new meta object every time, and it re-ran from
+     * scratch every time the player typed a letter into the search box.</p>
      */
     public List<ItemStack> filterItems(Player player, String filter) {
         if (filter == null || filter.trim().isEmpty()) return allItems;
@@ -1183,8 +1190,8 @@ public class GuiManager {
         List<ItemStack> items = allItems;
         List<ItemStack> out = new ArrayList<>();
         for (int i = 0; i < items.size(); i++) {
-            // Indeks liste yeniden kuruldugu anda eskiyebilir; boyut uymuyorsa
-            // yavas ama dogru yola dusulur.
+            // The index can go stale the moment the list is rebuilt; if the
+            // size doesn't match, we fall back to the slow but correct path.
             String haystack = names != null && i < names.length
                     ? names[i]
                     : lowerNameOf(code, items.get(i));
@@ -1196,10 +1203,11 @@ public class GuiManager {
     }
 
     /**
-     * Bir dil icin "enum adi + cevrilmis ad" birlesik arama dizisi.
+     * The combined "enum name + translated name" search array for a language.
      *
-     * <p>{@link #rebuildItemList()} ve dil yeniden yuklemesi bu onbellegi
-     * gecersiz kilar, boylece ceviri degistiginde arama eski adlarla calismaz.</p>
+     * <p>{@link #rebuildItemList()} and reloading the language file both
+     * invalidate this cache, so search never keeps working against stale names
+     * once a translation changes.</p>
      */
     private String[] searchIndex(String code) {
         return searchIndexCache.computeIfAbsent(code, c -> {
@@ -1216,7 +1224,7 @@ public class GuiManager {
         return (stack.getType().name() + '\u0000' + displayNameOf(code, stack)).toLowerCase(Locale.ROOT);
     }
 
-    /** Listedeki bir eshyanin alicinin dilindeki adi. */
+    /** An item's name in the viewer's language, for the list. */
     private String displayNameOf(String code, ItemStack stack) {
         if (stack.getItemMeta() instanceof PotionMeta potionMeta) {
             PotionType type = potionMeta.getBasePotionType();
@@ -1230,10 +1238,11 @@ public class GuiManager {
     }
 
     /**
-     * Listedeki eshyaya cevrilmis ad yazar.
+     * Writes the translated name onto an item in the list.
      *
-     * <p>Isim yazmasaydik istemci vanilya (Ingilizce ya da oyuncunun istemci dili)
-     * adini gosterirdi; sunucu dilinde bir menude bu tutarsiz durur.</p>
+     * <p>If we didn't write a name, the client would show the vanilla name
+     * (English, or the player's client language); that looks inconsistent in
+     * a menu that's in the server's language.</p>
      */
     private ItemStack nameForSelector(String code, ItemStack source) {
         ItemStack stack = source.clone();
@@ -1245,7 +1254,7 @@ public class GuiManager {
         return stack;
     }
 
-    // =========================================================== iksir turu
+    // =========================================================== potion type
 
     public void openPotionTypeSelector(Player player) {
         MenuConfig menu = plugin.menus().get(MenuRegistry.POTION_SELECTOR);
@@ -1283,7 +1292,7 @@ public class GuiManager {
         playOpen(player, menu);
     }
 
-    // =========================================================== teslim etme
+    // =========================================================== delivering
 
     public void openDeliverItems(Player player, Order order) {
         MenuConfig menu = plugin.menus().get(MenuRegistry.DELIVER_ITEMS);
@@ -1393,7 +1402,7 @@ public class GuiManager {
         playOpen(player, menu);
     }
 
-    // =========================================================== siparis duzenleme
+    // =========================================================== editing an order
 
     public void openEditOrder(Player player, Order order) {
         try {
@@ -1435,7 +1444,7 @@ public class GuiManager {
                             "%amount%", String.valueOf(inventoryCount)));
                 }
             } else {
-                // Tamamlanan sipariste iptal yoktur; toplama butonu onun yerini alir.
+                // A completed order has no cancel; the collect button takes its place.
                 collectLore.add("");
                 collectLore.add(plugin.msg(player, "gui.lore.order-completed"));
                 MenuItem cancelOrder = menu.item("cancel-order");
@@ -1463,7 +1472,7 @@ public class GuiManager {
         }
     }
 
-    // =========================================================== eshya toplama
+    // =========================================================== collecting items
 
     public void openCollectItems(Player player, Order order) {
         openCollectItems(player, order, 1);
@@ -1511,7 +1520,7 @@ public class GuiManager {
         playOpen(player, menu);
     }
 
-    // =========================================================== buyu secme
+    // =========================================================== enchantment selection
 
     public void openEnchantmentPicker(Player player) {
         openEnchantmentPicker(player, 1);
@@ -1599,7 +1608,7 @@ public class GuiManager {
         playOpen(player, menu);
     }
 
-    /** Secilebilir buyu/seviye ciftleri — tiklama isleyicisi ayni sirayi kullanir. */
+    /** Selectable enchantment/level pairs — the click handler uses the same order. */
     public List<String> enchantmentOptions(Material material) {
         List<String> options = new ArrayList<>();
         for (Enchantment enchantment : getApplicableEnchantments(material)) {
@@ -1610,18 +1619,19 @@ public class GuiManager {
         return options;
     }
 
-    // =========================================================== dil menusu
+    // =========================================================== language menu
 
     public void openLanguageMenu(Player player) {
         openLanguageMenu(player, 1);
     }
 
     /**
-     * Dil secme ekrani.
+     * The language selection screen.
      *
-     * <p>Sayfalanir: jar 13 dille geliyor ama sunucu sahibi {@code lang/} klasorune
-     * daha fazlasini ekleyebilir. Sayfalama olmasaydi {@code content-slots}'a
-     * sigmayan diller <b>sessizce kaybolurdu</b> ve oyuncu onlari hic secemezdi.</p>
+     * <p>It's paginated: the jar ships with 13 languages, but a server owner
+     * can add more to the {@code lang/} folder. Without pagination, languages
+     * that didn't fit into {@code content-slots} would <b>silently disappear</b>
+     * and a player could never select them.</p>
      */
     public void openLanguageMenu(Player player, int page) {
         MenuConfig menu = plugin.menus().get(MenuRegistry.LANGUAGE);
@@ -1673,7 +1683,7 @@ public class GuiManager {
         playOpen(player, menu);
     }
 
-    /** Menude gosterilecek dil kodlari — tiklama isleyicisi ayni sirayi kullanir. */
+    /** Language codes to display in the menu — the click handler uses the same order. */
     public List<String> availableLanguages() {
         List<String> codes = new ArrayList<>(plugin.getLanguage().available());
         codes.sort(Comparator.naturalOrder());

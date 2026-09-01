@@ -11,12 +11,12 @@ public class TextUtil {
     private static final ConcurrentHashMap<String, String> MATERIAL_NAME_CACHE = new ConcurrentHashMap<>();
 
     /**
-     * Desenler <b>bir kez</b> derlenir.
+     * Patterns are compiled <b>once</b>.
      *
-     * <p>Eskiden {@code colorize} her cagrida {@code Pattern.compile} yapardi.
-     * Tek bir menu acilisinda bu metot 300'den fazla kez cagrilir (54 slot x isim
-     * + lore satirlari); derleme islemi eslesmenin kendisinden kat kat pahalidir
-     * ve ana is parcaciginda birikirdi.</p>
+     * <p>{@code colorize} used to call {@code Pattern.compile} on every invocation.
+     * A single menu open calls this method more than 300 times (54 slots x name
+     * + lore lines); compiling is far more expensive than the matching itself
+     * and would pile up on the main thread.</p>
      */
     private static final Pattern HEX_PATTERN = Pattern.compile("&#([a-fA-F0-9]{6})");
     private static final Pattern HEX_SECTION_PATTERN = Pattern.compile("\u00a7x(\u00a7[0-9a-fA-F]){6}");
@@ -25,8 +25,8 @@ public class TextUtil {
         if (text == null) {
             return "";
         }
-        // Metinlerin buyuk cogunlugunda hex renk yoktur; regex motorunu hic
-        // calistirmadan cikmak en sik gorulen durumu ucuzlatir.
+        // The vast majority of text has no hex color; bailing out without ever
+        // running the regex engine makes the common case cheap.
         if (text.indexOf("&#") >= 0) {
             Matcher matcher = HEX_PATTERN.matcher(text);
             StringBuilder buffer = new StringBuilder(text.length() + 16);
@@ -94,19 +94,22 @@ public class TextUtil {
     }
 
     /**
-     * Binlik ayracli, kisaltmasiz tam sayi bicimi: {@code 45000000 -> "45.000.000"}.
+     * Full integer formatting with a thousands separator, no abbreviation:
+     * {@code 45000000 -> "45.000.000"}.
      *
-     * <p>{@link #formatNumber} K/M/B/T'ye kisaltir; bu metot kisaltmaz, sadece
-     * gruplar. Sipariş lore sablonu ({@code gui.order-lore.template}) tam
-     * rakam istedigi icin eklendi — {@code formatNumber}'in davranisi
-     * degistirilmedi, cagiran kod hala eskisini kullanabilir.</p>
+     * <p>{@link #formatNumber} abbreviates to K/M/B/T; this method never
+     * abbreviates, it only groups. Added because the order lore template
+     * ({@code gui.order-lore.template}) needs the exact figure —
+     * {@code formatNumber}'s behavior was left untouched, so callers can
+     * still use the old one.</p>
      *
-     * <p>Ondalik ayraci, binlik ayracla karismasin diye otomatik secilir:
-     * binlik ayrac {@code "."} ise ondalik {@code ","} olur, degilse {@code "."}.</p>
+     * <p>The decimal separator is chosen automatically so it never collides
+     * with the thousands separator: if the thousands separator is {@code "."}
+     * the decimal becomes {@code ","}, otherwise {@code "."}.</p>
      *
-     * @param value               bicimlendirilecek sayi
-     * @param thousandsSeparator  binlik grup ayraci (orn. {@code "."}); bos/null ise {@code "."}
-     * @param decimals            ondalik basamak sayisi (negatifse 0 kabul edilir)
+     * @param value               the number to format
+     * @param thousandsSeparator  thousands group separator (e.g. {@code "."}); {@code "."} if empty/null
+     * @param decimals            number of decimal places (negative is treated as 0)
      */
     public static String formatFull(double value, String thousandsSeparator, int decimals) {
         String separator = (thousandsSeparator == null || thousandsSeparator.isEmpty()) ? "." : thousandsSeparator;
@@ -141,20 +144,20 @@ public class TextUtil {
     }
 
     /**
-     * Renkli ilerleme cubugu, orn. {@code &#49F267■■■■&#555555■■■■■■}.
+     * Colored progress bar, e.g. {@code &#49F267■■■■&#555555■■■■■■}.
      *
-     * <p>Renk kodlari cikti icinde ham (&#RRGGBB) kalir; cagiran taraf sonunda
-     * {@link #colorize} ya da esdeger bir mekanizma (orn. {@link LoreTemplate})
-     * uygulamalidir. Boylece bar tek basina test edilebilir ve birden fazla
-     * kez renklendirilmesi (idempotent oldugu icin) zarar vermez.</p>
+     * <p>Color codes are left raw (&#RRGGBB) in the output; the caller must
+     * apply {@link #colorize} or an equivalent mechanism (e.g. {@link LoreTemplate})
+     * afterward. That way the bar can be tested on its own, and applying color
+     * to it more than once does no harm (since it's idempotent).</p>
      *
-     * @param filled       dolan miktar
-     * @param needed       hedef miktar; 0 ya da negatifse ve {@code filled > 0} ise cubuk tam dolu sayilir
-     * @param length       toplam karakter sayisi (0 veya negatifse bos donderilir)
-     * @param filledChar   dolu hucre karakteri
-     * @param emptyChar    bos hucre karakteri
-     * @param filledColor  dolu kisimin renk kodu (orn. {@code &#49F267})
-     * @param emptyColor   bos kisimin renk kodu (orn. {@code &#555555})
+     * @param filled       the amount filled
+     * @param needed       target amount; if 0 or negative and {@code filled > 0} the bar is treated as full
+     * @param length       total character count (returns empty if 0 or negative)
+     * @param filledChar   character used for a filled cell
+     * @param emptyChar    character used for an empty cell
+     * @param filledColor  color code for the filled portion (e.g. {@code &#49F267})
+     * @param emptyColor   color code for the empty portion (e.g. {@code &#555555})
      */
     public static String progressBar(double filled, double needed, int length, String filledChar, String emptyChar,
             String filledColor, String emptyColor) {
@@ -174,9 +177,10 @@ public class TextUtil {
         if (filledCount > length) filledCount = length;
         int emptyCount = length - filledCount;
 
-        // Renk kodu yalnizca o kisimdan en az bir karakter varsa eklenir: sifir
-        // dolu (ya da sifir bos) bir cubukta kullanilmayan renk kodu bosuna
-        // kalmaz - mockup'ta da (filled=0) yalnizca bos-renk kodu gorunur.
+        // A color code is only appended if that section has at least one
+        // character: a bar with zero filled (or zero empty) cells doesn't
+        // waste an unused color code - e.g. at filled=0 only the empty-color
+        // code shows up.
         StringBuilder out = new StringBuilder();
         if (filledCount > 0) {
             if (filledColor != null) out.append(filledColor);
