@@ -454,7 +454,11 @@ public class OrderManager {
         // karsiligi olmayan para gecerdi.
         plugin.tax().deposit(tax.amount());
 
-        Order order = new Order(player.getUniqueId(), material, amount, pricePerItem, potionType, enchantmentType);
+        // Izin OLUSTURMA aninda kontrol edilip siparise islenir: sonradan rutbe
+        // kaybi siparisi geriye donuk etkilemez, oyuncunun cevrimici olmasi da
+        // gerekmez (bkz. Order#expiry, orders.expire-bypass-permission).
+        boolean neverExpires = player.hasPermission(settings.orderExpireBypassPermission());
+        Order order = new Order(player.getUniqueId(), material, amount, pricePerItem, potionType, enchantmentType, neverExpires);
         addToIndex(order);
         if (this.useSQL) {
             this.scheduler.runAsync(plugin, () -> {
@@ -478,6 +482,11 @@ public class OrderManager {
         plugin.sync().publish(SyncMessage.of(SyncService.ORDER_CREATED,
                 plugin.sync().serverId(), order.getId().toString()));
 
+        // Siparis TAMAMEN olusup para cekildikten SONRA duyurulur: yukaridaki
+        // kontrollerden biri false donseydi hicbir duyuru yapilmayacakti, boylece
+        // hayali (basarisiz) bir siparis asla sunucuya duyurulamaz.
+        announceOrderCreated(player, itemName, amount, pricePerItem, subtotal);
+
         // Seviye sistemi kapaliysa bu cagrilarin hicbiri bir sey yapmaz.
         //
         // Varsayilan olarak siparis XP'si BURADA VERILMEZ: acip hemen iptal
@@ -489,6 +498,29 @@ public class OrderManager {
             plugin.levels().award(player, "create-money", subtotal);
         }
         return true;
+    }
+
+    /**
+     * Yeni acilan siparisi tum sunucuya duyurur — orders.broadcast.enabled
+     * kapaliysa (varsayilan) hicbir sey yapmaz. orders.broadcast.min-total
+     * altindaki siparisler de duyurulmaz; 0 = hepsi.
+     *
+     * <p>LevelManager#announceLevelUp ile ayni sekilde: cevrimici oyuncular
+     * tek tek gezilip her birine kendi dilinde plugin.msg ile mesaj gonderilir.</p>
+     */
+    private void announceOrderCreated(Player owner, String itemName, int amount, double pricePerItem, double total) {
+        Settings settings = plugin.settings();
+        if (!settings.orderBroadcastEnabled()) return;
+        if (total < settings.orderBroadcastMinTotal()) return;
+
+        String amountText = plugin.getGuiManager().formatOrderNumber(amount);
+        String priceText = plugin.getGuiManager().formatOrderNumber(pricePerItem);
+        String totalText = plugin.getGuiManager().formatOrderNumber(total);
+        for (Player online : Bukkit.getOnlinePlayers()) {
+            online.sendMessage(plugin.msg(online, "success.order-created-broadcast",
+                    "%player%", owner.getName(), "%item%", itemName,
+                    "%amount%", amountText, "%price%", priceText, "%total%", totalText));
+        }
     }
 
     public boolean cancelOrder(Player player, Order order) {
@@ -923,7 +955,11 @@ public class OrderManager {
         long retention = plugin.settings().completedRetentionMillis();
         for (Order order : ordersById.values()) {
             if (!order.isComplete() || order.hasItems()) continue;
-            if (now < order.getExpiry() + retention) continue;
+            // orders.bypass.expire ile acilmis siparislerde expiry Long.MAX_VALUE'dir;
+            // dogrudan toplarsak tasip negatife donerdi ve siparis erkenden silinirdi.
+            long retentionDeadline = order.getExpiry() > Long.MAX_VALUE - retention
+                    ? Long.MAX_VALUE : order.getExpiry() + retention;
+            if (now < retentionDeadline) continue;
             if (ordersById.remove(order.getId()) == null) continue;
             removeFromSecondaryIndexes(order);
             deletedIds.add(order.getId());

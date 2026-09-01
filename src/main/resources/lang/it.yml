@@ -66,6 +66,8 @@ success:
   items-sold: '{prefix}&aOggetti venduti per &a$%price%&a.'
   language-changed: '{prefix}&aLingua impostata su &e%language%&a.'
   tax-charged: '{prefix}&7È stata applicata una tassa d''ordine del &e%tax%&7 (&e$%amount%&7).'
+  # English default (unverified machine translation risk) - feel free to translate.
+  order-created-broadcast: '&#00d271%player% &fordered &#00d271%amount%x %item% &fat &#00d271$%price% &feach (&#00d271$%total% &ftotal)!'
 gui:
   type-amount: '{prefix}&aScrivi la quantità in chat:'
   type-price: '{prefix}&aScrivi il prezzo in chat:'
@@ -382,6 +384,8 @@ time:
   hour: '%value%h'
   minute: '%value%m'
   expired: Scaduto
+  # English default (unverified machine translation risk) - feel free to translate.
+  never: Never
 names:
   unknown: Unknown
   enchanted-book: '%enchantment% Book'

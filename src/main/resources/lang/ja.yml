@@ -66,6 +66,8 @@ success:
   items-sold: '{prefix}&aアイテムを &a$%price%&a で売却しました。'
   language-changed: '{prefix}&a言語を &e%language%&a に設定しました。'
   tax-charged: '{prefix}&e%tax%&7 の注文税が徴収されました（&e$%amount%&7）。'
+  # English default (unverified machine translation risk) - feel free to translate.
+  order-created-broadcast: '&#00d271%player% &fordered &#00d271%amount%x %item% &fat &#00d271$%price% &feach (&#00d271$%total% &ftotal)!'
 gui:
   type-amount: '{prefix}&aチャットに数量を入力してください：'
   type-price: '{prefix}&aチャットに価格を入力してください：'
@@ -382,6 +384,8 @@ time:
   hour: '%value%時間'
   minute: '%value%分'
   expired: 期限切れ
+  # English default (unverified machine translation risk) - feel free to translate.
+  never: Never
 names:
   unknown: Unknown
   enchanted-book: '%enchantment% Book'

@@ -66,6 +66,8 @@ success:
   items-sold: '{prefix}&aItems verkocht voor &a$%price%&a.'
   language-changed: '{prefix}&aTaal ingesteld op &e%language%&a.'
   tax-charged: '{prefix}&7Er is &e%tax%&7 bestelbelasting berekend (&e$%amount%&7).'
+  # English default (unverified machine translation risk) - feel free to translate.
+  order-created-broadcast: '&#00d271%player% &fordered &#00d271%amount%x %item% &fat &#00d271$%price% &feach (&#00d271$%total% &ftotal)!'
 gui:
   type-amount: '{prefix}&aTyp het aantal in de chat:'
   type-price: '{prefix}&aTyp de prijs in de chat:'
@@ -382,6 +384,8 @@ time:
   hour: '%value%u'
   minute: '%value%m'
   expired: Verlopen
+  # English default (unverified machine translation risk) - feel free to translate.
+  never: Never
 names:
   unknown: Unknown
   enchanted-book: '%enchantment% Book'

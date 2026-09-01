@@ -273,6 +273,9 @@ public class GuiManager {
 
     /** Kalan sureyi alicinin dilinde biciminde ("2g 4s 10dk"). */
     private String timeRemaining(Player player, long expiryTimestamp) {
+        // orders.bypass.expire ile acilmis siparislerde expiry Long.MAX_VALUE'dir;
+        // gunlere cevirip anlamsiz devasa bir sayi gostermek yerine "hicbir zaman" denir.
+        if (expiryTimestamp == Long.MAX_VALUE) return plugin.rawMsg(player, "time.never");
         long remaining = expiryTimestamp - System.currentTimeMillis();
         if (remaining <= 0L) return plugin.rawMsg(player, "time.expired");
         long days = TimeUnit.MILLISECONDS.toDays(remaining);
@@ -779,6 +782,15 @@ public class GuiManager {
             return TextUtil.formatNumber(value);
         }
         return TextUtil.formatFull(value, settings.numberFormatSeparator(), settings.numberFormatDecimals());
+    }
+
+    /**
+     * {@link #formatQuantity} ile ayni bicim; siparis panosundaki lore hangi
+     * sayi bicimini kullaniyorsa disaridan (orn. yeni siparis duyurusu) da
+     * onunla ayni gorunsun diye public.
+     */
+    public String formatOrderNumber(double value) {
+        return formatQuantity(value);
     }
 
     /**

@@ -32,6 +32,9 @@ permissions:
   orders.bypass.cooldown:
     description: Spam/bekleme korumasindan muaf (config.yml -> protection.bypass-permission).
     default: op
+  orders.bypass.expire:
+    description: Siparisler asla suresi dolmaz (config.yml -> orders.expire-bypass-permission ile degistirilebilir).
+    default: false
   orders.tax.exempt:
     description: Vergiden tamamen muaf (config.yml -> tax.exempt-permission ile degistirilebilir).
     default: false

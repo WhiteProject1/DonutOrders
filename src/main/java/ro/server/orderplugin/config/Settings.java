@@ -69,10 +69,13 @@ public final class Settings {
     private double taxMinAmount = -1;
     private double taxMaxAmount = -1;
     private long expiryMillis = TimeUnit.DAYS.toMillis(7);
+    private String orderExpireBypassPermission = "orders.bypass.expire";
     private long completedRetentionMillis = TimeUnit.DAYS.toMillis(7);
     private int maxEnchantments = 5;
     private Set<Material> blacklist = EnumSet.noneOf(Material.class);
     private long cleanupIntervalTicks = 6000L;
+    private boolean orderBroadcastEnabled = false;
+    private double orderBroadcastMinTotal = 0d;
 
     // --- sesler
     private boolean soundsEnabled = true;
@@ -187,9 +190,12 @@ public final class Settings {
         taxMaxAmount = c.getDouble("tax.max-amount", -1);
 
         expiryMillis = TimeUnit.HOURS.toMillis(Math.max(1, c.getLong("orders.expiry-hours", 168L)));
+        orderExpireBypassPermission = c.getString("orders.expire-bypass-permission", "orders.bypass.expire");
         completedRetentionMillis = TimeUnit.HOURS.toMillis(Math.max(1, c.getLong("orders.completed-retention-hours", 168L)));
         maxEnchantments = c.getInt("orders.max-enchantments-per-order", 5);
         cleanupIntervalTicks = Math.max(200L, c.getLong("orders.cleanup-interval-ticks", 6000L));
+        orderBroadcastEnabled = c.getBoolean("orders.broadcast.enabled", false);
+        orderBroadcastMinTotal = c.getDouble("orders.broadcast.min-total", 0d);
 
         blacklist = EnumSet.noneOf(Material.class);
         for (String raw : c.getStringList("orders.blacklist")) {
@@ -434,9 +440,12 @@ public final class Settings {
     public int minAmount() { return minAmount; }
     public int maxAmount() { return maxAmount; }
     public long expiryMillis() { return expiryMillis; }
+    public String orderExpireBypassPermission() { return orderExpireBypassPermission; }
     public long completedRetentionMillis() { return completedRetentionMillis; }
     public int maxEnchantments() { return maxEnchantments; }
     public long cleanupIntervalTicks() { return cleanupIntervalTicks; }
+    public boolean orderBroadcastEnabled() { return orderBroadcastEnabled; }
+    public double orderBroadcastMinTotal() { return orderBroadcastMinTotal; }
     public boolean soundsEnabled() { return soundsEnabled; }
 
     /** Olay sesi; tanimsiz olay icin {@link SoundSpec#NONE} doner (asla null). */

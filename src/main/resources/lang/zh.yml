@@ -66,6 +66,8 @@ success:
   items-sold: '{prefix}&a物品以 &a$%price%&a 售出。'
   language-changed: '{prefix}&a语言已设置为 &e%language%&a。'
   tax-charged: '{prefix}&7已收取 &e%tax%&7 的订单税（&e$%amount%&7）。'
+  # English default (unverified machine translation risk) - feel free to translate.
+  order-created-broadcast: '&#00d271%player% &fordered &#00d271%amount%x %item% &fat &#00d271$%price% &feach (&#00d271$%total% &ftotal)!'
 gui:
   type-amount: '{prefix}&a请在聊天栏输入数量：'
   type-price: '{prefix}&a请在聊天栏输入价格：'
@@ -382,6 +384,8 @@ time:
   hour: '%value%时'
   minute: '%value%分'
   expired: 已过期
+  # English default (unverified machine translation risk) - feel free to translate.
+  never: Never
 names:
   unknown: Unknown
   enchanted-book: '%enchantment% Book'

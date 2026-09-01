@@ -71,6 +71,7 @@ success:
   items-sold: '{prefix}&aItems sold for &a$%price%&a.'
   language-changed: '{prefix}&aLanguage set to &e%language%&a.'
   tax-charged: '{prefix}&7A &e%tax%&7 order tax was charged (&e$%amount%&7).'
+  order-created-broadcast: '&#00d271%player% &fordered &#00d271%amount%x %item% &fat &#00d271$%price% &feach (&#00d271$%total% &ftotal)!'
 gui:
   type-amount: '{prefix}&aType the amount in chat:'
   type-price: '{prefix}&aType the price in chat:'
@@ -385,6 +386,7 @@ time:
   hour: '%value%h'
   minute: '%value%m'
   expired: Expired
+  never: Never
 names:
   unknown: Unknown
   enchanted-book: '%enchantment% Book'

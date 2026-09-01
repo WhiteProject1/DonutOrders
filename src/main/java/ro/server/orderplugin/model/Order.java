@@ -43,6 +43,17 @@ public class Order {
     }
 
     public Order(UUID owner, Material material, int needed, double pricePerItem, String potionType, String enchantmentType) {
+        this(owner, material, needed, pricePerItem, potionType, enchantmentType, false);
+    }
+
+    /**
+     * @param neverExpires siparis sahibi olusturma aninda {@code orders.expire-bypass-permission}
+     *        iznine sahipse {@code true}. Ayri bir alan olarak DEGIL, {@code expiry}
+     *        {@link Long#MAX_VALUE} yapilarak saklanir — boylece depolama semasi
+     *        degismez ve mevcut suresi-dolma kontrolleri ({@code expiry <= now})
+     *        hic degistirilmeden dogru calisir.
+     */
+    public Order(UUID owner, Material material, int needed, double pricePerItem, String potionType, String enchantmentType, boolean neverExpires) {
         this.id = UUID.randomUUID();
         this.owner = owner;
         this.material = material;
@@ -51,7 +62,7 @@ public class Order {
         this.potionType = potionType;
         this.enchantmentType = enchantmentType;
         this.created = System.currentTimeMillis();
-        this.expiry = this.created + expiryDuration();
+        this.expiry = neverExpires ? Long.MAX_VALUE : this.created + expiryDuration();
     }
 
     /**

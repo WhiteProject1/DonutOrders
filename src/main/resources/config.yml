@@ -58,6 +58,11 @@ orders:
   # Siparişin geçerlilik süresi (saat). 168 = 7 gün.
   expiry-hours: 168
 
+  # Bu izne sahip oyuncunun sipariş OLUŞTURDUĞU an sahip olduğu siparişler asla
+  # süresi dolmaz. İzin oluşturma anında kontrol edilip siparişe işlenir; oyuncu
+  # sonradan rütbesini kaybetse bile o sipariş süresiz kalmaya devam eder.
+  expire-bypass-permission: "orders.bypass.expire"
+
   # Tamamlanmış siparişin, eşyalar toplanmadan önce ne kadar bekleyeceği (saat).
   completed-retention-hours: 168
 
@@ -76,6 +81,13 @@ orders:
   blacklist: []
   #  - BEDROCK
   #  - BARRIER
+
+  # Yeni bir siparis acildiginda sunucuya duyuru yapilir.
+  broadcast:
+    enabled: false
+    # Duyuruyu yalnizca bu tutarin ustundeki siparisler tetikler (0 = hepsi).
+    # Kucuk siparislerin sohbeti bogmasini engeller.
+    min-total: 0
 
 # =============================================================================
 #  VERGİ

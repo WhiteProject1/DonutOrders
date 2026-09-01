@@ -71,6 +71,7 @@ success:
   items-sold: '{prefix}&aEşyalar &a$%price%&a karşılığında satıldı.'
   language-changed: '{prefix}&aDil &e%language%&a olarak ayarlandı.'
   tax-charged: '{prefix}&7Sipariş vergisi alındı (&e%tax%&7 = &e$%amount%&7).'
+  order-created-broadcast: '&#00d271%player% &f&#00d271%amount%x %item% &fiçin sipariş açtı — tanesi &#00d271$%price%&f, toplamı &#00d271$%total%&f!'
 gui:
   type-amount: '{prefix}&aSohbete miktarı yazın:'
   type-price: '{prefix}&aSohbete fiyatı yazın:'
@@ -385,6 +386,7 @@ time:
   hour: '%value%s'
   minute: '%value%dk'
   expired: Süresi doldu
+  never: Asla
 names:
   unknown: Bilinmeyen
   enchanted-book: '%enchantment% Kitabı'
