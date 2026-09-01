@@ -153,6 +153,10 @@ Output lands in `target/`. Requires JDK 17 or newer.
 
 ---
 
+## Changelog
+
+See [CHANGELOG.md](CHANGELOG.md).
+
 ## License
 
 [PolyForm Noncommercial 1.0.0](LICENSE) — free for personal, community and other
